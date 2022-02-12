@@ -19,24 +19,28 @@
    </head>
    <body>
     <!-- The TOP NAVIGATION BAR -->
-    <div class="navbar"> 
-      <button id="menuBtn" type="button" class="navbar-btn" title="Menu">
-          <span id="menuBtnIcon" class="navbar-btn-icon fas fa-bars"></span>
-      </button>
-      <img src="images/sslogo.png" class="navbar-app-icon">
-      <span id="appName" class="navbar-title">SpeedScore</span> 
-      <div class="navbar-right-items">
-        <button id="searchBtn" type="button" 
-          class="navbar-btn" title="Search">
-          <span class="navbar-btn-icon fas fa-search"></span>
+    <header class="navbar"> 
+        <a id="sLink" class="skip-link" tabindex="0">Skip to content</a>  
+        <button id="menuBtn" type="button" class="navbar-btn" title="Menu"
+            aria-controls="sideMenu" aria-label="Actions"
+            aria-haspopup="true" aria-expanded="false">
+            <span id="menuBtnIcon" class="navbar-btn-icon fas fa-bars"></span>
         </button>
-        <button id="profileBtn" type="button" class="navbar-btn"
-          title="Edit Profile">
-          <img class="navbar-profile-pic" 
-               src="images/ChrisProfilePic.jpg"> 
-        </button>  
-      </div>
-    </div>
+        <img src="images/sslogo.png" class="navbar-app-icon" 
+        alt="SpeedScore logo">
+        <h1 id="appName" class="navbar-title">SpeedScore</h1> 
+        <div class="navbar-right-items">
+            <button  id="searchBtn" type="button" class="navbar-btn" title="Search" 
+            aria-label="Search">
+            <span class="navbar-btn-icon fas fa-search"></span>
+            </button>
+            <button id="profileBtn" type="button" class="navbar-btn" title="Edit Profile"
+            aria-label="Account Settings">
+            <img class="navbar-profile-pic" 
+                src="images/ChrisProfilePic.jpg" alt="User's profile picture">
+            </button>  
+        </div>
+    </header>
     <script>
       //Begin SCRIPT section of document. Here we define app behavior.
     </script>

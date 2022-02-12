@@ -16,6 +16,29 @@
 }
 
 /*************************************************************************
+* CSS CLASSES FOR SKIP LINK (USED BY SCREEN READERS AND KEYBOARD NAV)
+* A skip link allows keyboard users to quickly skip over an app's 
+* navigation elements to reach its content. It is a best practice for
+* accessibility.
+*************************************************************************/
+.skip-link {
+    cursor: pointer;    
+    background: var(--main-color);
+    color: var(--text-color);
+    font-weight: 700;              
+    left: 50%;
+    padding: 4px;
+    position: absolute;
+    transform: translateY(-200%);
+    transition: transform 0.3s;
+    z-index: 200;
+}
+
+.skip-link:focus {
+    transform: translateY(0%);
+}
+
+/*************************************************************************
 * CSS CLASSES FOR TOP NAVIGATION BAR
 *************************************************************************/
 
