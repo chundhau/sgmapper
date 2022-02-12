@@ -1,11 +1,42 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <!-- Begin HEAD section of document. Here we set up things, define styles 
-         and/or import stylesheets. -->
+    <!-- Title displays in page's tab.  -->
+    <title>SpeedScore</title>
+    <!-- Define Favicon -->
+    <link rel='shortcut icon' type='image/x-icon' 
+          href="images/ssfavicon.ico"/>
+    <!--Specify viewable part of page ('viewport'). -->
+    <meta name="viewport" content="width=device-width, 
+          initial-scale=1.0">
+     <!-- Enable app to open full screen on mobile devices-->
+     <meta name="mobile-web-app-capable" content="yes">
+     <!-- Import FontAwesome icons -->
+     <script src="https://kit.fontawesome.com/79d46ac19d.js" 
+      crossorigin="anonymous"></script>
+     <!-- Import local stylesheet -->
+     <link rel="stylesheet" href="styles/style.css">
    </head>
    <body>
-     <!-- Begin BODY section of document. Here we specify the page content. -->
+     <!-- The TOP NAVIGATION BAR -->
+     <div class="navbar"> 
+       <button id="menuBtn" type="button" class="navbar-btn" title="Menu">
+         <span id="menuBtnIcon" class="navbar-btn-icon fas fa-bars"></span>
+       </button>
+       <img src="images/sslogo.png" class="navbar-app-icon">
+       <span id="appName" class="navbar-title">SpeedScore</span> 
+       <div class="navbar-right-items">
+         <button id="searchBtn" type="button" 
+           class="navbar-btn" title="Search">
+           <span class="navbar-btn-icon fas fa-search"></span>
+         </button>
+         <button id="profileBtn" type="button" class="navbar-btn"
+           title="Edit Profile">
+           <img class="navbar-profile-pic" 
+               src="images/ChrisProfilePic.jpg"> 
+         </button>  
+       </div>
+     </div>
      <script>
      //Begin SCRIPT section of document. Here we define app behavior.
      </script>
