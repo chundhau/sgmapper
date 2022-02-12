@@ -18,9 +18,27 @@
      <link rel="stylesheet" href="styles/style.css">
    </head>
    <body>
-     <!-- Begin BODY section of document. Here we specify the page content. -->
-     <script>
-     //Begin SCRIPT section of document. Here we define app behavior.
-     </script>
-   </body>
+    <!-- The TOP NAVIGATION BAR -->
+    <div class="navbar"> 
+      <button id="menuBtn" type="button" class="navbar-btn" title="Menu">
+          <span id="menuBtnIcon" class="navbar-btn-icon fas fa-bars"></span>
+      </button>
+      <img src="images/sslogo.png" class="navbar-app-icon">
+      <span id="appName" class="navbar-title">SpeedScore</span> 
+      <div class="navbar-right-items">
+        <button id="searchBtn" type="button" 
+          class="navbar-btn" title="Search">
+          <span class="navbar-btn-icon fas fa-search"></span>
+        </button>
+        <button id="profileBtn" type="button" class="navbar-btn"
+          title="Edit Profile">
+          <img class="navbar-profile-pic" 
+               src="images/ChrisProfilePic.jpg"> 
+        </button>  
+      </div>
+    </div>
+    <script>
+      //Begin SCRIPT section of document. Here we define app behavior.
+    </script>
+  </body>
 </html>
