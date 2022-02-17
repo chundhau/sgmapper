@@ -1,13 +1,48 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <!-- Begin HEAD section of document. Here we set up things, define styles 
-         and/or import stylesheets. -->
-  </head>
-  <body>
-    <!-- Begin BODY section of document. Here we specify the page content. -->
+    <!-- Title displays in page's tab.  -->
+    <title>SpeedScore</title>
+    <!-- Define Favicon -->
+    <link rel='shortcut icon' type='image/x-icon' 
+          href="images/ssfavicon.ico"/>
+    <!--Specify viewable part of page ('viewport'). -->
+    <meta name="viewport" content="width=device-width, 
+          initial-scale=1.0">
+     <!-- Enable app to open full screen on mobile devices-->
+     <meta name="mobile-web-app-capable" content="yes">
+     <!-- Import FontAwesome icons -->
+     <script src="https://kit.fontawesome.com/79d46ac19d.js" 
+      crossorigin="anonymous"></script>
+     <!-- Import local stylesheet -->
+     <link rel="stylesheet" href="styles/style.css">
+   </head>
+   <body>
+    <!-- The TOP NAVIGATION BAR -->
+    <header class="navbar"> 
+        <a id="sLink" class="skip-link" tabindex="0">Skip to content</a>  
+        <button id="menuBtn" type="button" class="navbar-btn" title="Menu"
+            aria-controls="sideMenu" aria-label="Actions"
+            aria-haspopup="true" aria-expanded="false">
+            <span id="menuBtnIcon" class="navbar-btn-icon fas fa-bars"></span>
+        </button>
+        <img src="images/sslogo.png" class="navbar-app-icon" 
+        alt="SpeedScore logo">
+        <h1 id="appName" class="navbar-title">SpeedScore</h1> 
+        <div class="navbar-right-items">
+            <button  id="searchBtn" type="button" class="navbar-btn" title="Search" 
+            aria-label="Search">
+            <span class="navbar-btn-icon fas fa-search"></span>
+            </button>
+            <button id="profileBtn" type="button" class="navbar-btn" title="Edit Profile"
+            aria-label="Account Settings">
+            <img class="navbar-profile-pic" 
+                src="images/ChrisProfilePic.jpg" alt="User's profile picture">
+            </button>  
+        </div>
+    </header>
     <script>
-    //Begin SCRIPT section of document. Here we define app behavior.
+      //Begin SCRIPT section of document. Here we define app behavior.
     </script>
   </body>
 </html>
