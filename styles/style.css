@@ -13,7 +13,9 @@
 :root {
     --main-color: #13294E;
     --text-color: white;     
-    --main-red-color: #ff0f00;       
+    --main-red-color: #ff0f00; 
+    --item-highlight-color: #f0f0f0;    
+    --side-menu-width: 250px;       
 }
 
 /*************************************************************************
@@ -111,6 +113,39 @@
     width: auto;
     margin-left: 16px;
 } 
+
+/*************************************************************************
+* CSS CLASSES FOR SIDE MENU
+*************************************************************************/
+
+/* sidemenu -- Styles the side menu */
+.sidemenu {
+    position: fixed; /* Menu stays in place */
+    top: 56px; /* Position menu just below top navbar */
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margins */
+    z-index: 200; /* Force the menu to be near the front */
+    left: 0px; /* Position side menu on left-hand side of screen */
+    height: 100%; /* Menu is full height of window */
+    width: var(--side-menu-width);
+    overflow: hidden;
+    background-color: var(--main-color); /* Match to main-color */
+    color: var(--text-color);
+    list-style-type: none; /* Remove bullets */
+  }
+
+/* sidemenu-li -- Styles items in the side menu. */
+.sidemenu li {
+    padding: 24px 0px 24px 24px; /* top, right, bottom, left */
+    font-size: 18px;
+}
+
+/* sidemenu-li -- Styles items in the side menu on hover. */
+.sidemenu li:hover {
+    cursor: pointer;
+    background-color: var(--item-highlight-color);
+    color: var(--main-color);
+}  
 
 /*************************************************************************
 * CSS CLASSES FOR TOP "MODE" TABS
