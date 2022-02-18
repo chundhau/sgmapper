@@ -19,6 +19,14 @@
 }
 
 /*************************************************************************
+* GLOBAL CSS CLASSES
+* These are global classes that care useful for a variety of elements.
+*************************************************************************/
+.hidden {
+    display: none;
+}
+
+/*************************************************************************
 * CSS CLASSES FOR SKIP LINK (USED BY SCREEN READERS AND KEYBOARD NAV)
 * A skip link allows keyboard users to quickly skip over an app's 
 * navigation elements to reach its content. It is a best practice for
@@ -178,4 +186,29 @@
 .modetab-selected {
     cursor: default;
     border-bottom: 4px solid var(--main-red-color);
+}
+
+/*************************************************************************
+* CSS CLASSES FOR MODE PAGES
+*************************************************************************/
+.mode-page {
+    padding-top: 70px;
+}
+
+.mode-page-header {
+    text-align: center;
+    font-size: 48px;
+}
+
+.mode-page-content {
+    text-align: center;
+    font-size: 24px;
+}
+
+.mode-page-icon {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    height: 200px;
+    width: 200px;
 }
