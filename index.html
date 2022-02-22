@@ -41,6 +41,90 @@
             </button>  
         </div>
     </header>
+      <!--THE SIDE MENU -->
+      <ul id="sideMenu" role="menu" class="sidemenu hidden"
+          arial-labelledby="menuBtn">
+      <li role="menuitem" tabindex="-1">
+        Settings
+      </li>
+      <li role="menuitem" tabindex="-1">
+        About
+      </li>
+      <li role="menuitem" tabindex="-1">
+        Log Out
+      </li>
+    </ul>
+    <!-- "MODE" TABS -->
+    <div id="modeTabs" class="modetab-container" role="tablist" 
+      aria-label="App Modes">
+      <button id="feedMode" type="button" 
+        class="modetab-btn modetab-selected" 
+        role="tab" tabindex="0" aria-selected="true" 
+        aria-controls="feedModeMain">
+        Feed
+      </button>
+      <button id="roundsMode" type="button" 
+        class="modetab-btn" 
+        role="tab" tabindex="-1" aria-selected="false" 
+        aria-controls="roundsModeMain">
+        Rounds
+      </button>
+      <button id="coursesMode" type="button" 
+        class="modetab-btn" 
+        role="tab" tabindex="-1" aria-selected="false" 
+        aria-controls="coursesModeMain">
+        Courses
+      </button>
+      <button id="buddiesMode" type="button" 
+        class="modetab-btn" 
+        role="tab" tabindex="-1" aria-selected="false" 
+        aria-controls="buddiesModeMain">
+        Buddies
+      </button>
+    </div>
+    <main>
+      <div id="feedModeTab" class="mode-page" role="tabpanel"
+        aria-label="Feed Tab" tabindex="0">
+        <h1 class="mode-page-header">Activity Feed</h1>
+        <p class="mode-page-content">This page is under construction.</p>
+        <img class="mode-page-icon" 
+              src="images/sslogo2.png" alt="SpeedScore logo">
+        <button id="feedModeActionBtn"  type="button" 
+                 class="float-btn">
+          <span class="fas fa-comment-medical fa-fw" aria-hidden="true"></span>New Post
+        </button>
+      </div>
+      <div id="roundsModeTab" class="mode-page hidden" role="tabpanel"
+           aria-label="Rounds Tab" tabindex="0">
+        <h1 class="mode-page-header">Rounds</h1>
+        <p class="mode-page-content">This page is under construction.</p>
+        <img class="mode-page-icon" src="images/sslogo2.png" alt="SpeedScore logo">
+        <button id="roundsModeActionBtn"  type="button" 
+                class="float-btn">
+          <span class="fas fa-calendar-plus fa-fw" aria-hidden="true"></span>New Round
+        </button>
+      </div>
+      <div id="coursesModeTab" role="tabpanel" class="mode-page hidden" 
+           aria-label="Courses Tab" tabindex="0">
+        <h1 class="mode-page-header">Courses</h1>
+        <p class="mode-page-content">This page is under construction.</p>
+        <img class="mode-page-icon" src="images/sslogo2.png" alt="SpeedScore logo">
+        <button id="coursesModeActionBtn"  type="button" 
+                class="float-btn">
+          <span class="fas fa-plus fa-fw" aria-hidden="true"></span>New Course
+        </button>
+      </div>
+      <div id="buddiesModeTab" role="tabpanel" class="mode-page hidden" 
+           aria-label="Buddies Tab" tabindex="0">
+        <h1 class="mode-page-header">Buddies</h1>
+        <p class="mode-page-content">This page is under construction.</p>
+        <img class="mode-page-icon" src="images/sslogo2.png" alt="SpeedScore logo">
+        <button id="roundsModeActionBtn"  type="button" 
+                class="float-btn">
+          <span class="fas fa-search fa-fw" aria-hidden="true"></span>Find Buddies
+        </button>
+      </div>
+    </main>
     <script>
       //Begin SCRIPT section of document. Here we define app behavior.
     </script>

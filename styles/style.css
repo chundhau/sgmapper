@@ -12,7 +12,18 @@
 *************************************************************************/
 :root {
     --main-color: #13294E;
-    --text-color: white;         
+    --text-color: white;     
+    --main-red-color: #ff0f00; 
+    --item-highlight-color: #f0f0f0;    
+    --side-menu-width: 250px;       
+}
+
+/*************************************************************************
+* GLOBAL CSS CLASSES
+* These are global classes that care useful for a variety of elements.
+*************************************************************************/
+.hidden {
+    display: none;
 }
 
 /*************************************************************************
@@ -110,3 +121,119 @@
     width: auto;
     margin-left: 16px;
 } 
+
+/*************************************************************************
+* CSS CLASSES FOR SIDE MENU
+*************************************************************************/
+
+/* sidemenu -- Styles the side menu */
+.sidemenu {
+    position: fixed; /* Menu stays in place */
+    top: 56px; /* Position menu just below top navbar */
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margins */
+    z-index: 200; /* Force the menu to be near the front */
+    left: 0px; /* Position side menu on left-hand side of screen */
+    height: 100%; /* Menu is full height of window */
+    width: var(--side-menu-width);
+    overflow: hidden;
+    background-color: var(--main-color); /* Match to main-color */
+    color: var(--text-color);
+    list-style-type: none; /* Remove bullets */
+  }
+
+/* sidemenu-li -- Styles items in the side menu. */
+.sidemenu li {
+    padding: 24px 0px 24px 24px; /* top, right, bottom, left */
+    font-size: 18px;
+}
+
+/* sidemenu-li -- Styles items in the side menu on hover. */
+.sidemenu li:hover {
+    cursor: pointer;
+    background-color: var(--item-highlight-color);
+    color: var(--main-color);
+}  
+
+.sidemenu 
+
+/*************************************************************************
+* CSS CLASSES FOR TOP "MODE" TABS
+*************************************************************************/
+/* .modetab -- Style the container enclosing the mode tabs */
+.modetab-container {
+    position: fixed;
+    top: 56px;
+    left: 0px;
+    width: 100%;
+    z-index: 150;
+    display: flex; 
+}
+    
+/* .modetab-btn -- Style mode tabs */
+.modetab-btn { 
+    border: none;
+    background-color: var(--main-color);
+    color: var(--text-color);
+    font-size: 17px; 
+    font-variant: small-caps;
+    width: 25%;
+    text-align: center;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    cursor: pointer;
+}   
+
+/* .modetab-selected -- Style the selected mode tab */
+.modetab-selected {
+    cursor: default;
+    border-bottom: 4px solid var(--main-red-color);
+}
+
+/*************************************************************************
+* CSS CLASSES FOR MODE PAGES
+*************************************************************************/
+.mode-page {
+    padding-top: 70px;
+}
+
+.mode-page-header {
+    text-align: center;
+    font-size: 48px;
+}
+
+.mode-page-content {
+    text-align: center;
+    font-size: 24px;
+}
+
+.mode-page-icon {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    height: 200px;
+    width: 200px;
+}
+
+/*************************************************************************
+* CSS CLASSES FOR FLOATING ACTION BUTTON
+*************************************************************************/
+/* Float-btn -- Styling for the floating action button. */
+.float-btn {
+    position:fixed;
+    width: 120px;
+    height: 40px;
+    bottom: 20px;
+    right: 20px;
+    color: var(--text-color);
+    background-color: var(--main-color);
+    border-radius: 50px;
+    text-align: center;
+    box-shadow: 2px 2px 3px #999;
+}
+
+/* float-btn:hover -- When float button is hovered, 
+change cursor to pointer */
+.float-btn:hover {
+cursor: pointer;
+}
