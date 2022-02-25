@@ -19,14 +19,15 @@
         sideMenuIcon.classList.remove("fa-bars");
         sideMenuIcon.classList.add("fa-times");
         //Open menu
-        sideMenu.classList.remove("hidden");
-        sideMenuBtn.setAttribute("aria-expanded","true");     
+        sideMenuBtn.setAttribute("aria-expanded","true"); 
+        sideMenu.classList.add("sidemenu-open");
+
     } else { //CLOSE MENU
         //Change menu icon
         sideMenuIcon.classList.remove("fa-times");
         sideMenuIcon.classList.add("fa-bars");
         //Close menu
-        sideMenu.classList.add("hidden");
         sideMenuBtn.setAttribute("aria-expanded","false");
+        sideMenu.classList.remove("sidemenu-open");
     }
 });

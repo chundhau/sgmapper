@@ -135,12 +135,18 @@
     z-index: 200; /* Force the menu to be near the front */
     left: 0px; /* Position side menu on left-hand side of screen */
     height: 100%; /* Menu is full height of window */
-    width: var(--side-menu-width);
     overflow: hidden;
     background-color: var(--main-color); /* Match to main-color */
     color: var(--text-color);
     list-style-type: none; /* Remove bullets */
+    transition: 0.5s;
+    width: 0px;
   }
+
+/* sidemenu-open -- Sets the width of the side menu */
+  .sidemenu-open {
+    width: var(--side-menu-width);
+}
 
 /* sidemenu-li -- Styles items in the side menu. */
 .sidemenu li {
