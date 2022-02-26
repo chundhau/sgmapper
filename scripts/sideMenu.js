@@ -31,3 +31,17 @@
         sideMenu.classList.remove("sidemenu-open");
     }
 });
+
+/*************************************************************************
+ * @function menuItems click handler
+ * @desc 
+ * When the user clicks on a menu item, close the menu. 
+ * This functionality is a placeholder; we will update later with more
+ * specific functionality for each menu item.
+ *************************************************************************/
+const  menuItems = document.querySelectorAll("li[role='menuitem']");
+for (let i = 0; i < menuItems.length; ++i) {
+    menuItems[i].addEventListener("click",function(e) {
+      menuBtn.click();
+    });
+}
