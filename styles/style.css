@@ -206,7 +206,7 @@
 /* .modetab-selected -- Style the selected mode tab */
 .modetab-selected {
     cursor: default;
-    border-bottom: 4px solid var(--main-red-color);
+    border-bottom: 4px solid var(--main-red-color) !important;
 }
 
 /*************************************************************************
