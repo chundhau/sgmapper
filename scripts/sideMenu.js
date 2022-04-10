@@ -93,7 +93,7 @@ function keyDownMenuItemFocused(key) {
         GlobalFocusedMenuItem.set((GlobalFocusedMenuItem.get() - 1 + GlobalMenuItems.length)
           % GlobalMenuItems.length);
         GlobalMenuItems[GlobalFocusedMenuItem.get()].focus();
-    } else if (key === "ArrowDown") {  //Focus on prev item
+    } else if (key === "ArrowDown") {  //Focus on prev item                                                                                                                                             
         GlobalFocusedMenuItem.set((GlobalFocusedMenuItem.get() + 1) % GlobalMenuItems.length);
         GlobalMenuItems[GlobalFocusedMenuItem.get()].focus();
     } else if (key === "Home") { //Focus on first item
