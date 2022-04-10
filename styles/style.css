@@ -22,8 +22,23 @@
 * GLOBAL CSS CLASSES
 * These are global classes that care useful for a variety of elements.
 *************************************************************************/
+*:focus {
+    border: 3px solid #94BFF9 !important;
+    border-radius: 3px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 
+       0 0 3px rgba(102, 175, 233, 0.6);
+    outline: 0 none;
+  }
+  button::-moz-focus-inner {
+    border: 0;
+  }
+
 .hidden {
     display: none;
+}
+
+.disabled {
+    pointer-events: none;
 }
 
 /*************************************************************************
@@ -135,12 +150,18 @@
     z-index: 200; /* Force the menu to be near the front */
     left: 0px; /* Position side menu on left-hand side of screen */
     height: 100%; /* Menu is full height of window */
-    width: var(--side-menu-width);
     overflow: hidden;
     background-color: var(--main-color); /* Match to main-color */
     color: var(--text-color);
     list-style-type: none; /* Remove bullets */
+    transition: 0.5s;
+    width: 0px;
   }
+
+/* sidemenu-open -- Sets the width of the side menu */
+  .sidemenu-open {
+    width: var(--side-menu-width);
+}
 
 /* sidemenu-li -- Styles items in the side menu. */
 .sidemenu li {
@@ -185,7 +206,7 @@
 /* .modetab-selected -- Style the selected mode tab */
 .modetab-selected {
     cursor: default;
-    border-bottom: 4px solid var(--main-red-color);
+    border-bottom: 4px solid var(--main-red-color) !important;
 }
 
 /*************************************************************************
