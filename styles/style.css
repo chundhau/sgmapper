@@ -177,7 +177,7 @@
 }  
 
 /*************************************************************************
-* CSS CLASSES FOR TOP "MODE" TABS
+* CSS CLASSES FOR TOP MODE TABS
 *************************************************************************/
 /* .modetab -- Style the container enclosing the mode tabs */
 .modetab-container {
@@ -232,6 +232,24 @@
     margin-right: auto;
     height: 200px;
     width: 200px;
+}
+
+.mode-page-btn-container {
+    display: flex;
+    justify-content: center;
+    margin: auto;
+    width: 25%;  
+}
+
+.mode-page-btn {
+    display: inline;
+    font-size: 18px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    color: var(--text-color);
+    background-color: var(--main-color);
+    cursor: pointer;
 }
 
 /*************************************************************************
