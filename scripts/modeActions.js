@@ -100,3 +100,42 @@ for (let i = 0; i < GlobalDialogCancelButtons.length; ++i) {
         GlobalModeActionButtons[GlobalCurrentMode.get()].focus();
     });
 }
+
+/*************************************************************************
+ * @function keyDownDialogFocused
+ * @Desc 
+ * When the user issues a keypress when a dialog box is open,
+ * we need to see if it is a tab or escape. If tab, we ensure that the
+ * user stays within the dialog. If escape, we cancel out of dialog.
+ * @param e, the keyboard event. e.code gives code of key pressed.                  
+ * @global modeActionDialogs: array of dialog boxes for each mode
+ * @global dialogActionButtons: array of default ("OK") buttons for
+ * each mode's dialog box
+ * @global dialogCancelButtons: array of cancel buttons for
+ * each mode's dialog box
+ *************************************************************************/
+ function keyDownDialogFocused(e) {
+    if (document.activeElement.classList
+        .contains("action-button") && 
+        e.code === "Tab" && e.shiftKey) {
+        //User is shift-tabbing from first focusable item in dialog. 
+        //Prevent tab to URL bar by explicitly setting focus to 
+        //last focusable item in dialog. 
+        GlobalModeActionDialogs[GlobalCurrentMode.get()].focus();
+        e.preventDefault()
+    } else if (document.activeElement.classList
+        .contains("cancel-button") && e.code === "Tab" &&
+        !e.shiftKey) {
+        //User is tabbing from last focusable item in a dialog. 
+        //Prevent tab to URL bar by explicitly setting focus 
+        //to first focusable item in dialog.
+        GlobalModeActionDialogs[GlobalCurrentMode.get()].focus();     
+        e.preventDefault();
+    } else if (document.activeElement.hasAttribute("role") && 
+               e.code === "Tab" && e.shiftKey) {
+        GlobalDialogCancelButtons[GlobalCurrentMode.get()].focus();
+        e.preventDefault();
+    } else if (e.code === "Escape") { //Close and cancel
+        GlobalDialogCancelButtons[GlobalCurrentMode.get()].click();
+    }
+}

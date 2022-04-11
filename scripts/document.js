@@ -22,5 +22,8 @@
                === "tab") {
         //User is pressing a key when mode tab is focused
         keyDownModeTabFocused(e.code); 
+    } else if (document.activeElement.classList
+        .contains("action-dialog")) {
+            keyDownDialogFocused(e);
     }
  });
