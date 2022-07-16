@@ -5,13 +5,7 @@ const config = {
     outputDir: './test-results',
     use: {
       baseURL: 'http://localhost:5500',
-      browserName: 'chromium',
-      headless: false,
-      viewport: { width: 600, height: 800 },
-      video: 'on',
-      launchOptions: {
-        slowMo: 1000,
-      },
+      headless: true
     },
     projects: [
       {

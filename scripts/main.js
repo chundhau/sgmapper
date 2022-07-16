@@ -8,7 +8,10 @@
 /* MENU VARIABLES                   */
 /************************************/
 const GlobalMenuBtn =  document.getElementById("menuBtn"); 
+const GlobalMenu = document.getElementById("sideMenu");
+const GlobalMenuIcon = document.getElementById("menuBtnIcon");
 const GlobalMenuItems = document.querySelectorAll("li[role='menuitem']");
+
 
 //Note: Per Josh Wulf's blog post, we implement all immutable global variables using
 //immediately invoked function expressions
