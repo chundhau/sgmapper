@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-test.describe("menu tests",() => {
+test.describe("menu keyboard tests",() => {
   test.beforeEach(async({ page }) => {
     await page.goto(''); //goes to base URL set in config file
     await page.keyboard.press('Tab'); //Focus skip link

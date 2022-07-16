@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-test.describe("menu tests",() => {
+test.describe("menu visual tests",() => {
   test.beforeEach(async({ page }) => {
     await page.goto(''); //goes to base URL set in config file
     await page.locator('#menuBtn').click();
