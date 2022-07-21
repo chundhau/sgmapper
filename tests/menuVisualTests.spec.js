@@ -15,8 +15,8 @@ test.describe("menu visual tests",() => {
     await expect(page.locator('#sideMenu')).not.toBeVisible();
   });
 
-  test('click Settings menu item', async ({ page }) => {
-    await page.locator('li',{hasText: "Settings"}).click();
+  test('click settings menu item', async ({ page }) => {
+    await page.locator("li",{hasText: "Settings"}).click();
     await expect(page.locator('#sideMenu')).not.toBeVisible();
   });
 

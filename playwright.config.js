@@ -5,7 +5,7 @@ const config = {
     outputDir: './test-results',
     use: {
       baseURL: 'http://localhost:5500',
-      headless: true
+      headless: true,
     },
     projects: [
       {
