@@ -6,7 +6,6 @@ const config = {
     use: {
       baseURL: 'http://localhost:5500',
       headless: true,
-      video: 'on',
     },
     projects: [
       {
