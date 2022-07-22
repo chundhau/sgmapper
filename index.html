@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
     <!-- Title displays in page's tab.  -->
     <title>SpeedScore</title>
@@ -40,49 +40,49 @@
                 src="images/ChrisProfilePic.jpg" alt="User's profile picture">
             </button>  
         </div>
-        <!--THE SIDE MENU -->
-        <ul id="sideMenu" role="menu" class="sidemenu"
-        arial-labelledby="menuBtn">
-        <li role="menuitem" tabindex="-1">
-          Settings
-        </li>
-        <li role="menuitem" tabindex="-1">
-          About
-        </li>
-        <li role="menuitem" tabindex="-1">
-          Log Out
-        </li>
-      </ul>
     </header>
+      <!--THE SIDE MENU -->
+      <ul id="sideMenu" role="menu" class="sidemenu"
+          arial-labelledby="menuBtn">
+      <li role="menuitem" tabindex="-1">
+        Settings
+      </li>
+      <li role="menuitem" tabindex="-1">
+        About
+      </li>
+      <li role="menuitem" tabindex="-1">
+        Log Out
+      </li>
+    </ul>
+    <!-- "MODE" TABS -->
+    <div id="modeTabs" class="modetab-container" role="tablist" 
+      aria-label="App Modes">
+      <button id="feedMode" type="button" 
+        class="modetab-btn modetab-selected" 
+        role="tab" tabindex="0" aria-selected="true" 
+        aria-controls="feedModeMain">
+        Feed
+      </button>
+      <button id="roundsMode" type="button" 
+        class="modetab-btn" 
+        role="tab" tabindex="-1" aria-selected="false" 
+        aria-controls="roundsModeMain">
+        Rounds
+      </button>
+      <button id="coursesMode" type="button" 
+        class="modetab-btn" 
+        role="tab" tabindex="-1" aria-selected="false" 
+        aria-controls="coursesModeMain">
+        Courses
+      </button>
+      <button id="buddiesMode" type="button" 
+        class="modetab-btn" 
+        role="tab" tabindex="-1" aria-selected="false" 
+        aria-controls="buddiesModeMain">
+        Buddies
+      </button>
+    </div>
     <main>
-      <!-- "MODE" TABS -->
-        <div id="modeTabs" class="modetab-container" role="tablist" 
-        aria-label="App Modes">
-        <button id="feedMode" type="button" 
-          class="modetab-btn modetab-selected" 
-          role="tab" tabindex="0" aria-selected="true" 
-          aria-controls="feedModeTab">
-          Feed
-        </button>
-        <button id="roundsMode" type="button" 
-          class="modetab-btn" 
-          role="tab" tabindex="-1" aria-selected="false" 
-          aria-controls="roundsModeTab">
-          Rounds
-        </button>
-        <button id="coursesMode" type="button" 
-          class="modetab-btn" 
-          role="tab" tabindex="-1" aria-selected="false" 
-          aria-controls="coursesModeTab">
-          Courses
-        </button>
-        <button id="buddiesMode" type="button" 
-          class="modetab-btn" 
-          role="tab" tabindex="-1" aria-selected="false" 
-          aria-controls="buddiesModeTab">
-          Buddies
-        </button>
-      </div>
       <div id="feedModeTab" class="mode-page" role="tabpanel"
         aria-label="Feed Tab" tabindex="0">
         <h1 class="mode-page-header">Activity Feed</h1>
@@ -119,7 +119,7 @@
         <h1 class="mode-page-header">Buddies</h1>
         <p class="mode-page-content">This page is under construction.</p>
         <img class="mode-page-icon" src="images/sslogo2.png" alt="SpeedScore logo">
-        <button id="buddiesModeActionBtn"  type="button" 
+        <button id="roundsModeActionBtn"  type="button" 
                 class="float-btn">
           <span class="fas fa-search fa-fw" aria-hidden="true"></span>Find Buddies
         </button>
@@ -134,7 +134,7 @@
         <img class="mode-page-icon" src="images/sslogo2.png" 
             alt="SpeedScore logo">
         <div class="mode-page-btn-container">
-          <button id="feedModePostBtn" 
+          <button id="feedModeActionBtn" 
                   class="mode-page-btn action-dialog action-button" 
                   type="button">Post to Feed</button>
           <button id="feedModePostCancelBtn" 
@@ -152,7 +152,7 @@
         <img class="mode-page-icon" src="images/sslogo2.png" 
             alt="SpeedScore logo">
         <div class="mode-page-btn-container">
-          <button id="roundsModePostBtn" 
+          <button id="roundsModeActionBtn" 
                   class="mode-page-btn action-dialog action-button" 
                   type="button">Post Round</button>
           <button id="roundsModeCancelBtn" 
@@ -170,7 +170,7 @@
         <img class="mode-page-icon" src="images/sslogo2.png" 
             alt="SpeedScore logo">
         <div class="mode-page-btn-container">
-          <button id="coursesModeAddBtn" 
+          <button id="coursesModeActionBtn" 
                   class="mode-page-btn action-dialog action-button" 
                   type="button">Add Course</button>
           <button id="coursesModeCancelBtn" 
@@ -188,7 +188,7 @@
         <img class="mode-page-icon" src="images/sslogo2.png" 
             alt="SpeedScore logo">
         <div class="mode-page-btn-container">
-          <button id="buddiesModeRequestBtn" 
+          <button id="buddiesModeActionBtn" 
                   class="mode-page-btn action-dialog action-button" 
                   type="button">Send Buddy Request</button>
           <button id="buddiesModeCancelBtn" 
