@@ -147,7 +147,7 @@
     top: 56px; /* Position menu just below top navbar */
     padding: 0; /* Remove padding */
     margin: 0; /* Remove margins */
-    z-index: 200; /* Force the menu to be near the front */
+    z-index: 250; /* Force the menu to be near the front */
     left: 0px; /* Position side menu on left-hand side of screen */
     height: 100%; /* Menu is full height of window */
     overflow: hidden;
@@ -185,7 +185,7 @@
     top: 56px;
     left: 0px;
     width: 100%;
-    z-index: 150;
+    z-index: 50;
     display: flex; 
 }
     

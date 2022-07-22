@@ -27,7 +27,7 @@
         GlobalMenuBtn.setAttribute("aria-expanded","false");
         GlobalMenu.classList.remove("sidemenu-open");
         //Focus menu button
-        GlobalMenuBtn.focus();
+        setTimeout(() => GlobalMenuBtn.focus(),1);
     }
 });
 
