@@ -14,7 +14,10 @@
      <!-- Import FontAwesome icons -->
      <script src="https://kit.fontawesome.com/79d46ac19d.js" 
       crossorigin="anonymous"></script> 
-    
+     <!-- Import Bootstrap -->
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+     rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" 
+     crossorigin="anonymous"/>
      <!-- Import local stylesheet -->
      <link rel="stylesheet" href="styles/style.css">
    </head>
@@ -199,32 +202,35 @@
       </div>
       <div id="loginPage" class="mode-page">
         <h1 class="mode-page-header">Log In</h1>
-        <form class="centered">
-              <label for="email" class="fm-label">Email:
-                  <input id="email" type="email" class="fm-field"
+        <form id="loginForm" class="centered">
+            <div class="mb-3">
+              <label for="email" class="form-label">Email:<br/>
+                  <input id="email" type="email" class="form-control-lg centered"
                   aria-describedby="loginIdDescr"
                   required>
               </label>
-              <div id=loginIdDescr class="fm-field-descr">
+              <div id=loginIdDescr class="form-text">
                 Enter a valid email address.
               </div>
-              <label for="password" class="fm-label">Password: 
-                  <input id="password" type="password" class="fm-field"
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Password:<br/>
+                  <input id="password" type="password" class="form-control-lg centered"
                   pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$"
                   aria-describedby="passwordDescr"
                   required>
               </label>
-              <div id=passwordDescr class="fm-field-descr">
-                Passwords must be at least 8 characters long with 
-                 at least one number, one lower case letter, 
-                 and one upper case letter.
+              <div id=passwordDescr class="form-text">
+                Passwords must be at least 8 characters long with at least one number, 
+                one lower case letter, and one upper case letter.
               </div>
+            </div>
           <p></p>
-          <button type="submit" id="loginBtn" class="fm-btn">
+          <button type="submit" id="loginBtn" class="btn btn-primary fm-btn">
               Log In
           </button>
         </form>
-      </div>     
+      </div>              
     </main>
     <script src="scripts/main.js"></script>
     <script src="scripts/sideMenu.js"></script>
