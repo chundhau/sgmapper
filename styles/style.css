@@ -34,7 +34,7 @@
   }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 .disabled {
@@ -182,7 +182,7 @@
 /* .modetab -- Style the container enclosing the mode tabs */
 .modetab-container {
     position: fixed;
-    top: 58px;
+    top: 62px;
     left: 0px;
     width: 100%;
     z-index: 50;
@@ -273,4 +273,38 @@
 change cursor to pointer */
 .float-btn:hover {
 cursor: pointer;
+}
+
+/*************************************************************************
+* CSS CLASSES FOR FORMS
+*************************************************************************/
+
+.fm-label {
+    font-weight: bold;
+    font-size: 24px;
+}
+
+.fm-field {
+    text-align: center;
+    width: 90%;
+    height: 10%;
+    font-size:24px;
+}
+
+.fm-field-descr {
+    font-style: italic;
+    padding-bottom: 16px;
+}
+
+.fm-btn {
+    width:70%; 
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-size: 36px;
+    color: var(--text-color);
+    background-color: var(--main-color);
+}
+
+.centered {
+    text-align: center;
 }
