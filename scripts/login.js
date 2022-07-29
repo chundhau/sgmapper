@@ -47,6 +47,7 @@
     GlobalSearchBtn.classList.remove("hidden");
     GlobalProfileBtn.classList.remove("hidden");
     document.title = "SpeedScore: Activity Feed";
+    GlobalSkipLink.focus(); //Force initial focus on skip link
 }
 
 /*************************************************************************

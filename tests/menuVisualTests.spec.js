@@ -1,8 +1,10 @@
 const { test, expect } = require('@playwright/test');
+const { LoginPage } = require('./models/Login');
 
 test.describe("menu visual tests",() => {
   test.beforeEach(async({ page }) => {
-    await page.goto(''); //goes to base URL set in config file
+    const loginPage = new LoginPage(page);
+    await loginPage.login('speedgolfer@gmail.com','Speedgolfer123');
     await page.locator('#menuBtn').click();
   });
 
