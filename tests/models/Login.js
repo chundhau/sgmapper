@@ -14,12 +14,11 @@ class LoginPage {
      * from the page param. 
      * @param {import('playwright').Page} page 
      */
-    constructor(page, email, password) {
+    constructor(page) {
       this.page = page;
       this.emailInput = page.locator('#email');
       this.passwordInput = page.locator('#password');
       this.loginButton = page.locator('#loginBtn');
-      this.menuButton = page.locator('menuBtn');
     }
     
     /**
@@ -38,7 +37,6 @@ class LoginPage {
         await this.passwordInput.click(); //Focus on email field
         await this.passwordInput.type(password);
         await this.loginButton.click(); //Log in!
-        //await this.menuButton.waitFor({state: "visible"},1000);
     }
     
   }
