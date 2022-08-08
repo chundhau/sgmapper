@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <!-- Title displays in page's tab.  -->
-    <title>SpeedScore</title>
+    <title>Log in to SpeedScore</title>
     <!-- Define Favicon -->
     <link rel='shortcut icon' type='image/x-icon' 
           href="images/ssfavicon.ico"/>
@@ -13,7 +13,11 @@
      <meta name="mobile-web-app-capable" content="yes">
      <!-- Import FontAwesome icons -->
      <script src="https://kit.fontawesome.com/79d46ac19d.js" 
-      crossorigin="anonymous"></script>
+      crossorigin="anonymous"></script> 
+     <!-- Import Bootstrap -->
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+     rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" 
+     crossorigin="anonymous"/>
      <!-- Import local stylesheet -->
      <link rel="stylesheet" href="styles/style.css">
    </head>
@@ -21,7 +25,7 @@
     <!-- The TOP NAVIGATION BAR -->
     <header class="navbar"> 
         <a id="sLink" class="skip-link" tabindex="0">Skip to content</a>  
-        <button id="menuBtn" type="button" class="navbar-btn" title="Menu"
+        <button id="menuBtn" type="button" class="navbar-btn hidden" title="Menu"
             aria-controls="sideMenu" aria-label="Actions"
             aria-haspopup="true" aria-expanded="false">
             <span id="menuBtnIcon" class="navbar-btn-icon fas fa-bars"></span>
@@ -30,11 +34,11 @@
         alt="SpeedScore logo">
         <h1 id="appName" class="navbar-title">SpeedScore</h1> 
         <div class="navbar-right-items">
-            <button  id="searchBtn" type="button" class="navbar-btn" title="Search" 
+            <button  id="searchBtn" type="button" class="navbar-btn hidden" title="Search" 
             aria-label="Search">
             <span class="navbar-btn-icon fas fa-search"></span>
             </button>
-            <button id="profileBtn" type="button" class="navbar-btn" title="Edit Profile"
+            <button id="profileBtn" type="button" class="navbar-btn hidden" title="Edit Profile"
             aria-label="Account Settings">
             <img class="navbar-profile-pic" 
                 src="images/ChrisProfilePic.jpg" alt="User's profile picture">
@@ -56,8 +60,8 @@
     </header>
     <main>
       <!-- "MODE" TABS -->
-        <div id="modeTabs" class="modetab-container" role="tablist" 
-        aria-label="App Modes">
+      <div id="modeTabs" class="modetab-container hidden" role="tablist" 
+           aria-label="App Modes">
         <button id="feedMode" type="button" 
           class="modetab-btn modetab-selected" 
           role="tab" tabindex="0" aria-selected="true" 
@@ -83,7 +87,7 @@
           Buddies
         </button>
       </div>
-      <div id="feedModeTab" class="mode-page" role="tabpanel"
+      <div id="feedModeTab" class="mode-page hidden" role="tabpanel"
         aria-label="Feed Tab" tabindex="0">
         <h1 class="mode-page-header">Activity Feed</h1>
         <p class="mode-page-content">This page is under construction.</p>
@@ -195,12 +199,48 @@
                   class="mode-page-btn action-dialog cancel-button"
                   type="button">Cancel</button>
         </div>
-      </div> 
+      </div>
+      <div id="loginPage" class="mode-page">
+        <h1 class="mode-page-header">Log In</h1>
+        <p id="errorBox" class="alert alert-danger centered hidden">
+          <a id="emailError" href="#email" class="alert-link">Enter a valid email address<br/></a>
+          <a id="passwordError" href="#password" class="alert-link">Enter a valid password</a>
+        </p>
+        <form id="loginForm" class="centered" novalidate>
+            <div class="mb-3">
+              <label for="email" class="form-label">Email:<br/>
+                  <input id="email" type="email" class="form-control-lg centered"
+                  aria-describedby="loginIdDescr"
+                  required>
+              </label>
+              <div id=loginIdDescr class="form-text">
+                Enter a valid email address.
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Password:<br/>
+                  <input id="password" type="password" class="form-control-lg centered"
+                  pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$"
+                  aria-describedby="passwordDescr"
+                  required>
+              </label>
+              <div id=passwordDescr class="form-text">
+                Passwords must be at least 8 characters long with at least one number, 
+                one lower case letter, and one upper case letter.
+              </div>
+            </div>
+          <p></p>
+          <button type="submit" id="loginBtn" class="btn btn-primary fm-btn">
+              Log In
+          </button>
+        </form>
+      </div>              
     </main>
     <script src="scripts/main.js"></script>
     <script src="scripts/sideMenu.js"></script>
     <script src="scripts/modeTabs.js"></script>
     <script src="scripts/modeActions.js"></script>
+    <script src="scripts/login.js"></script>
     <script src="scripts/document.js"></script>
   </body>
 </html>
