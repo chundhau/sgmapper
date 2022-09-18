@@ -97,7 +97,7 @@ const GlobalAccountCreatedClose = document.getElementById("accountCreatedClose")
 const GlobalAccountCreatedEmail = document.getElementById("accountCreatedEmail")
 
 /*****************************************************/
-/* CREATE ACCOUNT FORM                               */
+/* CREATE ACCOUNT DIALOG FORM                        */
 /*****************************************************/
 const GlobalCreateAccountDialog = document.getElementById("createAccountDialog");
 const GlobalSubmitCreateAccountBtn = document.getElementById("submitCreateAccountBtn");

@@ -25,5 +25,7 @@
     } else if (document.activeElement.classList
         .contains("action-dialog")) {
             keyDownDialogFocused(e);
-    }
+    } else if (GlobalCreateAccountDialog.contains(document.activeElement)) {
+        keyDownCreateDialogFocused(e);
+    }  
  });

@@ -215,3 +215,53 @@ function createAccount(newAcct) {
         GlobalAcctEmailErr.classList.add("hidden");
     }
  });
+
+  /*************************************************************************
+ * @function cancelCreateAccountBtn CLICK Handler 
+ * @Desc 
+ * When the user clicks the "Cancel" button to exit "Create Account" Dialog, 
+ * reset the form and transition to the Log In page.
+ * @global createAccountDialog: The "Create Account" dialog
+ * @global loginPage: The Log In page
+ *************************************************************************/
+   cancelCreateAccountBtn.addEventListener("click",function(e) {
+    resetCreateAccountForm();
+    document.title = "Log In to SpeedScore";
+    createAccountDialog.classList.add("hidden");
+    loginPage.classList.remove("hidden");
+});
+
+/*************************************************************************
+ * @function keyDownCreateDialogFocused 
+ * @desc 
+ * When the user presses a key with an element in the Create Account 
+ * dialog focused, we implement the accessible keyboard interface for
+ * a modal dialog box. This means that "Escape" dismisses the dialog and
+ * that it is impossible to tab outside of the dialog box.
+ * @global createAccountDialog: The "Create Account" dialog
+ * @global loginPage: The Log In page
+ * @global firstFocusableCreateAccountItem: References the first focusable
+ *         item in "Create Account" dialog. 
+ * @global cancelCreateAccountBtn: The "Cancel" button (last focusable 
+ *         item in "Create Account" dialog)
+ *************************************************************************/
+function keyDownCreateDialogFocused(e) {
+    if (e.code === "Escape") {
+        GlobalCancelCreateAccountBtn.click();
+        return;
+    }
+    if (e.code === "Tab" && document.activeElement == GlobalFirstFocusableCreateAccountItem.get() &&
+       e.shiftKey) {
+        //shift focus to last focusable item in dialog
+        GlobalCancelCreateAccountBtn.focus();
+        e.preventDefault();
+        return;
+    }
+    if (e.code === "Tab" && document.activeElement == GlobalCancelCreateAccountBtn &&
+        !e.shiftKey) {
+        //shift focus to first focusable item in dialog
+        GlobalFirstFocusableCreateAccountItem.get().focus();
+        e.preventDefault()
+        return;
+    }
+}
