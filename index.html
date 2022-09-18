@@ -202,6 +202,14 @@
       </div>
       <div id="loginPage" class="mode-page">
         <h1 class="mode-page-header">Log In</h1>
+        <div id="accountCreated" class="toast-container hidden" role="alert" aria-atomic="true" aria-live="assertive">
+          <div class="toast-text">
+             New account created with email <span id="accountCreatedEmail"></span>
+          </div>
+           <button id="accountCreatedClose" type="button" class="btn-close toast-close" aria-label="Close">
+             <span aria-hidden="true">&times;</span>
+           </button>
+       </div>
         <p id="errorBox" class="alert alert-danger centered hidden">
           <a id="emailError" href="#email" class="alert-link">Enter a valid email address<br/></a>
           <a id="passwordError" href="#password" class="alert-link">Enter a valid password</a>
@@ -252,7 +260,7 @@
             role="dialog" aria-modal="true" 
             aria-labelledby="createAccountHeader">
         <h1 id="createAccountHeader" class="mode-page-header">Create Account</h1>
-        <p id="acctErrorBox" class="alert alert-danger centered ">
+        <p id="acctErrorBox" class="alert alert-danger centered hidden">
           <a id="acctEmailError" href="#acctEmail" class="alert-link">Enter a valid email address<br/></a>
           <a id="acctPasswordError" href="#acctPassword" class="alert-link">Enter a valid password<br></a>
           <a id="acctPasswordRepeatError" href="#acctPasswordRepeat" class="alert-link">Repeated password must match<br/></a>
@@ -365,6 +373,7 @@
     <script src="scripts/modeTabs.js"></script>
     <script src="scripts/modeActions.js"></script>
     <script src="scripts/login.js"></script>
+    <script src="scripts/createAccount.js"></script>
     <script src="scripts/document.js"></script>
   </body>
 </html>
