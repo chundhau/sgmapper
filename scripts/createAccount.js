@@ -189,7 +189,7 @@ function createAccount(newAcct) {
     if (!displayNameValid) { //Display name field is invalid
         GlobalAcctDisplayNameErr.classList.remove("hidden");
         GlobalAcctDisplayNameErr.focus();
-        GlobalFirstFocusableCreateAccountItem.set(GlobalAcctDisplayName);
+        GlobalFirstFocusableCreateAccountItem.set(GlobalAcctDisplayNameField);
     } else {
         GlobalAcctDisplayNameErr.classList.add("hidden");
     } 
