@@ -7,7 +7,6 @@ test.describe("create account visual tests",() => {
       await expect(page.locator('#createAccountDialog')).toBeVisible(); //'Create Account' dialog visible
       await expect(page.locator('#loginPage')).not.toBeVisible(); //'Login' page hidden
       await expect(page.locator('#acctEmail')).toBeFocused(); //Email field has focus
-
     });
   
     test('invalid email and repeated password via visual interface', async ({ page }) => { 
