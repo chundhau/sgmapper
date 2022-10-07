@@ -12,26 +12,31 @@ test.describe("create account keyboard tests",() => {
       await page.keyboard.press('Tab'); //Focus "Log In" btton
       await expect(page.locator('#loginBtn')).toBeFocused();
       await page.keyboard.press('Tab'); //Focus "Create Account" btton
-      await expect(page.locator('#CreateAcctBtn')).toBeFocused();
+      await expect(page.locator('#createAccountBtn')).toBeFocused();
       await page.keyboard.press('Enter'); //Activate 'Create Account' link
-      await expect(page.locator('#createAcctDialog')).toBeVisible(); //'Create Account' dialog visible
+      await expect(page.locator('#createAccountDialog')).toBeVisible(); //'Create Account' dialog visible
       await expect(page.locator('#loginPage')).not.toBeVisible(); //'Login' page hidden
       await expect(page.locator('#acctEmail')).toBeFocused(); //Email field has focus
     });
 
     test('invalid email and repeated password via kb interface', async ({ page }) => { 
         await page.keyboard.type('chris.h'); //Invalid email
-        await page.keyboard.type('Tab'); //Focus on 'Password' field
+        await page.keyboard.press('Tab'); //Focus on 'Password' field
         await expect(page.locator('#acctPassword')).toBeFocused();
         await page.keyboard.type('Speedgolf123'); //Valid password
-        await page.keyboard.type('Tab'); //Focus on 'Password' field
+        await page.keyboard.press('Tab'); //Focus on 'Repeat Password' field
         await expect(page.locator('#acctPasswordRepeat')).toBeFocused();
         await page.keyboard.type('Speedgolf1234'); //Password does not match.
-        await page.keyboard.type('Tab'); //Focus on 'Display Name' field
-        await page.keyboard.type('Tab'); //Focus on 'Security Q' field 
-        await page.keyboard.type('Tab'); //Focus on 'Security A' field
-        await page.keyboard.type('Tab'); //Focus on 'Create Account' Button
-        await page.keyboard.type('Enter'); //Activate 'Create Account' Button
+        await page.keyboard.press('Tab'); //Focus on 'Display Name' field
+        await expect(page.locator('#acctDisplayName')).toBeFocused();
+        await page.keyboard.press('Tab'); //Focus on 'Profile Pic' field
+        await expect(page.locator('#acctProfilePic')).toBeFocused();
+        await page.keyboard.press('Tab'); //Focus on 'Security Q' field 
+        await expect(page.locator('#acctSecurityQuestion')).toBeFocused();
+        await page.keyboard.press('Tab'); //Focus on 'Security A' field
+        await expect(page.locator('#acctSecurityAnswer')).toBeFocused();
+        await page.keyboard.press('Tab'); //Focus on 'Create Account' Button
+        await page.keyboard.press('Enter'); //Activate 'Create Account' Button
         await expect(page.locator('#acctEmailError')).toBeVisible(); //Email error visible
         await expect(page.locator('#acctEmailError')).toBeFocused(); //top-most error should have focus 
         await expect(page.locator('#acctPasswordError')).not.toBeVisible(); //No password error
