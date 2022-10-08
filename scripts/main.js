@@ -88,6 +88,7 @@ const GlobalEmailField = document.getElementById("email");
 const GlobalPasswordField = document.getElementById("password");
 const GlobalEmailError = document.getElementById("emailError");
 const GlobalPasswordError = document.getElementById("passwordError");
+const GlobalAuthError = document.getElementById("authError");
 const GlobalCreateAccountBtn = document.getElementById("createAccountBtn");
 const GlobalLoginBtnIcon = document.getElementById("loginBtnIcon");
 const GlobalLoginBtn = document.getElementById("loginBtn");
