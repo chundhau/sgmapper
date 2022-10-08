@@ -5,6 +5,12 @@
  *************************************************************************/
 
 /************************************/
+/* USER DATA                        */
+/************************************/
+//Global variable containing data object of user currently logged in
+let GlobalUserData = {}; //set upon login
+
+/************************************/
 /* MENU VARIABLES                   */
 /************************************/
 const GlobalMenuBtn =  document.getElementById("menuBtn"); 
@@ -75,6 +81,7 @@ const GlobalDialogCancelButtons =
 /*******************************************************/
 const GlobalSearchBtn = document.getElementById("searchBtn");
 const GlobalProfileBtn = document.getElementById("profileBtn");
+const GlobalProfileBtnImg = document.getElementById("profileBtnImg")
 const GlobalSkipLink = document.getElementById("sLink");
 const GlobalModeTabsContainer = document.getElementById("modeTabs");
 
@@ -126,4 +133,4 @@ const GlobalFirstFocusableCreateAccountItem = (() => {
   }
   return Object.freeze(Store)
 })()
-const GlobalDefaultProfilePic = "../images/DefaultProfilePic.jpg";
+const GlobalDefaultProfilePic = "images/DefaultProfilePic.jpg";

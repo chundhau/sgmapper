@@ -17,7 +17,7 @@
         return false;
     }
     acct = JSON.parse(acct);
-    if (acct.accountInfo.password !== password) {
+    if (acct.password !== password) {
         return false;
     }
     return true;
@@ -58,6 +58,8 @@
  function login(userId) {
     //1. Reset the login form in case user logs in again
     resetLoginForm();
+    //2. Place user acct data of logged in user in global JS object
+    GlobalUserData = JSON.parse(localStorage.getItem(userId));
     //2. Reset state of app with user logged in.
     GlobalLoginPage.classList.add("hidden");
     GlobalModeTabsContainer.classList.remove("hidden");
@@ -66,6 +68,7 @@
     GlobalMenu.classList.remove("hidden");
     GlobalSearchBtn.classList.remove("hidden");
     GlobalProfileBtn.classList.remove("hidden");
+    GlobalProfileBtnImg.src = GlobalUserData.profilePic;
     document.title = "SpeedScore: Activity Feed";
     GlobalSkipLink.focus(); //Force initial focus on skip link
 }
