@@ -108,8 +108,8 @@ GlobalCreateAccountBtn.addEventListener("click",function(e) {
  * @global: accountCreated: The toast notification on the "Log In" page
   *************************************************************************/
 function createAccount(newAcct) {
+    localStorage.setItem(newAcct.email, JSON.stringify(newAcct));
     resetCreateAccountForm();
-    alert("New account created: " + JSON.stringify(newAcct));
     document.title = "Log In to SpeedScore";
     GlobalCreateAccountDialog.classList.add("hidden");
     GlobalLoginPage.classList.remove("hidden");
