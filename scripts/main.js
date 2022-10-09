@@ -5,6 +5,12 @@
  *************************************************************************/
 
 /************************************/
+/* USER DATA                        */
+/************************************/
+//Global variable containing data object of user currently logged in
+let GlobalUserData = {}; //set upon login
+
+/************************************/
 /* MENU VARIABLES                   */
 /************************************/
 const GlobalMenuBtn =  document.getElementById("menuBtn"); 
@@ -53,6 +59,9 @@ const GlobalModeTabButtons =
 //Array of mode tab panel elements:
 const GlobalModeTabPanels = 
   document.querySelectorAll("div[role='tabpanel']");
+//Array mapping current mode to its name, so that
+//we can set document.title appropriately
+GlobalModeNames=["Activity Feed", "Rounds","Courses","Buddies"];
 
 /*****************************************************/
 /* FLOATING ACTION BUTTON AND MODAL DIALOG VARIABLES */
@@ -75,6 +84,7 @@ const GlobalDialogCancelButtons =
 /*******************************************************/
 const GlobalSearchBtn = document.getElementById("searchBtn");
 const GlobalProfileBtn = document.getElementById("profileBtn");
+const GlobalProfileBtnImg = document.getElementById("profileBtnImg")
 const GlobalSkipLink = document.getElementById("sLink");
 const GlobalModeTabsContainer = document.getElementById("modeTabs");
 
@@ -88,6 +98,7 @@ const GlobalEmailField = document.getElementById("email");
 const GlobalPasswordField = document.getElementById("password");
 const GlobalEmailError = document.getElementById("emailError");
 const GlobalPasswordError = document.getElementById("passwordError");
+const GlobalAuthError = document.getElementById("authError");
 const GlobalCreateAccountBtn = document.getElementById("createAccountBtn");
 const GlobalLoginBtnIcon = document.getElementById("loginBtnIcon");
 const GlobalLoginBtn = document.getElementById("loginBtn");
@@ -125,4 +136,102 @@ const GlobalFirstFocusableCreateAccountItem = (() => {
   }
   return Object.freeze(Store)
 })()
-const GlobalDefaultProfilePic = "../images/DefaultProfilePic.jpg";
+const GlobalDefaultProfilePic = "images/DefaultProfilePic.jpg";
+
+/*****************************************************/
+/* ACCOUNT & SETTINGS DIALOG FORM                    */
+/*****************************************************/
+const GlobalProfileSettingsDialog = document.getElementById("profileSettingsDialog");
+const GlobalAccountSettingsBtn = document.getElementById("accountSettingsBtn");
+const GlobalAccountSettingsPanel = document.getElementById("accountSettingsPanel");
+const GlobalProfileSettingsBtn = document.getElementById("profileSettingsBtn");
+const GlobalProfileSettingsPanel = document.getElementById("profileSettingsPanel");
+const GlobalsgSettingsBtn = document.getElementById("sgSettingsBtn");
+const GlobalsgSettingsPanel = document.getElementById("sgSettingsPanel");
+const GlobalEditProfileForm = document.getElementById("editProfileForm");
+const GlobalProfileErrBox = document.getElementById("profileErrorBox");
+const GlobalProfileEmailErr = document.getElementById("profileEmailError");
+const GlobalProfileDisplayNameErr = document.getElementById("profileDisplayNameError");
+const GlobalProfileSecurityQuestionErr = document.getElementById("profileSecurityQuestionError");
+const GlobalProfileSecurityAnswerErr = document.getElementById("profileSecurityAnswerError");
+const GlobalProfileEmailField = document.getElementById("profileEmail");
+const GlobalProfilePasswordField = document.getElementById("profilePassword");
+const GlobalProfileSecurityQuestionField = document.getElementById("profileSecurityQuestion");
+const GlobalProfileSecurityAnswerField = document.getElementById("profileSecurityAnswer");
+const GlobalProfileDisplayNameField = document.getElementById("profileDisplayName");
+const GlobalProfilePicField = document.getElementById("profilePic");
+const GlobalProfilePicImage = document.getElementById("profilePicImage");
+const GlobalProfileBioField = document.getElementById("sgBio");
+const GlobalProfileFirstRoundField = document.getElementById("sgFirstRound");
+const GlobalProfileHomeCourseField = document.getElementById("sgHomeCourse");
+const GlobalProfileBestStrokesField = document.getElementById("sgBestStrokes");
+const GlobalProfileBestMinutesField = document.getElementById("sgBestMinutes");
+const GlobalProfileBestSecondsField = document.getElementById("sgBestSeconds");
+const GlobalProfileBestCourseField = document.getElementById("sgBestCourse");
+const GlobalAllClubs = ["Driver","3W","4W","5W","Hybrid","1I","2I","3I","4I","5I","6I","7I","8I","9I","PW","GW","SW","LW","Putter"];
+const GlobalProfileClubsInBagChecks = document.getElementById("clubsDiv").querySelectorAll("input");
+const GlobalProfileClubCommentsField = document.getElementById("sgClubComments");
+const GlobalCancelUpdateProfileBtn = document.getElementById("cancelUpdateProfileBtn");
+const GlobalFirstFocusableUpdateProfileItem = (() => {
+  let _firstFocusedUpdateProfileItem = GlobalAcctEmailField
+  const Store = {
+      get: () => _firstFocusedUpdateProfileItem,
+      set: val => (_firstFocusedUpdateProfileItem = val)
+  }
+  return Object.freeze(Store)
+})()
+
+/*************************************************************************
+ * @function transitionToDialog
+ * @desc 
+ * This function prepares the UI prior to opening a dialog box. It hides
+ * the skip link, banner bar buttons, mode tabs, and current tab panel,
+ * so that they are unavailable while the user interacts with the dialog.
+ * It then displays the dialog box and dialog box title.
+ * Note: This function is placed in main.js because it is useful to 
+ * multiple UI components.
+ * @param dialogTitle: The title of the dialog to which to set 
+ * document.title
+ * @param dialog: A reference to the HTML element containing the dialog;
+ * it will be shown by removing the "hidden" class 
+ * @global GlobalSkipLink: The skip link
+ * @global GlobalMenuBtn: The menu button
+ * @global GlobalModeTabsContainer: The mode tabs
+ * @global GlobalModeTabPanels: array of tab panels 
+ * @global GlobalCurrentMode, index of current mode.
+ *************************************************************************/
+ function transitionToDialog(dialog, dialogTitle) {
+  GlobalSkipLink.classList.add("hidden"); 
+  GlobalMenuBtn.classList.add("hidden");
+  GlobalSearchBtn.classList.add("hidden");
+  GlobalProfileBtn.classList.add("hidden");
+  GlobalModeTabsContainer.classList.add("hidden");
+  GlobalModeTabPanels[GlobalCurrentMode.get()].classList.add("hidden");
+  document.title = dialogTitle;
+  dialog.classList.remove("hidden");
+}
+
+/*************************************************************************
+ * @function transitionFromDialog
+ * @param dialogToClose -- a reference to the HML dialog element to close
+ * @desc 
+ * This function restores the UI after closing a dialog box. It shows
+ * the skip link, banner bar buttons, mode tabs, and current tab panel,
+ * Note: This function is placed in main.js because it is useful to 
+ * multiple UI components.
+ * @global GlobalSkipLink: The skip link
+ * @global GlobalMenuBtn: The menu button
+ * @global GlobalModeTabsContainer: The mode tabs
+ * @global GlobalModeTabPanels: array of tab panels 
+ * @global GlobalCurrentMode, index of current mode.
+ *************************************************************************/
+ function transitionFromDialog(dialogToClose) {
+  GlobalSkipLink.classList.remove("hidden"); 
+  GlobalMenuBtn.classList.remove("hidden");
+  GlobalSearchBtn.classList.remove("hidden");
+  GlobalProfileBtn.classList.remove("hidden");
+  GlobalModeTabsContainer.classList.remove("hidden");
+  GlobalModeTabPanels[GlobalCurrentMode.get()].classList.remove("hidden");
+  document.title = "SpeedScore: " + GlobalModeNames[GlobalCurrentMode.get()];
+  dialogToClose.classList.add("hidden");
+}

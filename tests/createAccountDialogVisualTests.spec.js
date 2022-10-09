@@ -29,4 +29,5 @@ test.describe("create account visual tests",() => {
       await page.click('#acctEmailError'); //Activate "Enter a valid email address"
       await expect(page.locator('#acctEmail')).toBeFocused(); //Email field should be focused
     });
-  });
+
+});

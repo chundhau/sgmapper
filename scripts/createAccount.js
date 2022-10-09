@@ -107,9 +107,34 @@ GlobalCreateAccountBtn.addEventListener("click",function(e) {
  *         we display the email of the new account.
  * @global: accountCreated: The toast notification on the "Log In" page
   *************************************************************************/
-function createAccount(newAcct) {
+function createAccount() {
+    //Build account object from form data
+    const newAcct = {
+        accountInfo: {
+            email: GlobalAcctEmailField.value, 
+            password: GlobalAcctPasswordField.value,
+            securityQuestion: GlobalAcctSecurityQuestionField.value,
+            securityAnswer: GlobalAcctSecurityAnswerField.value
+        },
+        identityInfo: {
+            displayName: GlobalAcctDisplayNameField.value,
+            profilePic: GlobalAcctProfilePicImage.getAttribute("src"),
+        },
+        speedgolfInfo: {
+            bio: "",
+            homeCourse: "",
+            firstRound: "",
+            personalBest: {strokes: 0, minutes: 0, seconds: 0, course: ""},
+            clubs: {},
+            clubComments: ""
+        }
+    };    
+    //Save account to localStorage as key-value pair
+    localStorage.setItem(newAcct.accountInfo.email, 
+        JSON.stringify(newAcct));
+    //Reset form in case it is visited again
     resetCreateAccountForm();
-    alert("New account created: " + JSON.stringify(newAcct));
+    //Transition to "Log In" page
     document.title = "Log In to SpeedScore";
     GlobalCreateAccountDialog.classList.add("hidden");
     GlobalLoginPage.classList.remove("hidden");
@@ -117,7 +142,7 @@ function createAccount(newAcct) {
     GlobalAccountCreated.classList.remove("hidden");
 }
 
- /*************************************************************************
+/*************************************************************************
  * @function createAccountForm SUBMIT Handler 
  * @Desc 
  * When the user clicks on the "Create Account" button, we first check the
@@ -159,13 +184,7 @@ function createAccount(newAcct) {
     if (emailValid && passwordValid && repeatPasswordValid &&
         displayNameValid && securityQuestionValid & securityAnswerValid) { 
         //All is well -- Call createAccount()
-       createAccount({email: GlobalAcctEmailField.value, 
-                      password: GlobalAcctPasswordField.value,
-                      displayName: GlobalAcctDisplayNameField.value,
-                      profilePic: GlobalAcctProfilePicImage.getAttribute("src"),
-                      securityQuestion: GlobalAcctSecurityQuestionField.value,
-                      securityAnswer: GlobalAcctSecurityAnswerField.value
-                    });
+       createAccount();
        return;
     }
     //If here, at least one field is invalid: Display the errors

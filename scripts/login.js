@@ -2,6 +2,26 @@
  * File: login.js
  * This file contains functions that support the log in page.
 *************************************************************************/
+/*************************************************************************
+ * @function validAccount
+ * @desc 
+ * Given an email and password entered into the "Log In" page, return true
+ * if the account exists in localStorage and the password matches, false 
+ * otherwise. 
+ * @param email: String entered into Email field of "Log In" form
+ * @param password: String entered into Password field of "Log In" form
+ *************************************************************************/
+ function validAccount(email, password) {
+    let acct = localStorage.getItem(email);
+    if (acct === null) {
+        return false;
+    }
+    acct = JSON.parse(acct);
+    if (acct.accountInfo.password !== password) {
+        return false;
+    }
+    return true;
+}
 
 /*************************************************************************
  * @function resetLoginForm
@@ -38,6 +58,8 @@
  function login(userId) {
     //1. Reset the login form in case user logs in again
     resetLoginForm();
+    //2. Place user acct data of logged in user in global JS object
+    GlobalUserData = JSON.parse(localStorage.getItem(userId));
     //2. Reset state of app with user logged in.
     GlobalLoginPage.classList.add("hidden");
     GlobalModeTabsContainer.classList.remove("hidden");
@@ -46,6 +68,7 @@
     GlobalMenu.classList.remove("hidden");
     GlobalSearchBtn.classList.remove("hidden");
     GlobalProfileBtn.classList.remove("hidden");
+    GlobalProfileBtnImg.src = GlobalUserData.identityInfo.profilePic;
     document.title = "SpeedScore: Activity Feed";
     GlobalSkipLink.focus(); //Force initial focus on skip link
 }
@@ -73,26 +96,32 @@
     //Is the password field valid?
     let passwordValid = !GlobalPasswordField.validity.patternMismatch && 
                         !GlobalPasswordField.validity.valueMissing;
-    if (emailValid && passwordValid) { //All is well -- Exit
+    //Did the user specify valid account credentials?
+    let authenticated = emailValid && passwordValid && 
+                        validAccount(GlobalEmailField.value, GlobalPasswordField.value);
+    if (authenticated) { //Log user in
        login(GlobalEmailField.value);
        return;
     }
     //If here, at least one field is invalid
     GlobalErrorBox.classList.remove("hidden");
+    document.title = "Error: Log in to SpeedScore";
+    if (!passwordValid) { //Password field is invalid
+         GlobalPasswordError.classList.remove("hidden");
+         GlobalPasswordError.focus();
+     } else {
+         GlobalPasswordError.classList.add("hidden");
+     } 
     if (!emailValid) { //Email field is invalid
-        document.title = "Error: Log in to SpeedScore";
         GlobalEmailError.classList.remove("hidden");
         GlobalEmailError.focus();
     } else {
         GlobalEmailError.classList.add("hidden");
     }
-    if (!passwordValid) { //Password field is invalid
-        GlobalPasswordError.classList.remove("hidden");
-        if (emailValid) {
-             document.title = "Error: Log in to SpeedScore";
-             GlobalPasswordError.focus();
-        }
-    } else {
-        GlobalPasswordError.classList.add("hidden");
-    } 
+    if (emailValid && passwordValid) { //Authentication failed
+       GlobalAuthError.classList.remove("hidden");
+       GlobalAuthError.focus();
+     } else {
+         GlobalAuthError.classList.add("hidden");
+     }
  });
