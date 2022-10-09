@@ -134,3 +134,68 @@ const GlobalFirstFocusableCreateAccountItem = (() => {
   return Object.freeze(Store)
 })()
 const GlobalDefaultProfilePic = "images/DefaultProfilePic.jpg";
+
+/*****************************************************/
+/* ACCOUNT & SETTINGS DIALOG FORM                    */
+/*****************************************************/
+const GlobalProfileSettingsDialog = document.getElementById("profileSettingsDialog");
+const accountSettingsBtn = document.getElementById("accountSettingsBtn");
+const accountSettingsPanel = document.getElementById("accountSettingsPanel");
+const GlobalProfileSettignsBtn = document.getElementById("profileSettingsBtn");
+const GlobalProfileSettingsPanel = document.getElementById("profileSettingsPanel");
+const GlobalsgSettingsBtn = document.getElementById("sgSettingsBtn");
+const GlobalsgSettingsPanel = document.getElementById("sgSettingsPanel");
+const GlobalEditProfileForm = document.getElementById("editProfileForm");
+const GlobalProfileErrBox = document.getElementById("profileErrorBox");
+const GlobalProfileEmailErr = document.getElementById("profileEmailError");
+const GlobalProfileDisplayNameErr = document.getElementById("profileDisplayNameError");
+const GlobalProfileSecurityQuestionErr = document.getElementById("profileSecurityQuestionError");
+const GlobalProfileSecurityAnswerErr = document.getElementById("profileSecurityAnswerError");
+const GlobalProfileEmailField = document.getElementById("profileEmail");
+const GlobalProfilePasswordField = document.getElementById("profilePassword");
+const GlobalProfileSecurityQuestionField = document.getElementById("profileSecurityQuestion");
+const GlobalProfileSecurityAnswerField = document.getElementById("profileSecurityAnswer");
+const GlobalProfileDisplayNameField = document.getElementById("profileDisplayName");
+const GlobalProfilePicField = document.getElementById("profilePic");
+const GlobalProfilePicImage = document.getElementById("profilePicImage");
+const GlobalProfileBioField = document.getElementById("sgBio");
+const GlobalProfileFirstRoundField = document.getElementById("sgFirstRound");
+const GlobalProfileHomeCourseField = document.getElementById("sgHomeCourse");
+const GlobalProfileBestStrokesField = document.getElementById("sgBestStrokes");
+const GlobalProfileBestMinutesField = document.getElementById("sgBestMinutes");
+const GlobalProfileBestSecondsField = document.getElementById("sgBestSeconds");
+const GlobalProfileBestCourseField = document.getElementById("sgBestCourse");
+const GlobalAllClubs = ["Driver","3W","4W","5W","Hybrid","1I","2I","3I","4I","5I","6I","7I","8I","9I","PW","GW","SW","LW","Putter"];
+const GlobalProfileClubsInBagChecks = document.getElementById("clubsDiv").querySelectorAll("input");
+const GlobalProfileClubCommentsField = document.getElementById("sgClubComments");
+const GlobalCancelUpdateProfileBtn = document.getElementById("cancelUpdateProfileBtn");
+
+/*************************************************************************
+ * @function transitionToDialog
+ * @desc 
+ * This function prepares the UI prior to opening a dialog box. It hides
+ * the skip link, banner bar buttons, mode tabs, and current tab panel,
+ * so that they are unavailable while the user interacts with the dialog.
+ * It then displays the dialog box and dialog box title.
+ * Note: This function is placed in main.js because it is useful to 
+ * multiple UI components.
+ * @param dialogTitle: The title of the dialog to which to set 
+ * document.title
+ * @param dialog: A reference to the HTML element containing the dialog;
+ * it will be shown by removing the "hidden" class 
+ * @global GlobalSkipLink: The skip link
+ * @global GlobalMenuBtn: The menu button
+ * @global GlobalModeTabsContainer: The mode tabs
+ * @global GlobalModeTabPanels: array of tab panels 
+ * @global GlobalCurrentMode, index of current mode.
+ *************************************************************************/
+ function transitionToDialog(dialog, dialogTitle) {
+  GlobalSkipLink.classList.add("hidden"); 
+  GlobalMenuBtn.classList.add("hidden");
+  GlobalSearchBtn.classList.add("hidden");
+  GlobalProfileBtn.classList.add("hidden");
+  GlobalModeTabsContainer.classList.add("hidden");
+  GlobalModeTabPanels[GlobalCurrentMode.get()].classList.add("hidden");
+  document.title = dialogTitle;
+  dialog.classList.remove("hidden");
+}

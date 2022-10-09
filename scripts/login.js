@@ -17,7 +17,7 @@
         return false;
     }
     acct = JSON.parse(acct);
-    if (acct.password !== password) {
+    if (acct.accountInfo.password !== password) {
         return false;
     }
     return true;
@@ -68,7 +68,7 @@
     GlobalMenu.classList.remove("hidden");
     GlobalSearchBtn.classList.remove("hidden");
     GlobalProfileBtn.classList.remove("hidden");
-    GlobalProfileBtnImg.src = GlobalUserData.profilePic;
+    GlobalProfileBtnImg.src = GlobalUserData.identityInfo.profilePic;
     document.title = "SpeedScore: Activity Feed";
     GlobalSkipLink.focus(); //Force initial focus on skip link
 }

@@ -120,7 +120,14 @@ function createAccount() {
             displayName: GlobalAcctDisplayNameField.value,
             profilePic: GlobalAcctProfilePicImage.getAttribute("src"),
         },
-        speedgolfInfo: {}
+        speedgolfInfo: {
+            bio: "",
+            homeCourse: "",
+            firstRound: "",
+            personalBest: {strokes: 0, minutes: 0, seconds: 0, course: ""},
+            clubs: {},
+            clubComments: ""
+        }
     };    
     //Save account to localStorage as key-value pair
     localStorage.setItem(newAcct.accountInfo.email, 
@@ -129,8 +136,8 @@ function createAccount() {
     resetCreateAccountForm();
     //Transition to "Log In" page
     document.title = "Log In to SpeedScore";
-    createAccountDialog.classList.add("hidden");
-    loginPage.classList.remove("hidden");
+    GlobalCreateAccountDialog.classList.add("hidden");
+    GlobalLoginPage.classList.remove("hidden");
     GlobalAccountCreatedEmail.textContent = newAcct.email;
     GlobalAccountCreated.classList.remove("hidden");
 }
