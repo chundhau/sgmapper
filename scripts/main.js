@@ -59,6 +59,9 @@ const GlobalModeTabButtons =
 //Array of mode tab panel elements:
 const GlobalModeTabPanels = 
   document.querySelectorAll("div[role='tabpanel']");
+//Array mapping current mode to its name, so that
+//we can set document.title appropriately
+GlobalModeNames=["Activity Feed", "Rounds","Courses","Buddies"];
 
 /*****************************************************/
 /* FLOATING ACTION BUTTON AND MODAL DIALOG VARIABLES */
@@ -139,9 +142,9 @@ const GlobalDefaultProfilePic = "images/DefaultProfilePic.jpg";
 /* ACCOUNT & SETTINGS DIALOG FORM                    */
 /*****************************************************/
 const GlobalProfileSettingsDialog = document.getElementById("profileSettingsDialog");
-const accountSettingsBtn = document.getElementById("accountSettingsBtn");
-const accountSettingsPanel = document.getElementById("accountSettingsPanel");
-const GlobalProfileSettignsBtn = document.getElementById("profileSettingsBtn");
+const GlobalAccountSettingsBtn = document.getElementById("accountSettingsBtn");
+const GlobalAccountSettingsPanel = document.getElementById("accountSettingsPanel");
+const GlobalProfileSettingsBtn = document.getElementById("profileSettingsBtn");
 const GlobalProfileSettingsPanel = document.getElementById("profileSettingsPanel");
 const GlobalsgSettingsBtn = document.getElementById("sgSettingsBtn");
 const GlobalsgSettingsPanel = document.getElementById("sgSettingsPanel");
@@ -169,6 +172,14 @@ const GlobalAllClubs = ["Driver","3W","4W","5W","Hybrid","1I","2I","3I","4I","5I
 const GlobalProfileClubsInBagChecks = document.getElementById("clubsDiv").querySelectorAll("input");
 const GlobalProfileClubCommentsField = document.getElementById("sgClubComments");
 const GlobalCancelUpdateProfileBtn = document.getElementById("cancelUpdateProfileBtn");
+const GlobalFirstFocusableUpdateProfileItem = (() => {
+  let _firstFocusedUpdateProfileItem = GlobalAcctEmailField
+  const Store = {
+      get: () => _firstFocusedUpdateProfileItem,
+      set: val => (_firstFocusedUpdateProfileItem = val)
+  }
+  return Object.freeze(Store)
+})()
 
 /*************************************************************************
  * @function transitionToDialog
@@ -198,4 +209,29 @@ const GlobalCancelUpdateProfileBtn = document.getElementById("cancelUpdateProfil
   GlobalModeTabPanels[GlobalCurrentMode.get()].classList.add("hidden");
   document.title = dialogTitle;
   dialog.classList.remove("hidden");
+}
+
+/*************************************************************************
+ * @function transitionFromDialog
+ * @param dialogToClose -- a reference to the HML dialog element to close
+ * @desc 
+ * This function restores the UI after closing a dialog box. It shows
+ * the skip link, banner bar buttons, mode tabs, and current tab panel,
+ * Note: This function is placed in main.js because it is useful to 
+ * multiple UI components.
+ * @global GlobalSkipLink: The skip link
+ * @global GlobalMenuBtn: The menu button
+ * @global GlobalModeTabsContainer: The mode tabs
+ * @global GlobalModeTabPanels: array of tab panels 
+ * @global GlobalCurrentMode, index of current mode.
+ *************************************************************************/
+ function transitionFromDialog(dialogToClose) {
+  GlobalSkipLink.classList.remove("hidden"); 
+  GlobalMenuBtn.classList.remove("hidden");
+  GlobalSearchBtn.classList.remove("hidden");
+  GlobalProfileBtn.classList.remove("hidden");
+  GlobalModeTabsContainer.classList.remove("hidden");
+  GlobalModeTabPanels[GlobalCurrentMode.get()].classList.remove("hidden");
+  document.title = "SpeedScore: " + GlobalModeNames[GlobalCurrentMode.get()];
+  dialogToClose.classList.add("hidden");
 }
