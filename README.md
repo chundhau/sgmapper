@@ -1,13 +1,70 @@
-# SpeedScore
+# Getting Started with Create React App
 
-This repository contains the code for the SpeedScore personal speedfgolf app developed in the book *Full Stack Web Development from the Ground Up* (first edition) by Chris Hundhausen, published by Morgan Kaufmann.
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-The code in each chapter is developed in a feature branch named after the chapter (e.g., 'ch3').
+## Available Scripts
 
-The book's development of SpeedScore is mostly *cumulative*. Thus, each chapter's feature branch is often merged into the main branch, so that the main branch contains the final software product that emerges from the book's development activities.
+In the project directory, you can run:
 
-Tagged code snapshots take the project from its initial state through its final state, following the development progression in the chapter's featured code blocks. To follow along with a chapter, you can
- * check out the feature branch associated with the chapter, e.g., `git checkout -b ch3`, which shows you the *final state* of the code at the end of the chatper, or
- * view the code *at a specific point in the chapter* by checking out a tagged version of the code referenced in the chapter, e.g., `git checkout -b ch3s1`. Git tags are used to name each chapter's snapshots sequentially as ch*x*s*y*, where *x* is the chapter number and *y* is the snapshot number. Snapshots start at 0 for each chapter.
+### `npm start`
 
-For detailed instructions on how to get the most out of the book's companion code, please see Box 3.1 ("Exploring the Book's Code Using Git, GitHub and VSC") in Chapter 3.
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+
+The page will reload when you make changes.\
+You may also see any lint errors in the console.
+
+### `npm test`
+
+Launches the test runner in the interactive watch mode.\
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+
+### `npm run build`
+
+Builds the app for production to the `build` folder.\
+It correctly bundles React in production mode and optimizes the build for the best performance.
+
+The build is minified and the filenames include the hashes.\
+Your app is ready to be deployed!
+
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### `npm run eject`
+
+**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+
+If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+
+You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+
+## Learn More
+
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+
+To learn React, check out the [React documentation](https://reactjs.org/).
+
+### Code Splitting
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+
+### Analyzing the Bundle Size
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+
+### Making a Progressive Web App
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+
+### Advanced Configuration
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+
+### Deployment
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+
+### `npm run build` fails to minify
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
