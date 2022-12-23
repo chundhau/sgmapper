@@ -1,16 +1,63 @@
 
 import React from 'react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 function CoursesMode() {
     const [showDialog, setShowDialog] = useState(false);
+    const dialog = useRef();
+    const addBtn = useRef();
+    const cancelBtn = useRef();
 
     function handleClick() {
         setShowDialog(!showDialog);
- 
+        if (showDialog) {
+            window.transitionFromReactDialog();
+        }
     }
-   
+
+    function handleKeyPress(event) {   
+        event.preventDefault();
+        if (event.code === "Escape") {
+            handleClick();
+            return;
+        } 
+        if (event.code === "Enter" && (document.activeElement === addBtn.current || document.activeElement === cancelBtn.current)) {
+            handleClick();
+            return;
+        }
+        if (document.activeElement === dialog.current && event.code === "Tab" && event.shiftKey) {
+              cancelBtn.current.focus();
+              return;
+        }
+        if (document.activeElement === dialog.current && event.code === "Tab") {
+          addBtn.current.focus();
+          return;
+        }
+        if (document.activeElement === addBtn.current && event.code === "Tab" && event.shiftKey) {
+            dialog.current.focus();
+            event.stopPropagation();
+            return;
+        }
+        if (document.activeElement === addBtn.current && event.code === "Tab") {
+            cancelBtn.current.focus();
+            event.stopPropagation();
+            return;
+        }
+        if (document.activeElement === cancelBtn.current && event.code === "Tab" &&  event.shiftKey) {
+            //alert("cancel reverse");
+            addBtn.current.focus();
+            event.stopPropagation();
+            return;
+        }
+        if (document.activeElement === cancelBtn.current && event.code === "Tab") {
+            //alert("cancel forward");
+            dialog.current.focus();
+            event.stopPropagation();
+            return;
+        }
+    }
+    
     if (!showDialog) {
         return (
             <>
@@ -22,10 +69,12 @@ function CoursesMode() {
             </>
         );
     } else {
+      window.transitionToReactDialog("Add Course");
       return (
-        <div id="coursesModeDialog" tabIndex="0"
+        <div id="coursesModeDialog" ref={dialog} tabIndex="0"
             className="mode-page action-dialog" role="dialog" 
-            aria-modal="true" aria-labelledby="newCourseHeader">
+            aria-modal="true" aria-labelledby="newCourseHeader" 
+            onKeyDown={handleKeyPress}>
             <h1 id="addCourseHeader" className="mode-page-header">Add Course</h1>
             <p className="mode-page-content">
             This modal dialog is under construction.
@@ -33,12 +82,14 @@ function CoursesMode() {
             <img className="mode-page-icon" src="sslogo_lg.png" 
                 alt="SpeedScore logo" />
             <div className="mode-page-btn-container">
-            <button id="coursesModeAddBtn" tabIndex="0"
+            <button id="coursesModeAddBtn" ref ={addBtn} tabIndex="0"
                     className="mode-page-btn action-dialog action-button" 
-                    type="button"onClick={handleClick}>Add Course</button>
-            <button id="coursesModeCancelBtn" tabIndex="0"
+                    type="button"onClick={handleClick} 
+                    onKeyDown={handleKeyPress}>Add Course</button>
+            <button id="coursesModeCancelBtn" ref={cancelBtn} tabIndex="0"
                     className="mode-page-btn action-dialog cancel-button"
-                    type="button" onClick={handleClick}>Cancel</button>
+                    type="button" onClick={handleClick}
+                    onKeyDown={handleKeyPress}>Cancel</button>
             </div>
         </div> 
       );
