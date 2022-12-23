@@ -273,6 +273,15 @@ const GlobalDialogTitles = ["SpeedScore: Post to Feed","SpeedScore: Log Round",
   dialog.classList.remove("hidden");
 }
 
+function transitionToReactDialog(dialogTitle) {
+  GlobalSkipLink.classList.add("hidden"); 
+  GlobalMenuBtn.classList.add("hidden");
+  GlobalSearchBtn.classList.add("hidden");
+  GlobalProfileBtn.classList.add("hidden");
+  GlobalModeTabsContainer.classList.add("hidden");
+  document.title = dialogTitle;
+}
+
 /*************************************************************************
  * @function transitionFromDialog
  * @param dialogToClose -- a reference to the HML dialog element to close
@@ -296,4 +305,14 @@ const GlobalDialogTitles = ["SpeedScore: Post to Feed","SpeedScore: Log Round",
   GlobalModeTabPanels[GlobalCurrentMode.get()].classList.remove("hidden");
   document.title = "SpeedScore: " + GlobalModeNames[GlobalCurrentMode.get()];
   dialogToClose.classList.add("hidden");
+}
+
+function transitionFromReactDialog() {
+  GlobalSkipLink.classList.remove("hidden"); 
+  GlobalMenuBtn.classList.remove("hidden");
+  GlobalSearchBtn.classList.remove("hidden");
+  GlobalProfileBtn.classList.remove("hidden");
+  GlobalModeTabsContainer.classList.remove("hidden");
+  GlobalModeTabPanels[GlobalCurrentMode.get()].classList.remove("hidden");
+  document.title = "SpeedScore: " + GlobalModeNames[GlobalCurrentMode.get()];
 }

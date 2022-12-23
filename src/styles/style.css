@@ -135,7 +135,7 @@
     margin-right: 8px;
     height: 44px;
     width: 44px;
-    background-image: url("DefaultProfilePic.jpg");
+    background-image: url("../images/DefaultProfilePic.jpg");
     background-size: cover;
     flex-shrink: 0;
 }

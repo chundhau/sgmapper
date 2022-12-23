@@ -32,8 +32,7 @@
      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
      rel="stylesheet" "integrity=sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" 
      crossorigin="anonymous"/>
-     <!-- Import local stylesheet -->
-     <link rel="stylesheet" href="styles/style.css">
+     <!-- Local stylesheet is imported through src/index.js -->
   </head>
   <body>
     <!-- The TOP NAVIGATION BAR -->
@@ -166,14 +165,8 @@
         </button>
       </div>
       <div id="coursesModeTab" role="tabpanel" class="mode-page hidden" 
-           aria-label="Courses Tab" tabindex="0">
-           <h1 class="mode-page-header">Courses</h1>
-           <p class="mode-page-content">This page is under construction.</p>
-           <img class="mode-page-icon" src="sslogo_lg.png" alt="SpeedScore logo">
-           <button id="coursesModeActionBtn"  type="button" 
-                class="float-btn">
-          <span class="fas fa-search fa-fw" aria-hidden="true"></span>Find Courses
-        </button>
+            aria-label="Courses Tab" tabindex="0">
+            <button type="button" class="float-btn hidden"></button>
       </div>
       <div id="buddiesModeTab" role="tabpanel" class="mode-page hidden" 
            aria-label="Buddies Tab" tabindex="0">
@@ -303,24 +296,15 @@
           </div>
         </form>
       </div> 
-      <div id="coursesModeDialog" 
-            class="mode-page action-dialog hidden" role="dialog" 
-        aria-modal="true" aria-labelledby="newCourseHeader" tabindex="0">
-        <h1 id="addCourseHeader" class="mode-page-header">Add Course</h1>
-        <p class="mode-page-content">
-          This modal dialog is under construction.
-        </p>
-        <img class="mode-page-icon" src="sslogo_lg.png" 
-            alt="SpeedScore logo">
-        <div class="mode-page-btn-container">
-          <button id="coursesModeAddBtn" 
-                  class="mode-page-btn action-dialog action-button" 
+      <div id="cModeDialog" class="mode-page action-dialog hidden" role="dialog" 
+               aria-modal="true" aria-labelledby="newPostHeader" tabindex="0">
+                <button
+                  class="hidden mode-page-btn action-dialog action-button" 
                   type="button">Add Course</button>
-          <button id="coursesModeCancelBtn" 
-                  class="mode-page-btn action-dialog cancel-button"
+                <button  
+                  class="hidden mode-page-btn action-dialog cancel-button"
                   type="button">Cancel</button>
-        </div>
-      </div> 
+      </div>
       <div id="buddiesModeDialog" 
             class="mode-page action-dialog hidden" role="dialog" 
         aria-modal="true" aria-labelledby="findBuddiesHeader" tabindex="0">

@@ -22,19 +22,6 @@
     GlobalModeActionButtons[i].addEventListener("click",
         () => transitionToDialog(GlobalModeActionDialogs[i],GlobalDialogTitles[i],GlobalDialogPrepFuncs[i]));
   };
-    // //Hide tab panel
-    // GlobalModeTabPanels[GlobalCurrentMode.get()].classList.add("hidden");
-    // //Hide and disable all UI elements
-    // GlobalMenuBtn.classList.add("disabled");
-    // GlobalSearchBtn.classList.add("disabled");
-    // GlobalProfileBtn.classList.add("disabled");
-    // GlobalSkipLink.classList.add("hidden"); 
-    // GlobalModeTabsContainer.classList.add("disabled");
-    // //Show dialog box
-    // GlobalModeActionDialogs[GlobalCurrentMode.get()].classList.remove("hidden");
-    // //Set focus to dialog box's action button
-    // GlobalDialogActionButtons[GlobalCurrentMode.get()].focus();
-    //});
 
 /*************************************************************************
  * @function Dialog Box Action Button CLICK handler 
@@ -54,9 +41,6 @@
  //Feed mode
  GlobalDialogActionButtons[0].addEventListener("click",
         () => transitionFromDialog(GlobalModeActionDialogs[0]));
-//Courses mode
-GlobalDialogActionButtons[2].addEventListener("click",
-        () => transitionFromDialog(GlobalModeActionDialogs[2]));
 //Buddies mode
 GlobalDialogActionButtons[3].addEventListener("click",
         () => transitionFromDialog(GlobalModeActionDialogs[3]));
@@ -84,9 +68,6 @@ GlobalDialogCancelButtons[1].addEventListener("click",function() {
    resetLogRoundForm(); //Log round form needs to be reset
    transitionFromDialog(GlobalModeActionDialogs[1]);
 });
-//COURSES mode
-GlobalDialogCancelButtons[2].addEventListener("click",
- () => transitionFromDialog(GlobalModeActionDialogs[2]));
 //BUDDIES mode
 GlobalDialogCancelButtons[3].addEventListener("click",
  () => transitionFromDialog(GlobalModeActionDialogs[3]));
