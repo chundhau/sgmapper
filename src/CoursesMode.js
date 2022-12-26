@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 function CoursesMode() {
@@ -11,9 +11,6 @@ function CoursesMode() {
 
     function handleClick() {
         setShowDialog(!showDialog);
-        if (showDialog) {
-            window.transitionFromReactDialog();
-        }
     }
 
     function handleKeyPress(event) {   
@@ -27,12 +24,12 @@ function CoursesMode() {
             return;
         }
         if (document.activeElement === dialog.current && event.code === "Tab" && event.shiftKey) {
-              cancelBtn.current.focus();
-              return;
+                cancelBtn.current.focus();
+                return;
         }
         if (document.activeElement === dialog.current && event.code === "Tab") {
-          addBtn.current.focus();
-          return;
+            addBtn.current.focus();
+            return;
         }
         if (document.activeElement === addBtn.current && event.code === "Tab" && event.shiftKey) {
             dialog.current.focus();
@@ -59,6 +56,7 @@ function CoursesMode() {
     }
     
     if (!showDialog) {
+        window.transitionFromDialog(null);
         return (
             <>
             <h1 className="mode-page-header">Courses</h1>
@@ -69,7 +67,7 @@ function CoursesMode() {
             </>
         );
     } else {
-      window.transitionToReactDialog("Add Course");
+      window.transitionToDialog(null,"Add Course",function(){});
       return (
         <div id="coursesModeDialog" ref={dialog} tabIndex="0"
             className="mode-page action-dialog" role="dialog" 

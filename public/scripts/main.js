@@ -252,7 +252,9 @@ const GlobalDialogTitles = ["SpeedScore: Post to Feed","SpeedScore: Log Round",
  * @param dialogTitle: The title of the dialog to which to set 
  * document.title
  * @param dialog: A reference to the HTML element containing the dialog;
- * it will be shown by removing the "hidden" class 
+ * it will be shown by removing the "hidden" class. If dialog is null,
+ * we do not hide the mode's tab panel or show the dialog, as we assume
+ * that is taken care of elsewhere.
  * @param dialogPrepFunc: A reference to a function to call to prepare 
  * the dialog's appearance.
  * @global GlobalSkipLink: The skip link
@@ -267,24 +269,20 @@ const GlobalDialogTitles = ["SpeedScore: Post to Feed","SpeedScore: Log Round",
   GlobalSearchBtn.classList.add("hidden");
   GlobalProfileBtn.classList.add("hidden");
   GlobalModeTabsContainer.classList.add("hidden");
-  GlobalModeTabPanels[GlobalCurrentMode.get()].classList.add("hidden");
   document.title = dialogTitle;
-  dialogPrepFunc();
-  dialog.classList.remove("hidden");
-}
-
-function transitionToReactDialog(dialogTitle) {
-  GlobalSkipLink.classList.add("hidden"); 
-  GlobalMenuBtn.classList.add("hidden");
-  GlobalSearchBtn.classList.add("hidden");
-  GlobalProfileBtn.classList.add("hidden");
-  GlobalModeTabsContainer.classList.add("hidden");
-  document.title = dialogTitle;
+  if (dialog != null) {
+    GlobalModeTabPanels[GlobalCurrentMode.get()].classList.add("hidden");
+    dialog.classList.remove("hidden");
+  }
+  dialogPrepFunc();   
 }
 
 /*************************************************************************
  * @function transitionFromDialog
- * @param dialogToClose -- a reference to the HML dialog element to close
+ * @param dialogToClose -- a reference to the HML dialog element to close.
+ * If null, we do not hide the dialog element, as we assume that will be
+ * taken care of elsewhere.
+ * 
  * @desc 
  * This function restores the UI after closing a dialog box. It shows
  * the skip link, banner bar buttons, mode tabs, and current tab panel,
@@ -302,17 +300,9 @@ function transitionToReactDialog(dialogTitle) {
   GlobalSearchBtn.classList.remove("hidden");
   GlobalProfileBtn.classList.remove("hidden");
   GlobalModeTabsContainer.classList.remove("hidden");
-  GlobalModeTabPanels[GlobalCurrentMode.get()].classList.remove("hidden");
   document.title = "SpeedScore: " + GlobalModeNames[GlobalCurrentMode.get()];
-  dialogToClose.classList.add("hidden");
-}
-
-function transitionFromReactDialog() {
-  GlobalSkipLink.classList.remove("hidden"); 
-  GlobalMenuBtn.classList.remove("hidden");
-  GlobalSearchBtn.classList.remove("hidden");
-  GlobalProfileBtn.classList.remove("hidden");
-  GlobalModeTabsContainer.classList.remove("hidden");
-  GlobalModeTabPanels[GlobalCurrentMode.get()].classList.remove("hidden");
-  document.title = "SpeedScore: " + GlobalModeNames[GlobalCurrentMode.get()];
+  if (dialogToClose != null) {
+    GlobalModeTabPanels[GlobalCurrentMode.get()].classList.remove("hidden");
+    dialogToClose.classList.add("hidden");
+  }
 }
