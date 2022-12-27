@@ -1,6 +1,10 @@
-
+ /*************************************************************************
+ * File: coursesMode.js
+ * This file defines the CoursesMode react component, which implements
+ * SpeedScore's "Courses" mode
+ ************************************************************************/
 import React from 'react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 function CoursesMode() {
@@ -9,10 +13,31 @@ function CoursesMode() {
     const addBtn = useRef();
     const cancelBtn = useRef();
 
+    /*************************************************************************
+     * @function handleClick 
+     * @Desc 
+     * When the user clicks any button, invoke the external JavaScript function
+     *  transitionFromDialog (if showDialog is true) or transitionToDialog 
+     * (if showDialog is false) to hide/display banner bar and mode tabs. Then
+     * toggle the showDialog state variable to force a re-rendering of the 
+     * component.
+     *************************************************************************/
     function handleClick() {
+        if (showDialog)
+            window.transitionFromDialog(null);
+        else
+            window.transitionToDialog(null,"Add Course",function(){});
         setShowDialog(!showDialog);
     }
 
+    /*************************************************************************
+     * @function handleKeyPress 
+     * @Desc 
+     * When the user presses a key, check if it is the tab, enter, or escape
+     * key (the three keys we care about). If so, determine which element had
+     * the focus and act accordingly: If tab or shift-tab, then shift the focus
+     * to next or previous element. If Enter, then call upon handleClick().
+     *************************************************************************/
     function handleKeyPress(event) {   
         event.preventDefault();
         if (event.code === "Escape") {
@@ -42,21 +67,19 @@ function CoursesMode() {
             return;
         }
         if (document.activeElement === cancelBtn.current && event.code === "Tab" &&  event.shiftKey) {
-            //alert("cancel reverse");
             addBtn.current.focus();
             event.stopPropagation();
             return;
         }
         if (document.activeElement === cancelBtn.current && event.code === "Tab") {
-            //alert("cancel forward");
             dialog.current.focus();
             event.stopPropagation();
             return;
         }
     }
-    
+
+    /* JSX code to render the component */
     if (!showDialog) {
-        window.transitionFromDialog(null);
         return (
             <>
             <h1 className="mode-page-header">Courses</h1>
@@ -67,7 +90,6 @@ function CoursesMode() {
             </>
         );
     } else {
-      window.transitionToDialog(null,"Add Course",function(){});
       return (
         <div id="coursesModeDialog" ref={dialog} tabIndex="0"
             className="mode-page action-dialog" role="dialog" 
