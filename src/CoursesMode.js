@@ -3,8 +3,7 @@
  * This file defines the CoursesMode react component, which implements
  * SpeedScore's "Courses" mode
  ************************************************************************/
-import React from 'react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 function CoursesMode() {
