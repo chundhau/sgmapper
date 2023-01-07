@@ -3,7 +3,7 @@
  * This file defines the CoursesMode react component, which implements
  * SpeedScore's "Courses" mode
  ************************************************************************/
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect} from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 function CoursesMode() {
@@ -11,6 +11,7 @@ function CoursesMode() {
     const dialog = useRef();
     const addBtn = useRef();
     const cancelBtn = useRef();
+    const courseSearch = useRef();
 
     /*************************************************************************
      * @function handleClick 
@@ -29,6 +30,16 @@ function CoursesMode() {
         setShowDialog(!showDialog);
     }
 
+    async function getAutoCompleteMatches(searchTerm) {
+        let headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+        headers.append('Accept', 'application/json');
+
+
+        let matches = await fetch('https://maps.googleapis.com/maps/api/place/autocomplete/json?input=' +
+                               courseSearch.current.value + '&types=establishment&key=AIzaSyCuhyT2mzmSEpgsUgHiLm8EqmBhVCXJN2g');
+    }
+
     /*************************************************************************
      * @function handleKeyPress 
      * @Desc 
@@ -37,8 +48,8 @@ function CoursesMode() {
      * the focus and act accordingly: If tab or shift-tab, then shift the focus
      * to next or previous element. If Enter, then call upon handleClick().
      *************************************************************************/
-    function handleKeyPress(event) {   
-        event.preventDefault();
+    async function handleKeyPress(event) {   
+        //event.preventDefault();
         if (event.code === "Escape") {
             handleClick();
             return;
@@ -75,7 +86,28 @@ function CoursesMode() {
             event.stopPropagation();
             return;
         }
+        // if (document.activeElement === courseSearch.current) { //Autocomplete!
+        //     let matches = await getAutoCompleteMatches(courseSearch.current.value);
+        //     if (matches.status != 'OK') {
+        //         alert('Status: ' + matches.status);
+        //     } else {
+        //         alert(JSON.stringify(matches.predictions));
+        //     };
+        //     return;
+        // }
     }
+
+    useEffect(() => {
+        if (showDialog) {
+            const options = {
+                types: ['establishment']
+            }
+            const autocomplete = new window.google.maps.places.Autocomplete(courseSearch.current,options);
+            courseSearch.current.focus();
+        }
+
+    });
+
 
     /* JSX code to render the component */
     if (!showDialog) {
@@ -94,12 +126,12 @@ function CoursesMode() {
             className="mode-page action-dialog" role="dialog" 
             aria-modal="true" aria-labelledby="newCourseHeader" 
             onKeyDown={handleKeyPress}>
-            <h1 id="addCourseHeader" className="mode-page-header">Add Course</h1>
-            <p className="mode-page-content">
-            This modal dialog is under construction.
-            </p>
-            <img className="mode-page-icon" src="sslogo_lg.png" 
-                alt="SpeedScore logo" />
+            <div className="mb-3 centered">
+              <label htmlFor="courseSearch" className="form-label">Enter Course:<br/>
+                  <input id="courseSearch" ref={courseSearch} type="text" className="form-control-lg centered"
+                  aria-describedby="courseDescr"/>
+              </label>
+            </div>
             <div className="mode-page-btn-container">
             <button id="coursesModeAddBtn" ref ={addBtn} tabIndex="0"
                     className="mode-page-btn action-dialog action-button" 
