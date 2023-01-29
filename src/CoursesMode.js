@@ -30,16 +30,6 @@ function CoursesMode() {
         setShowDialog(!showDialog);
     }
 
-    // async function getAutoCompleteMatches(searchTerm) {
-    //     let headers = new Headers();
-    //     headers.append('Content-Type', 'application/json');
-    //     headers.append('Accept', 'application/json');
-
-
-    //     let matches = await fetch('https://maps.googleapis.com/maps/api/place/autocomplete/json?input=' +
-    //                            courseSearch.current.value + '&types=establishment&key=AIzaSyCuhyT2mzmSEpgsUgHiLm8EqmBhVCXJN2g');
-    // }
-
     /*************************************************************************
      * @function handleKeyPress 
      * @Desc 
@@ -86,15 +76,15 @@ function CoursesMode() {
             event.stopPropagation();
             return;
         }
-        // if (document.activeElement === courseSearch.current) { //Autocomplete!
-        //     let matches = await getAutoCompleteMatches(courseSearch.current.value);
-        //     if (matches.status != 'OK') {
-        //         alert('Status: ' + matches.status);
-        //     } else {
-        //         alert(JSON.stringify(matches.predictions));
-        //     };
-        //     return;
-        // }
+        if (document.activeElement === courseSearch.current) { //Autocomplete!
+            let matches = await getAutoCompleteMatches(courseSearch.current.value);
+            if (matches.status != 'OK') {
+                alert('Status: ' + matches.status);
+            } else {
+                alert(JSON.stringify(matches.predictions));
+            };
+            return;
+        }
     }
 
     useEffect(() => {
@@ -104,7 +94,6 @@ function CoursesMode() {
             };
             const autocomplete = new window.google.maps.places.Autocomplete(courseSearch.current,options);
             courseSearch.current.focus();
-            //autocomplete.addListener("place_changed",showCourse);
         }
     });
 
