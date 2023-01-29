@@ -30,15 +30,15 @@ function CoursesMode() {
         setShowDialog(!showDialog);
     }
 
-    async function getAutoCompleteMatches(searchTerm) {
-        let headers = new Headers();
-        headers.append('Content-Type', 'application/json');
-        headers.append('Accept', 'application/json');
+    // async function getAutoCompleteMatches(searchTerm) {
+    //     let headers = new Headers();
+    //     headers.append('Content-Type', 'application/json');
+    //     headers.append('Accept', 'application/json');
 
 
-        let matches = await fetch('https://maps.googleapis.com/maps/api/place/autocomplete/json?input=' +
-                               courseSearch.current.value + '&types=establishment&key=AIzaSyCuhyT2mzmSEpgsUgHiLm8EqmBhVCXJN2g');
-    }
+    //     let matches = await fetch('https://maps.googleapis.com/maps/api/place/autocomplete/json?input=' +
+    //                            courseSearch.current.value + '&types=establishment&key=AIzaSyCuhyT2mzmSEpgsUgHiLm8EqmBhVCXJN2g');
+    // }
 
     /*************************************************************************
      * @function handleKeyPress 
@@ -101,13 +101,12 @@ function CoursesMode() {
         if (showDialog) {
             const options = {
                 types: ['establishment']
-            }
+            };
             const autocomplete = new window.google.maps.places.Autocomplete(courseSearch.current,options);
             courseSearch.current.focus();
+            //autocomplete.addListener("place_changed",showCourse);
         }
-
     });
-
 
     /* JSX code to render the component */
     if (!showDialog) {
@@ -117,20 +116,21 @@ function CoursesMode() {
             <p className="mode-page-content">This page is under construction"</p>
             <img className="mode-page-icon" src="sslogo_lg.png" alt="SpeedScore logo"/>
             <button className="float-btn" onClick={handleClick}>
-                <FontAwesomeIcon icon="map-pin" />&nbsp;New Course</button>
+                <FontAwesomeIcon icon="map-pin" />&nbsp;Add Course</button>
             </>
         );
     } else {
       return (
         <div id="coursesModeDialog" ref={dialog} tabIndex="0"
-            className="mode-page action-dialog" role="dialog" 
+            className="action-dialog centered" role="dialog" 
             aria-modal="true" aria-labelledby="newCourseHeader" 
             onKeyDown={handleKeyPress}>
+            <h1>Add Course</h1>
             <div className="mb-3 centered">
-              <label htmlFor="courseSearch" className="form-label">Enter Course:<br/>
-                  <input id="courseSearch" ref={courseSearch} type="text" className="form-control-lg centered"
-                  aria-describedby="courseDescr"/>
-              </label>
+                <label htmlFor="courseSearch" className="form-label">Search for Course:<br/>
+                    <input id="courseSearch" ref={courseSearch} type="text" className="form-control-lg centered"
+                     placeholder="Enter a golf course" aria-describedby="courseDescr"/>
+                </label>  
             </div>
             <div className="mode-page-btn-container">
             <button id="coursesModeAddBtn" ref ={addBtn} tabIndex="0"
