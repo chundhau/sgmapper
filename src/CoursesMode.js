@@ -8,12 +8,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 function CoursesMode() {
     const [showDialog, setShowDialog] = useState(false);
-    const [autoMatches, setAutoMatches] = useState([]);
+    const [autocomplete, setAutocomplete] = useState({boxContents: "", matches: [], validCourseChosen: false});
     const dialog = useRef();
     const addBtn = useRef();
     const cancelBtn = useRef();
     const courseSearch = useRef();
     const autocompleteService = new window.google.maps.places.AutocompleteService();
+    let  autocompleteSessionToken = null; //null == no current session
+    let newSearchValue = "";
 
     /*************************************************************************
      * @function handleClick 
@@ -25,11 +27,26 @@ function CoursesMode() {
      * component.
      *************************************************************************/
     function handleClick() {
-        if (showDialog)
+        if (showDialog) {
+            setAutocomplete({boxContents: "", matches: []});
             window.transitionFromDialog(null);
-        else
+        } else {
             window.transitionToDialog(null,"Add Course",function(){});
+        }
         setShowDialog(!showDialog);
+    }
+
+    /*************************************************************************
+     * @function handleAutocompleteItemClick 
+     * @Desc 
+     * When the user clicks on an item in the autocomplete dropdown, we 
+     * place that item in the autocomplete box and set the list of automatches to
+     * empty (signifying the end of an autocomplete session).
+     * This forces a re-render.  
+     *************************************************************************/
+    function handleAutocompleteItemClick(i) {
+        autocompleteSessionToken = null; //Session is over
+        setAutocomplete({boxContents: i.name, matches: [], validCourseChosen: true}); //Force re-render    
     }
 
     /*************************************************************************
@@ -39,20 +56,24 @@ function CoursesMode() {
      * This is the function called by the Google Places API 
      * getPlacePredictions() function after it retrieves the matches based on
      * the latest contents of the autocomplete field. We update the 
-     * autoMatches state variable with the latest matches, triggering a 
+     * autocompleteMatches state variable with the latest matches, triggering a 
      * re-rendering of the component.
      *************************************************************************/
-    function updateAutocompleteMatches(matches, status) {
+    function updateAutocomplete(matches, status) {
         if (status != window.google.maps.places.PlacesServiceStatus.OK || !matches) {
-            alert(status);
-            setAutoMatches([]);
+            setAutocomplete({boxContents: newSearchValue, matches: [], validCourseChosen: false});
             return;
         }
         let matchArray = [];
         matches.forEach((match) => {
-            matchArray.push({name: match.description, id: match.place_id});
+            const items = match.description.split(",");
+            if ((items[0].includes("Golf Course") || items[0].includes("Golf Club") ||
+                 items[0].includes("Golf Links")) && !items[0].includes("Disc Golf"))
+            {
+              matchArray.push({name: match.description, id: match.place_id});
+            }
         });
-        setAutoMatches(matchArray); //force re-render
+        setAutocomplete({boxContents: newSearchValue, matches: matchArray, validCourseChosen: false}); //force re-render
     };
 
     /*************************************************************************
@@ -101,29 +122,23 @@ function CoursesMode() {
             event.stopPropagation();
             return;
         }
-        if (document.activeElement === courseSearch.current) { //Autocomplete!
-            addBtn.current.disabled = true;
-            autocompleteService.getPlacePredictions({input: courseSearch.current.value + " Golf",
-                                                     type: 'establishment'}, updateAutocompleteMatches);
-            event.stopPropagation();
-            return;
-        }
     }
 
-    // useEffect(() => {
-    //     if (showDialog) {
-    //         const options = {
-    //             types: ['establishment']
-    //         };
-    //         const autocomplete = new window.google.maps.places.Autocomplete(courseSearch.current,options);
-    //         courseSearch.current.focus();
-    //     }
-    // });
-
-    function autocompleteItemClick(i) {
-        courseSearch.current.value = i.name;
-        setAutoMatches([]);
-        addBtn.current.classList.remove("disable-btn");
+    function handleAutocompleteChange(event) {
+        newSearchValue = event.target.value;
+        if (newSearchValue == "") {
+            setAutocomplete({boxContents: "", matches: [], validCourseChosen: false});
+            return;
+        }
+        if (autocompleteSessionToken === null) { //start new session
+            autocompleteSessionToken = new window.google.maps.places.AutocompleteSessionToken();
+        }
+        autocompleteService.getPlacePredictions({
+            input: newSearchValue + " Golf Course",
+            offset: 3,
+            types: ['establishment'],
+            sessionToken: autocompleteSessionToken}, 
+            updateAutocomplete); 
     }
 
     /* JSX code to render the component */
@@ -147,12 +162,22 @@ function CoursesMode() {
             <div className="mb-3 centered">
                 <label htmlFor="courseSearch" className="form-label">Search for Course:</label><br/>
                 <div className="autocomplete-wrapper">
-                    <input id="courseSearch" ref={courseSearch} type="text" className="form-control-lg centered autocomplete-input"
-                            placeholder="Enter a golf course" aria-describedby="courseDescr"/>
+                    <input id="courseSearch" 
+                          ref={courseSearch} type="text" 
+                          className="form-control-lg centered autocomplete-input"
+                          placeholder="Enter a golf course" 
+                          aria-describedby="courseSearch"
+                          value={autocomplete.boxContents}
+                          onChange={handleAutocompleteChange} />
                     <div className="autocomplete-results-wrapper"> 
                         <ul className="autocomplete-results">
-                        {autoMatches.map((item) => {
-                            return (<li className="autocomplete-item" onClick={()=>autocompleteItemClick(item)}>{item.name}</li>);
+                        {autocomplete.matches.map((item) => {
+                            return (
+                              <li key={item.id} 
+                                  className="autocomplete-item" 
+                                  onClick={()=>handleAutocompleteItemClick(item)}>
+                                  {item.name}
+                               </li>);
                         })}
                         </ul>
                     </div>
@@ -160,7 +185,9 @@ function CoursesMode() {
             </div>
             <div className="mode-page-btn-container">
             <button id="coursesModeAddBtn" ref ={addBtn} tabIndex="0"
-                    className="mode-page-btn action-dialog action-button disable-btn" 
+                    className={autocomplete.validCourseChosen ? 
+                            "mode-page-btn action-dialog action-button" : 
+                            "mode-page-btn action-dialog action-button disable-btn"}
                     type="button" onClick={handleClick} 
                     onKeyDown={handleKeyPress}>Add Course</button>
             <button id="coursesModeCancelBtn" ref={cancelBtn} tabIndex="0"

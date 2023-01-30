@@ -398,17 +398,18 @@ cursor: pointer;
   left: 0;
   width: 100%;
   text-align: left;
+  z-index: 1000;
 }
 
 .autocomplete-results {
   list-style-type: none; /* Remove bullets */
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margins */
-  z-index: 1000;
 }
 
 .autocomplete-item {
     width: 100%;
+    background-color: white;
     outline: 1px solid lightgray;
 }
 
