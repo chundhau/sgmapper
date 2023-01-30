@@ -3,15 +3,17 @@
  * This file defines the CoursesMode react component, which implements
  * SpeedScore's "Courses" mode
  ************************************************************************/
-import { useState, useRef, useEffect} from 'react';
+import { useState, useRef} from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 function CoursesMode() {
     const [showDialog, setShowDialog] = useState(false);
+    const [autoMatches, setAutoMatches] = useState([]);
     const dialog = useRef();
     const addBtn = useRef();
     const cancelBtn = useRef();
     const courseSearch = useRef();
+    const autocompleteService = new window.google.maps.places.AutocompleteService();
 
     /*************************************************************************
      * @function handleClick 
@@ -29,6 +31,29 @@ function CoursesMode() {
             window.transitionToDialog(null,"Add Course",function(){});
         setShowDialog(!showDialog);
     }
+
+    /*************************************************************************
+     * @function updateAutocompleteMatches 
+     * @param matches, an array of matches returned by getPlacePredictions()
+     * @Desc status, the status returned by getPlacePredictions()
+     * This is the function called by the Google Places API 
+     * getPlacePredictions() function after it retrieves the matches based on
+     * the latest contents of the autocomplete field. We update the 
+     * autoMatches state variable with the latest matches, triggering a 
+     * re-rendering of the component.
+     *************************************************************************/
+    function updateAutocompleteMatches(matches, status) {
+        if (status != window.google.maps.places.PlacesServiceStatus.OK || !matches) {
+            alert(status);
+            setAutoMatches([]);
+            return;
+        }
+        let matchArray = [];
+        matches.forEach((match) => {
+            matchArray.push({name: match.description, id: match.place_id});
+        });
+        setAutoMatches(matchArray); //force re-render
+    };
 
     /*************************************************************************
      * @function handleKeyPress 
@@ -77,25 +102,29 @@ function CoursesMode() {
             return;
         }
         if (document.activeElement === courseSearch.current) { //Autocomplete!
-            let matches = await getAutoCompleteMatches(courseSearch.current.value);
-            if (matches.status != 'OK') {
-                alert('Status: ' + matches.status);
-            } else {
-                alert(JSON.stringify(matches.predictions));
-            };
+            addBtn.current.disabled = true;
+            autocompleteService.getPlacePredictions({input: courseSearch.current.value + " Golf",
+                                                     type: 'establishment'}, updateAutocompleteMatches);
+            event.stopPropagation();
             return;
         }
     }
 
-    useEffect(() => {
-        if (showDialog) {
-            const options = {
-                types: ['establishment']
-            };
-            const autocomplete = new window.google.maps.places.Autocomplete(courseSearch.current,options);
-            courseSearch.current.focus();
-        }
-    });
+    // useEffect(() => {
+    //     if (showDialog) {
+    //         const options = {
+    //             types: ['establishment']
+    //         };
+    //         const autocomplete = new window.google.maps.places.Autocomplete(courseSearch.current,options);
+    //         courseSearch.current.focus();
+    //     }
+    // });
+
+    function autocompleteItemClick(i) {
+        courseSearch.current.value = i.name;
+        setAutoMatches([]);
+        addBtn.current.classList.remove("disable-btn");
+    }
 
     /* JSX code to render the component */
     if (!showDialog) {
@@ -108,7 +137,7 @@ function CoursesMode() {
                 <FontAwesomeIcon icon="map-pin" />&nbsp;Add Course</button>
             </>
         );
-    } else {
+    } else { //showDialog!
       return (
         <div id="coursesModeDialog" ref={dialog} tabIndex="0"
             className="action-dialog centered" role="dialog" 
@@ -116,15 +145,23 @@ function CoursesMode() {
             onKeyDown={handleKeyPress}>
             <h1>Add Course</h1>
             <div className="mb-3 centered">
-                <label htmlFor="courseSearch" className="form-label">Search for Course:<br/>
-                    <input id="courseSearch" ref={courseSearch} type="text" className="form-control-lg centered"
-                     placeholder="Enter a golf course" aria-describedby="courseDescr"/>
-                </label>  
+                <label htmlFor="courseSearch" className="form-label">Search for Course:</label><br/>
+                <div className="autocomplete-wrapper">
+                    <input id="courseSearch" ref={courseSearch} type="text" className="form-control-lg centered autocomplete-input"
+                            placeholder="Enter a golf course" aria-describedby="courseDescr"/>
+                    <div className="autocomplete-results-wrapper"> 
+                        <ul className="autocomplete-results">
+                        {autoMatches.map((item) => {
+                            return (<li className="autocomplete-item" onClick={()=>autocompleteItemClick(item)}>{item.name}</li>);
+                        })}
+                        </ul>
+                    </div>
+                </div>
             </div>
             <div className="mode-page-btn-container">
             <button id="coursesModeAddBtn" ref ={addBtn} tabIndex="0"
-                    className="mode-page-btn action-dialog action-button" 
-                    type="button"onClick={handleClick} 
+                    className="mode-page-btn action-dialog action-button disable-btn" 
+                    type="button" onClick={handleClick} 
                     onKeyDown={handleKeyPress}>Add Course</button>
             <button id="coursesModeCancelBtn" ref={cancelBtn} tabIndex="0"
                     className="mode-page-btn action-dialog cancel-button"

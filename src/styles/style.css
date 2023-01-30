@@ -383,3 +383,40 @@ cursor: pointer;
    margin-left: auto;
    vertical-align: middle;
 }
+
+.autocomplete-input {
+    position: relative;
+    display: inline-block;
+}
+
+.autocomplete-wrapper {
+    position: relative;
+    display: inline-block;
+}
+.autocomplete-results-wrapper {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  text-align: left;
+}
+
+.autocomplete-results {
+  list-style-type: none; /* Remove bullets */
+  padding: 0; /* Remove padding */
+  margin: 0; /* Remove margins */
+  z-index: 1000;
+}
+
+.autocomplete-item {
+    width: 100%;
+    outline: 1px solid lightgray;
+}
+
+.autocomplete-item:hover {
+    background-color:#f0f0f0;
+}
+
+.disable-btn {
+    pointer-events: none;
+    background-color: lightgray;
+}
