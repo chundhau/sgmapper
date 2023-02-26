@@ -1,0 +1,195 @@
+ /*************************************************************************
+ * File: coursesModeAddDialog.js
+ * This file defines the CoursesMode react component, which implements
+ * SpeedScore's "Courses" mode
+ ************************************************************************/
+ import {useState, useRef} from 'react';
+ 
+ export default function CoursesModeAddDialog({closeDialog}) {
+     const [autocomplete, setAutocomplete] = 
+       useState({boxContents: "", suggestions: [], courseChosen: null});
+     const dialog = useRef();
+     const addBtn = useRef();
+     const cancelBtn = useRef();
+     const courseSearch = useRef();
+     const autocompleteService = new window.google.maps.places.AutocompleteService();
+     let  autocompleteSessionToken = null; //null == no current session
+     let newSearchValue = "";
+ 
+     /*************************************************************************
+      * @function handleClick 
+      * @Desc 
+      * When the user clicks on "Add Course" button, invoke the parent
+      * component's "closeDialog()" function prop to close the dialog, 
+      * passing in the course info to add the course to the 
+      * database.
+      * When the user clicks on the "Cancel" button, invoke the parent
+      * component's "closeDialog()" function prop to close the dialog,
+      * passing in null to indicate no course should be added to the
+      * database.
+      *************************************************************************/
+     //function handleClick() {
+     //   setAutocomplete({boxContents: "", suggestions: []});
+     //   closeDialog();
+     // }
+ 
+     /*************************************************************************
+      * @function handleAutocompleteItemClick 
+      * @Desc 
+      * When the user clicks on an item in the autocomplete dropdown, we 
+      * place that item in the autocomplete box and set the list of automatches to
+      * empty (signifying the end of an autocomplete session).
+      * This forces a re-render.  
+      *************************************************************************/
+     function handleAutocompleteItemClick(item) {
+         autocompleteSessionToken = null; //Session is over
+         setAutocomplete({boxContents: item.name, suggestions: [], courseChosen: item}); //Force re-render    
+     }
+ 
+     /*************************************************************************
+      * @function updateAutocomplete
+      * @param suggestions, an array of suggestions returned by getPlacePredictions()
+      * @Desc status, the status returned by getPlacePredictions()
+      * This is the function called by the Google Places API 
+      * getPlacePredictions() function after it retrieves the suggestions based on
+      * the latest contents of the autocomplete field. We update the 
+      * autocompleteMatches state variable with the latest suggestions, triggering a 
+      * re-rendering of the component.
+      *************************************************************************/
+     function updateAutocomplete(suggestions, status) {
+         if (status !== window.google.maps.places.PlacesServiceStatus.OK || 
+             !suggestions) {
+             setAutocomplete({boxContents: newSearchValue, suggestions: [], courseChosen: null});
+             return;
+         }
+         let filteredSuggestions = [];
+         suggestions.forEach((suggestion) => {
+             const items = suggestion.description.split(",");
+             if (items[0].includes("Golf") && 
+                 (items[0].includes("Course") || items[0].includes("Links") || 
+                     items[0].includes("Resort") || items[0].includes("Club")) &&
+                     !items[0].includes("Disc") && !items[0].includes("Academy") &&
+                     !items[0].includes("Driving Range"))
+             {
+                 filteredSuggestions.push({name: suggestion.description, id: suggestion.place_id});
+             }
+         });
+         setAutocomplete({boxContents: newSearchValue, 
+                          suggestions: filteredSuggestions, 
+                          courseChosen: null}); //force re-render
+     }
+ 
+     /*************************************************************************
+      * @function handleKeyPress 
+      * @Desc 
+      * When the user presses a key, check if it is the tab, enter, or escape
+      * key (the three keys we care about). If so, determine which element had
+      * the focus and act accordingly: If tab or shift-tab, then shift the focus
+      * to next or previous element. If Enter, then call upon handleClick().
+      *************************************************************************/
+     async function handleKeyPress(event) {   
+         //event.preventDefault();
+         if (event.code === "Escape") {
+             closeDialog(null);
+             return;
+         } 
+         if (event.code === "Enter" && (document.activeElement === addBtn.current || document.activeElement === cancelBtn.current)) {
+            closeDialog(autocomplete.courseChosen);
+             return;
+         }
+         if (document.activeElement === dialog.current && event.code === "Tab" && event.shiftKey) {
+                 cancelBtn.current.focus();
+                 return;
+         }
+         if (document.activeElement === dialog.current && event.code === "Tab") {
+             addBtn.current.focus();
+             return;
+         }
+         if (document.activeElement === addBtn.current && event.code === "Tab" && event.shiftKey) {
+             dialog.current.focus();
+             event.stopPropagation();
+             return;
+         }
+         if (document.activeElement === addBtn.current && event.code === "Tab") {
+             cancelBtn.current.focus();
+             event.stopPropagation();
+             return;
+         }
+         if (document.activeElement === cancelBtn.current && event.code === "Tab" &&  event.shiftKey) {
+             addBtn.current.focus();
+             event.stopPropagation();
+             return;
+         }
+         if (document.activeElement === cancelBtn.current && event.code === "Tab") {
+             dialog.current.focus();
+             event.stopPropagation();
+             return;
+         }
+     }
+ 
+     function handleAutocompleteChange(event) {
+         newSearchValue = event.target.value;
+         if (newSearchValue === "") {
+             setAutocomplete({boxContents: "", suggestions: [], courseChosen: null});
+             return;
+         }
+         if (autocompleteSessionToken === null) { //start new session
+             autocompleteSessionToken = new window.google.maps.places.AutocompleteSessionToken();
+         }
+         autocompleteService.getPlacePredictions({
+             input: newSearchValue + " Golf",
+             types: ['establishment'],
+             sessionToken: autocompleteSessionToken}, 
+             updateAutocomplete); 
+     }
+ 
+     /* JSX code to render the component */
+    return (
+        <div id="coursesModeDialog" ref={dialog} tabIndex="0"
+            className="action-dialog centered" role="dialog" 
+            aria-modal="true" aria-labelledby="newCourseHeader" 
+            onKeyDown={handleKeyPress}>
+            <h1>Add Course</h1>
+            <div className="mb-3 centered">
+                <label htmlFor="courseSearch" className="form-label">Search for Course:</label><br/>
+                <div className="autocomplete-wrapper">
+                    <input id="courseSearch" 
+                            ref={courseSearch} type="text" 
+                            className="form-control-lg centered autocomplete-input"
+                            placeholder="Enter a golf course" 
+                            aria-describedby="courseSearchDescr"
+                            value={autocomplete.boxContents}
+                            onChange={handleAutocompleteChange} />
+                    <div className="autocomplete-results-wrapper"> 
+                        <ul className="autocomplete-results">
+                            {autocomplete.suggestions.map((item) => {
+                                return (
+                                    <li key={item.id} 
+                                        className="autocomplete-item" 
+                                        onClick={()=>handleAutocompleteItemClick(item)}>
+                                        {item.name}
+                                        {/* List of results go here */}
+                                    </li>);
+                            })}
+                        </ul>
+                    </div>
+                </div>
+                <div id="courseSearchDescr" className="form-text">
+                    Enter a golf course to search for 
+                </div>
+            </div>
+            <div className="mode-page-btn-container">
+            <button id="coursesModeAddBtn" ref ={addBtn} tabIndex="0"
+                className={autocomplete.courseChosen != null ? 
+                        "mode-page-btn action-dialog action-button" : 
+                        "mode-page-btn action-dialog action-button disable-btn"}
+                type="button" onClick={() => closeDialog(autocomplete.courseChosen)} 
+                onKeyDown={handleKeyPress}>Add Course</button>
+            <button id="coursesModeCancelBtn" ref={cancelBtn} tabIndex="0"
+                className="mode-page-btn action-dialog cancel-button"
+                type="button" onClick={() => closeDialog(null)}
+                onKeyDown={handleKeyPress}>Cancel</button>
+            </div>
+        </div> 
+    );
+}
