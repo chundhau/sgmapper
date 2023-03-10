@@ -4,7 +4,7 @@
  * SpeedScore's "Courses" mode
  ************************************************************************/
 import {useState} from 'react';
-import CoursesModeAddDialog from './CoursesModeAddDialog.js';
+import CoursesModeAdd from './CoursesModeAdd.js';
 import CoursesModeMain from './CoursesModeMain.js';
 
 
@@ -24,7 +24,7 @@ export default function CoursesMode() {
      * re-rendering of the component.
      *************************************************************************/
     function openAddCourseDialog() {
-        window.transitionFromDialog(null);
+        window.transitionToDialog(null,"Add Course",function(){});
         setShowDialog(true);
     }
 
@@ -48,7 +48,7 @@ export default function CoursesMode() {
     /* JSX code to render the component */
     return(
       (showDialog) ?
-         <CoursesModeAddDialog closeDialog={closeAddCourseDialog} /> :
+         <CoursesModeAdd closeDialog={closeAddCourseDialog} /> :
          <CoursesModeMain openDialog={openAddCourseDialog} />
     );
 }  

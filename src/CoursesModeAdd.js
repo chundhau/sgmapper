@@ -1,11 +1,11 @@
  /*************************************************************************
- * File: coursesModeAddDialog.js
- * This file defines the CoursesMode react component, which implements
- * SpeedScore's "Courses" mode
+ * File: coursesModeAdd.js
+ * This file defines the CoursesModeAdd react component, which implements
+ * the "Add Course" dialog
  ************************************************************************/
  import {useState, useRef} from 'react';
  
- export default function CoursesModeAddDialog({closeDialog}) {
+ export default function CoursesModeAdd({closeDialog}) {
      const [autocomplete, setAutocomplete] = 
        useState({boxContents: "", suggestions: [], courseChosen: null});
      const dialog = useRef();
@@ -127,6 +127,13 @@
          }
      }
  
+      /*************************************************************************
+      * @function handleAutocompleteChange
+      * @param event, the input event 
+      * @desc 
+      * When the user types into the autcomplete box, update the autocomplete
+      * suggestions.
+      *************************************************************************/
      function handleAutocompleteChange(event) {
          newSearchValue = event.target.value;
          if (newSearchValue === "") {
