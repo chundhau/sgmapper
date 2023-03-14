@@ -137,20 +137,14 @@
      function getDetailsCallback(course, status) {
         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
             const courseDetails = {
-                address: {
-                    formattedAddress: course.formatted_address,
-                    street: course.address_components.filter(item => item.types.includes("street_number"))[0].short_name + " " +
-                            course.address_components.filter(item => item.types.includes("route"))[0].short_name,
-                    city: course.address_components.filter(item => item.types.includes("locality"))[0].short_name,
-                    state: course.address_components.filter(item => item.types.includes("administrative_area_level_1"))[0].short_name,
-                    postalCode: course.address_components.filter(item => item.types.includes("postal_code"))[0].long_name,
-                    country: course.address_components.filter(item => item.types.includes("country"))[0].short_name
-                },
+                address: course.formatted_address,
+                state: course.address_components.filter(item => item.types.includes("administrative_area_level_1"))[0].short_name,
+                country: course.address_components.filter(item => item.types.includes("country"))[0].short_name,
                 geoLocation: course.geometry.location,
                 viewport: course.geometry.viewport,
                 phoneNumber: course.formatted_phone_number,
                 website: course.website,
-                googleUrl: course.url,
+                mapsUrl: course.url,
                 images: course.photos.map(photo => photo.getUrl()),
             };
             const mergedCourse = Object.assign(autocomplete.courseChosen, courseDetails); //Merge
