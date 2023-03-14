@@ -134,6 +134,16 @@
              updateAutocomplete); 
      }
 
+      /*************************************************************************
+      * @function getDetailsCallback
+      * @param course, an object containing the course details from the call 
+      * to PlacesService.getDetails()
+      * @param status, the status of the call to getDetails()
+      * @desc
+      * This function is called from PlacesService.getDetails to return the
+      * results. If status is OK, we can use the results to build an object
+      * containing all relevant course info obtainable from Google.
+      *************************************************************************/
      function getDetailsCallback(course, status) {
         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
             const courseDetails = {
@@ -147,8 +157,8 @@
                 mapsUrl: course.url,
                 images: course.photos.map(photo => photo.getUrl()),
             };
-            const mergedCourse = Object.assign(autocomplete.courseChosen, courseDetails); //Merge
-            closeDialog(mergedCourse)
+            const mergedCourse = Object.assign(autocomplete.courseChosen, courseDetails);
+            closeDialog(mergedCourse);
         } else {
             alert("Course could not be added to database. Unknown error occurred");
             closeDialog(null);
