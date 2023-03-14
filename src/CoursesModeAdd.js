@@ -12,26 +12,10 @@
      const addBtn = useRef();
      const cancelBtn = useRef();
      const courseSearch = useRef();
+     const attrib = useRef();
      const autocompleteService = new window.google.maps.places.AutocompleteService();
      let  autocompleteSessionToken = null; //null == no current session
      let newSearchValue = "";
- 
-     /*************************************************************************
-      * @function handleClick 
-      * @Desc 
-      * When the user clicks on "Add Course" button, invoke the parent
-      * component's "closeDialog()" function prop to close the dialog, 
-      * passing in the course info to add the course to the 
-      * database.
-      * When the user clicks on the "Cancel" button, invoke the parent
-      * component's "closeDialog()" function prop to close the dialog,
-      * passing in null to indicate no course should be added to the
-      * database.
-      *************************************************************************/
-     //function handleClick() {
-     //   setAutocomplete({boxContents: "", suggestions: []});
-     //   closeDialog();
-     // }
  
      /*************************************************************************
       * @function handleAutocompleteItemClick 
@@ -149,6 +133,45 @@
              sessionToken: autocompleteSessionToken}, 
              updateAutocomplete); 
      }
+
+     function getDetailsCallback(course, status) {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+            const courseDetails = {
+                address: {
+                    formattedAddress: course.formatted_address,
+                    street: course.address_components.filter(item => item.types.includes("street_number"))[0].short_name + " " +
+                            course.address_components.filter(item => item.types.includes("route"))[0].short_name,
+                    city: course.address_components.filter(item => item.types.includes("locality"))[0].short_name,
+                    state: course.address_components.filter(item => item.types.includes("administrative_area_level_1"))[0].short_name,
+                    postalCode: course.address_components.filter(item => item.types.includes("postal_code"))[0].long_name,
+                    country: course.address_components.filter(item => item.types.includes("country"))[0].short_name
+                },
+                geoLocation: course.geometry.location,
+                viewport: course.geometry.viewport,
+                phoneNumber: course.formatted_phone_number,
+                website: course.website,
+                googleUrl: course.url,
+                images: course.photos.map(photo => photo.getUrl()),
+            };
+            const mergedCourse = Object.assign(autocomplete.courseChosen, courseDetails); //Merge
+            closeDialog(mergedCourse)
+        } else {
+            alert("Course could not be added to database. Unknown error occurred");
+            closeDialog(null);
+        }   
+     }
+
+     function getCourseDetailsAndClose() {
+        const placesService = new window.google.maps.places.PlacesService(attrib.current);
+        const placesDetails = {
+            placeId: autocomplete.courseChosen.id,
+            fields: ['address_components','formatted_address',
+                     'formatted_phone_number','geometry','photos',
+                     'url','website'],
+            sessionToken: autocompleteSessionToken
+        }
+        placesService.getDetails(placesDetails,getDetailsCallback);
+     }
  
      /* JSX code to render the component */
     return (
@@ -175,7 +198,6 @@
                                         className="autocomplete-item" 
                                         onClick={()=>handleAutocompleteItemClick(item)}>
                                         {item.name}
-                                        {/* List of results go here */}
                                     </li>);
                             })}
                         </ul>
@@ -184,13 +206,14 @@
                 <div id="courseSearchDescr" className="form-text">
                     Enter a golf course to search for 
                 </div>
+                <div id="attributions" ref={attrib}></div>
             </div>
             <div className="mode-page-btn-container">
             <button id="coursesModeAddBtn" ref ={addBtn} tabIndex="0"
                 className={autocomplete.courseChosen != null ? 
                         "mode-page-btn action-dialog action-button" : 
                         "mode-page-btn action-dialog action-button disable-btn"}
-                type="button" onClick={() => closeDialog(autocomplete.courseChosen)} 
+                type="button" onClick={getCourseDetailsAndClose} 
                 onKeyDown={handleKeyPress}>Add Course</button>
             <button id="coursesModeCancelBtn" ref={cancelBtn} tabIndex="0"
                 className="mode-page-btn action-dialog cancel-button"

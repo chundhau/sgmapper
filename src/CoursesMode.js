@@ -10,18 +10,32 @@ import CoursesModeMain from './CoursesModeMain.js';
 
 export default function CoursesMode() {
     const [showDialog, setShowDialog] = useState(false);
+    const coursesDB = JSON.parse(localStorage.getItem("courses"));
+    const [courses, setCourses] = useState(coursesDB == null ? [] : coursesDB);
+    
 
-    function addCourse(couurse) {
-        //TO DO: Place course in database
+    /*************************************************************************
+     * @function addCourse
+     * @param course, an object containing course info merged the Google 
+     * 'getPlacePredictions() and getDetails() functions.  
+     * @Desc 
+     * Add the object to the courses database in local storage, and update
+     * courses set state.
+     *************************************************************************/
+    function addCourse(course) {
+        const newCourses = [...courses,course]; //build new object
+        localStorage.setItem("courses",JSON.stringify(newCourses));
+        setCourses([course,...courses]);
     }
-
+    
+    
     /*************************************************************************
      * @function openAddCourseDialog 
      * @Desc 
-     * When the user opens the "Add Course" dialog, invoke the 
-     * external JavaScript function transitionFromDialog redisplay banner bar 
-     * and mode tabs. Then toggle the showDialog state variable to force a 
-     * re-rendering of the component.
+     * When the user opens the "Add Course" dialog, call the 
+     * external JavaScript function transitionToDialog hide banner bar 
+     * and mode tabs. Finally, set the showDialog state variable to true to
+     * re-render the component to display the "Add Course" dialog.
      *************************************************************************/
     function openAddCourseDialog() {
         window.transitionToDialog(null,"Add Course",function(){});
