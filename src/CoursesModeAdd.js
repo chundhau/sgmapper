@@ -165,6 +165,12 @@
         }   
      }
 
+     /*************************************************************************
+      * @function getCourseDetailsAndClose
+      * @desc
+      * When the user clicks on the "Add Course" button, we use the Google
+      * PlacesService API
+      *************************************************************************/
      function getCourseDetailsAndClose() {
         const placesService = new window.google.maps.places.PlacesService(attrib.current);
         const placesDetails = {

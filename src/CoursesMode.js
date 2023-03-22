@@ -25,7 +25,7 @@ export default function CoursesMode() {
     function addCourse(course) {
         const newCourses = [...courses,course]; //build new object
         localStorage.setItem("courses",JSON.stringify(newCourses));
-        setCourses([course,...courses]);
+        setCourses(newCourses);
     }
     
     
