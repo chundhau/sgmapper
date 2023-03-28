@@ -148,14 +148,13 @@
         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
             const courseDetails = {
                 address: course.formatted_address,
-                state: course.address_components.filter(item => item.types.includes("administrative_area_level_1"))[0].short_name,
-                country: course.address_components.filter(item => item.types.includes("country"))[0].short_name,
+                state: course.address_components.filter(item => item.types.includes("administrative_area_level_1"))[0].long_name,
+                country: course.address_components.filter(item => item.types.includes("country"))[0].long_name,
                 geoLocation: course.geometry.location,
                 viewport: course.geometry.viewport,
                 phoneNumber: course.formatted_phone_number,
                 website: course.website,
-                mapsUrl: course.url,
-                images: course.photos.map(photo => photo.getUrl()),
+                mapsUrl: course.url
             };
             const mergedCourse = Object.assign(autocomplete.courseChosen, courseDetails);
             closeDialog(mergedCourse);
@@ -176,8 +175,7 @@
         const placesDetails = {
             placeId: autocomplete.courseChosen.id,
             fields: ['address_components','formatted_address',
-                     'formatted_phone_number','geometry','photos',
-                     'url','website'],
+                     'formatted_phone_number','geometry','url','website'],
             sessionToken: autocompleteSessionToken
         }
         placesService.getDetails(placesDetails,getDetailsCallback);

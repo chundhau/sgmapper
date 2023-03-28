@@ -63,6 +63,6 @@ export default function CoursesMode() {
     return(
       (showDialog) ?
          <CoursesModeAdd closeDialog={closeAddCourseDialog} /> :
-         <CoursesModeMain openDialog={openAddCourseDialog} />
+         <CoursesModeMain openDialog={openAddCourseDialog} courses={courses} />
     );
 }  

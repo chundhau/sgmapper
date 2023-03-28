@@ -384,6 +384,9 @@ cursor: pointer;
    vertical-align: middle;
 }
 
+/*************************************************************************
+* CSS CLASSES FOR AUTOCOMPLETE BOX
+*************************************************************************/
 .autocomplete-input {
     position: relative;
     display: inline-block;
@@ -417,7 +420,18 @@ cursor: pointer;
     background-color:#f0f0f0;
 }
 
+/*************************************************************************
+* CSS CLASS FOR DISABLING A BUTTON
+*************************************************************************/
 .disable-btn {
     pointer-events: none;
     background-color: lightgray;
+}
+
+/*************************************************************************
+* CSS CLASS FOR INFO BUTTONS IN COURSES MODE
+*************************************************************************/
+.info-btn {
+    background-color: var(--main-color);
+    color: white;
 }
