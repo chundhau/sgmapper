@@ -11,7 +11,7 @@ import CoursesModeMain from './CoursesModeMain.js';
 export default function CoursesMode() {
     const [showDialog, setShowDialog] = useState(false);
     const coursesDB = JSON.parse(localStorage.getItem("courses"));
-    const [courses, setCourses] = useState(coursesDB == null ? [] : coursesDB);
+    const [courses, setCourses] = useState(coursesDB == null ? {} : coursesDB);
     
 
     /*************************************************************************
@@ -23,7 +23,7 @@ export default function CoursesMode() {
      * courses set state.
      *************************************************************************/
     function addCourse(course) {
-        const newCourses = [...courses,course]; //build new object
+        const newCourses = {...courses,[course.id]: course}; //build new object
         localStorage.setItem("courses",JSON.stringify(newCourses));
         setCourses(newCourses);
     }

@@ -432,6 +432,13 @@ cursor: pointer;
 * CSS CLASS FOR INFO BUTTONS IN COURSES MODE
 *************************************************************************/
 .info-btn {
-    background-color: var(--main-color);
     color: white;
+    background-color: var(--main-color);
+    margin-right: 6px;
+}
+
+.info-btn:hover {
+    border: 1px solid var(--main-color);
+    color: var(--main-color);
+    background-color: white;
 }
