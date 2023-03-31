@@ -19,7 +19,7 @@ export default function CoursesModeMain({openDialog,courses}) {
     <h1 className="mode-page-header">Courses</h1>
     <div className="table-responsive">
     <table id="coursesTable" className="table caption-top mx-auto w-auto">
-          <caption className="caption-center" aria-live="polite">{"Displaying all " + Object.keys(courses).length + " golf courses in SpeedScore's database"}</caption>
+          <caption id="roundsTableCaption" aria-live="polite">{"Displaying all " + Object.keys(courses).length + " golf courses in SpeedScore's database"}</caption>
           <thead>
             <tr scope="col" aria-label="Course picture"></tr>
             <tr scope="col" aria-label="Course info"></tr>
@@ -27,41 +27,31 @@ export default function CoursesModeMain({openDialog,courses}) {
           <tbody>
             {Object.keys(courses).map((c) => {
                 return [
-                    <tr key={c} >
+                    <tr key={c} className="d-flex">
                       <td><img src={DefaultGolfCoursePic}
-                               alt="Default golf course image"
-                               className="scaled-image" 
-                                />
+                               alt={"Default golf course image"} 
+                               width="300" height="165" />
                       </td>
                       <td tabIndex="0">
                         <strong>{courses[c].name.substring(0,courses[c].name.search(","))}</strong><br/>
                         {courses[c].address}<br/><br/>
-                        <div class="info-btn-outer-container">
-                            <div class="info-btn-inner-container">
-                            <a href={courses[c].website} target="_blank" className="btn btn-sm info-btn">
-                                <FontAwesomeIcon icon="globe"/>
+                            <a href={courses[c].website} target="_blank" className="btn btn-sm info-btn"
+                               aria-label={`Visit ${courses[c].name.substring(0, courses[c].name.search(","))} website`}>
+                                <i className="fa fa-globe"/>
                                 &nbsp;Web
                             </a>
-                            </div>
-                            <div class="info-btn-inner-container">
                             <a href={courses[c].mapsUrl} target="_blank" className="btn btn-sm info-btn">
-                                <FontAwesomeIcon icon="map" />
+                                <i className="fas fa-map"/>
                                 &nbsp;Map
                             </a>
-                            </div>
-                            <div class="info-btn-inner-container">
                             <a href ={"tel:" + courses[c].phoneNumber} target="_blank" className="btn btn-sm info-btn">
-                            <FontAwesomeIcon icon="phone" />
+                            <i className="fas fa-phone"/>
                             &nbsp;Call
                             </a>
-                            </div>
-                            <div class="info-btn-inner-container">
                             <button type="button" className="btn btn-sm info-btn" onClick={() => viewCourseDetails(c)}>
-                            <FontAwesomeIcon icon="eye" />
+                            <i className="fas fa-regular fa-eye"></i>
                             &nbsp;Details
                             </button>
-                            </div>
-                        </div>
                       </td>
                     </tr> 
                 ]
