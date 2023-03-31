@@ -4,9 +4,13 @@ import './styles/style.css';
 import CoursesMode from './CoursesMode';
 import reportWebVitals from './reportWebVitals';
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faPlus, faMapPin } from '@fortawesome/free-solid-svg-icons'
+import { faPlus, faMapPin, faGlobe, faMap, faPhone, faEye } from '@fortawesome/free-solid-svg-icons'
 library.add(faPlus)
 library.add(faMapPin)
+library.add(faGlobe)
+library.add(faMap)
+library.add(faPhone)
+library.add(faEye)
 
 const coursesDiv = ReactDOM.createRoot(document.getElementById('coursesModeTab'));
 coursesDiv.render(
