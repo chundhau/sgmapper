@@ -144,25 +144,26 @@
       * results. If status is OK, we can use the results to build an object
       * containing all relevant course info obtainable from Google.
       *************************************************************************/
-     function getDetailsCallback(course, status) {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-            const courseDetails = {
-                address: course.formatted_address,
-                state: course.address_components.filter(item => item.types.includes("administrative_area_level_1"))[0].long_name,
-                country: course.address_components.filter(item => item.types.includes("country"))[0].long_name,
-                geoLocation: course.geometry.location,
-                viewport: course.geometry.viewport,
-                phoneNumber: course.formatted_phone_number,
-                website: course.website,
-                mapsUrl: course.url
-            };
-            const mergedCourse = Object.assign(autocomplete.courseChosen, courseDetails);
-            closeDialog(mergedCourse);
-        } else {
-            alert("Course could not be added to database. Unknown error occurred");
-            closeDialog(null);
-        }   
-     }
+function getDetailsCallback(course, status) {
+if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+    const courseDetails = {
+        shortName: autocomplete.courseChosen.name.substring(0, autocomplete.courseChosen.name.search(",")),
+        address: course.formatted_address,
+        state: course.address_components.filter(item => item.types.includes("administrative_area_level_1"))[0].long_name,
+        country: course.address_components.filter(item => item.types.includes("country"))[0].long_name,
+        geoLocation: course.geometry.location,
+        viewport: course.geometry.viewport,
+        phoneNumber: course.formatted_phone_number,
+        website: course.website,
+        mapsUrl: course.url
+    };
+    const mergedCourse = Object.assign(autocomplete.courseChosen, courseDetails);
+    closeDialog(mergedCourse);
+} else {
+    alert("Course could not be added to database. Unknown error occurred");
+    closeDialog(null);
+}   
+}
 
      /*************************************************************************
       * @function getCourseDetailsAndClose
