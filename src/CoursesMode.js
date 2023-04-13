@@ -3,16 +3,16 @@
  * This file defines the CoursesMode react component, which implements
  * SpeedScore's "Courses" mode
  ************************************************************************/
-import {useState} from 'react';
+import {useState, useRef} from 'react';
 import CoursesModeAdd from './CoursesModeAdd.js';
 import CoursesModeMain from './CoursesModeMain.js';
+import CoursesModeSearch from './CoursesModeSearchFilter.js';
 
 
 export default function CoursesMode() {
     const [showDialog, setShowDialog] = useState(false);
     const coursesDB = JSON.parse(localStorage.getItem("courses"));
     const [courses, setCourses] = useState(coursesDB == null ? {} : coursesDB);
-    
 
     /*************************************************************************
      * @function addCourse

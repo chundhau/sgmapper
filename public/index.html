@@ -47,15 +47,18 @@
         alt="SpeedScore logo">
         <h1 id="appName" class="navbar-title">SpeedScore</h1> 
         <div class="navbar-right-items">
-          <input id="searchBox" class="form-control hidden" 
+          <input id="searchRounds" class="form-control hidden" 
                  aria-label="Search Rounds" size="30"
-                 type="search" value="" id="searchRounds"
+                 type="search" value=""
                  onkeyup="searchRoundsTable(this.value)" 
                  onsearch="searchRoundsTable(this.value)">
           <button  id="searchBtn" type="button" class="navbar-btn hidden" title="Search" 
             aria-label="Search">
             <span class="navbar-btn-icon fas fa-search"></span>
           </button>
+          <!-- <div id="coursesModeSearchDiv" class="navbar-right-items hidden"> -->
+            <!-- For React coursesModeSearch component -->
+          <!-- </div> -->
           <button id="profileBtn" type="button" 
             class="navbar-btn navbar-profile-btn hidden" 
             aria-label="Account and Profile Settings">
@@ -787,7 +790,7 @@
         <script src="scripts/roundsMode.js"></script>
         <script src="scripts/modeActions.js"></script>
         <script src="https://www.w3schools.com/lib/w3.js"></script>
-        <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCuhyT2mzmSEpgsUgHiLm8EqmBhVCXJN2g&libraries=places&callback=f">
+        <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxH7V9MJuu-ZcensrEjZxO5_0koVMokIs&libraries=places&callback=f">
 </script>
        </body>
   </body>

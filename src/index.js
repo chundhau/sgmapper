@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './styles/style.css';
+import CoursesModeSearch from './CoursesModeSearchFilter';
 import CoursesMode from './CoursesMode';
 import reportWebVitals from './reportWebVitals';
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -13,6 +14,12 @@ library.add(faPhone)
 library.add(faEye)
 
 const coursesDiv = ReactDOM.createRoot(document.getElementById('coursesModeTab'));
+//const coursesSearchDiv = ReactDOM.createRoot(document.getElementById('coursesModeSearchDiv'));
+// coursesSearchDiv.render(
+//   <React.StrictMode>
+//     <CoursesModeSearch />
+//   </React.StrictMode>
+// );
 coursesDiv.render(
   <React.StrictMode>
     <CoursesMode />

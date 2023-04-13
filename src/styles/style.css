@@ -505,3 +505,14 @@ cursor: pointer;
     width: auto;
     border-bottom: 6px;
 }
+
+.search-box-centered {
+    display: flex;
+    text-align: center;
+    justify-content: center;
+}
+
+.radio-centered {
+    display: flex;
+    justify-content: center;
+}
