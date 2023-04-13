@@ -21,13 +21,16 @@
  * @global focusedMode (index of mode with current focus)
  *************************************************************************/
  function switchMode(newMode) {
+    const currentMode = GlobalCurrentMode.get();
+    //Make sure search box is hidden
+    GlobalSearchBox.classList.add("hidden");
     //Switch mode button
-    GlobalModeTabButtons[GlobalCurrentMode.get()].classList.remove("modetab-selected");
-    GlobalModeTabButtons[GlobalCurrentMode.get()].setAttribute("aria-selected",false);
+    GlobalModeTabButtons[currentMode].classList.remove("modetab-selected");
+    GlobalModeTabButtons[currentMode].setAttribute("aria-selected",false);
     GlobalModeTabButtons[newMode].classList.add("modetab-selected");
     GlobalModeTabButtons[newMode].setAttribute("aria-selected",true);
     //Switch tab panel
-    GlobalModeTabPanels[GlobalCurrentMode.get()].classList.add("hidden");
+    GlobalModeTabPanels[currentMode].classList.add("hidden");
     GlobalModeTabPanels[newMode].classList.remove("hidden");
     //Switch app title
     document.title = "SpeedScore: " + GlobalModeNames[newMode];

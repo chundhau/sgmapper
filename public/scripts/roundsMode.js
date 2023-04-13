@@ -472,7 +472,7 @@ if (numVisibleRows == 1) {
 * @global searchBtn: The search button
 *************************************************************************/
 GlobalSearchBtn.addEventListener("click",function() {
-if (GlobalCurrentMode.get() === 1) {
+if (GlobalCurrentMode.get() === 1) { //"Rounds" mode
     if (GlobalSearchBox.classList.contains("hidden")) {
         GlobalSearchBtn.setAttribute("aria-label","Close rounds search");
         GlobalSearchBox.classList.remove("hidden");

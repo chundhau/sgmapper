@@ -384,6 +384,9 @@ cursor: pointer;
    vertical-align: middle;
 }
 
+/*************************************************************************
+* CSS CLASSES FOR AUTOCOMPLETE BOX
+*************************************************************************/
 .autocomplete-input {
     position: relative;
     display: inline-block;
@@ -417,7 +420,99 @@ cursor: pointer;
     background-color:#f0f0f0;
 }
 
+/*************************************************************************
+* CSS CLASS FOR DISABLING A BUTTON
+*************************************************************************/
 .disable-btn {
     pointer-events: none;
     background-color: lightgray;
+}
+
+/*************************************************************************
+* CSS CLASS FOR COURSE TABLE ITEMS IN COURSES MODE
+*************************************************************************/
+.info-btn {
+    color: white;
+    background-color: var(--main-color);
+    margin-right: 6px;
+    margin-bottom: 6px;
+    height: 30px;
+    width: 80px;
+}
+
+.info-btn:hover {
+    border: 1px solid var(--main-color);
+    color: var(--main-color);
+    background-color: white;
+}
+
+.info-btn-outer-container {
+    display: flex; 
+    flex-wrap: wrap
+}
+
+.info-btn-inner-container {
+  flex: 1;
+}
+
+@media (max-width: 476px) {
+  .info-btn-inner-container {
+    flex: 0 1 calc(50%);
+    margin-bottom: 5px;
+  }
+}
+
+.caption-center {
+    text-align: center;
+}
+
+.scaled-image {
+    width: 300px;
+}
+
+@media (max-width: 675px) {
+    .scaled-image {
+        width: 200px;
+    }
+}
+
+@media (max-width: 575px) {
+    .scaled-image {
+        width: 150px;
+    }
+}
+
+@media (max-width: 525px) {
+    .scaled-image {
+        width: 100px;
+    }
+}
+
+@media (max-width: 200px) {
+    .scaled-image {
+        width: 50px;
+    }
+}
+
+@media (max-width: 150px) {
+    .scaled-image {
+        width: 0px;
+    }
+}
+
+.fluid-image {
+    max-width: 100%;
+    width: auto;
+    border-bottom: 6px;
+}
+
+.search-box-centered {
+    display: flex;
+    text-align: center;
+    justify-content: center;
+}
+
+.radio-centered {
+    display: flex;
+    justify-content: center;
 }

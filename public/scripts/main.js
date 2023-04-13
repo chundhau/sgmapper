@@ -82,8 +82,9 @@ const GlobalDialogCancelButtons =
 /*******************************************************/
 /* SEARCH BUTTON, PROFILE BUTTON, SKIP LINK, MODE TABS */
 /*******************************************************/
+const GlobalCoursesSearchDiv = document.getElementById("coursesModeSearchDiv");
 const GlobalSearchBtn = document.getElementById("searchBtn");
-const GlobalSearchBox = document.getElementById("searchBox");
+const GlobalSearchBox = document.getElementById("searchRounds");
 const GlobalProfileBtn = document.getElementById("profileBtn");
 const GlobalProfileBtnImg = document.getElementById("profileBtnImg")
 const GlobalSkipLink = document.getElementById("sLink");
