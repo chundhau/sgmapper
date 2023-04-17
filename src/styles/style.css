@@ -429,7 +429,7 @@ cursor: pointer;
 }
 
 /*************************************************************************
-* CSS CLASS FOR COURSE TABLE ITEMS IN COURSES MODE
+* CSS CLASS FOR COURSES MODE MAIN PAGE
 *************************************************************************/
 .info-btn {
     color: white;
@@ -515,4 +515,36 @@ cursor: pointer;
 .radio-centered {
     display: flex;
     justify-content: center;
+}
+
+/*************************************************************************
+* CSS CLASS FOR COURSES MODE DETAILS PAGE
+*************************************************************************/
+.close-dialog-btn {
+    display: flex;
+    justify-content: center     ;
+}
+
+.image-with-button-container {
+    position: relative;
+	border: 2px solid black;
+    width: fit-content;
+    margin: auto;
+    display: block;
+}
+
+.image-course {
+    width: 300px;
+    height: auto;
+}
+
+.button-overlaid {
+    position: absolute;
+	padding: 8px;
+	background-color: var(--main-color);
+    color: white;
+	border-radius: 24px;
+	bottom: 10px;
+	right: 10px;
+	width: 50px;
 }

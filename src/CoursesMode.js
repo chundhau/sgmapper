@@ -3,10 +3,9 @@
  * This file defines the CoursesMode react component, which implements
  * SpeedScore's "Courses" mode
  ************************************************************************/
-import {useState, useRef} from 'react';
 import CoursesModeAdd from './CoursesModeAdd.js';
 import CoursesModeMain from './CoursesModeMain.js';
-import CoursesModeSearch from './CoursesModeSearchFilter.js';
+import {useState} from 'react';
 
 
 export default function CoursesMode() {
@@ -16,18 +15,32 @@ export default function CoursesMode() {
 
     /*************************************************************************
      * @function addCourse
-     * @param course, an object containing course info merged the Google 
-     * 'getPlacePredictions() and getDetails() functions.  
+     * @param course, an object containing course info from the Google 
+     * 'getPlacePredictions() function.  
      * @Desc 
-     * Add the object to the courses database in local storage, and update
-     * courses set state.
+     * Add the course to the courses database in local storage, and update
+     * courses state variable.
      *************************************************************************/
     function addCourse(course) {
         const newCourses = {...courses,[course.id]: course}; //build new object
         localStorage.setItem("courses",JSON.stringify(newCourses));
         setCourses(newCourses);
     }
-    
+
+    /*************************************************************************
+     * @function updateCourse
+     * @param course, an object containing updated course info from the
+     * obtained from the'Course Details" dialog 
+     * @Desc 
+     * Update the object in the courses database in local storage, and update
+     * courses state variable.
+     *************************************************************************/
+    function updateCourse(course) {
+        const newCourses = {...courses}
+        newCourses[course.id] = course;
+        localStorage.setItem("courses",JSON.stringify(newCourses));
+        setCourses(newCourses);
+    }
     
     /*************************************************************************
      * @function openAddCourseDialog 
@@ -52,17 +65,20 @@ export default function CoursesMode() {
      * re-render the component to display the "main" page.
      *************************************************************************/
     function closeAddCourseDialog(course) {
-        if (course != null) {
+        if (course !== null) {
             addCourse(course);
         } 
         window.transitionFromDialog(null);
         setShowDialog(false);
     }
 
-    /* JSX code to render the component */
     return(
       (showDialog) ?
          <CoursesModeAdd closeDialog={closeAddCourseDialog} /> :
-         <CoursesModeMain openDialog={openAddCourseDialog} courses={courses} />
+         <> 
+           <CoursesModeMain courses={courses} 
+                            updateCourse={updateCourse}
+                            openAddCourseDialog={openAddCourseDialog}/>
+        </> 
     );
 }  

@@ -250,12 +250,12 @@ const GlobalDialogTitles = ["SpeedScore: Post to Feed","SpeedScore: Log Round",
  * It then displays the dialog box and dialog box title.
  * Note: This function is placed in main.js because it is useful to 
  * multiple UI components.
- * @param dialogTitle: The title of the dialog to which to set 
- * document.title
  * @param dialog: A reference to the HTML element containing the dialog;
  * it will be shown by removing the "hidden" class. If dialog is null,
  * we do not hide the mode's tab panel or show the dialog, as we assume
  * that is taken care of elsewhere.
+ * @param dialogTitle: The title of the dialog to which to set 
+ * document.title
  * @param dialogPrepFunc: A reference to a function to call to prepare 
  * the dialog's appearance.
  * @global GlobalSkipLink: The skip link
