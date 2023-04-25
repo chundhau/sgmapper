@@ -19,8 +19,13 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
     const [showEditTextModal, setShowEditTextModal] = useState({show: false});
     const [showEditImageModal, setShowEditImageModal] = useState(false);
     
+    //Ensure all expected course props are present; create them if not
     useEffect(() => {
         const newUpdatedCourse = {...updatedCourse};
+        if (!Object.hasOwn(updatedCourse,'website'))
+            newUpdatedCourse.website = "none";
+        if (!Object.hasOwn(updatedCourse,'mapsUrl'))
+            newUpdatedCourse.mapsUrl = "none";
         if (!Object.hasOwn(updatedCourse,'numHoles'))
             newUpdatedCourse.numHoles = 18;
         if (!Object.hasOwn(updatedCourse,'sgContactName'))
@@ -142,6 +147,30 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
                                      {val: updatedCourse.phoneNumber,
                                       type: "tel",
                                       size: "15",
+                                      emptyAllowed: false})}>
+                    <FontAwesomeIcon icon="edit"/>
+                </button>
+            </div>
+            <label className="bold" htmlFor="sgContact">Website:</label>
+            <div id="website" className="float-center">
+                <div><a href={updatedCourse.website} target="_blank">{updatedCourse.website}</a></div>&nbsp;
+                <button className="btn-theme"
+                         onClick={()=>openTextEditModal("Course Web Site","website",
+                                     {val: updatedCourse.website,
+                                      type: "url",
+                                      size: "50",
+                                      emptyAllowed: false})}>
+                    <FontAwesomeIcon icon="edit"/>
+                </button>
+            </div>
+            <label className="bold" htmlFor="sgContact">Google Maps Page:</label>
+            <div id="website" className="float-center">
+                <div><a href={updatedCourse.mapsUrl} target="_blank">{updatedCourse.mapsUrl}</a></div>&nbsp;
+                <button className="btn-theme"
+                         onClick={()=>openTextEditModal("Course Google Maps Page","mapsUrl",
+                                     {val: updatedCourse.mapsUrl,
+                                      type: "url",
+                                      size: "50",
                                       emptyAllowed: false})}>
                     <FontAwesomeIcon icon="edit"/>
                 </button>
