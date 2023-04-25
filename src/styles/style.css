@@ -520,12 +520,15 @@ cursor: pointer;
 /*************************************************************************
 * CSS CLASS FOR COURSES MODE DETAILS PAGE
 *************************************************************************/
-.close-dialog-btn {
+.float-center {
     display: flex;
-    justify-content: center     ;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 1em;
+    
 }
 
-.image-with-button-container {
+.img-with-button-container {
     position: relative;
 	border: 2px solid black;
     width: fit-content;
@@ -533,12 +536,16 @@ cursor: pointer;
     display: block;
 }
 
-.image-course {
+.bold {
+    font-weight: bold;
+}
+
+.img-course {
     width: 300px;
     height: auto;
 }
 
-.button-overlaid {
+.btn-overlaid {
     position: absolute;
 	padding: 8px;
 	background-color: var(--main-color);
@@ -547,4 +554,32 @@ cursor: pointer;
 	bottom: 10px;
 	right: 10px;
 	width: 50px;
+}
+
+.btn-theme {
+    background-color: var(--main-color);
+    color: white;
+}
+
+.star-no-edit {
+    pointer-events: none;
+}
+
+.star-selected {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: gold
+}
+
+.star-unselected {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: lightgray;
+}
+
+.txt-wrap {
+    white-space: pre-wrap;
+    text-align: left;
 }

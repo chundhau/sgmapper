@@ -11,7 +11,7 @@ import {useState} from 'react';
  ************************************************************************/
 
 export default function CoursesModeMain({courses,updateCourse, openAddCourseDialog}) {  
-  const [filteredCourses, setFilteredCourses] = useState(courses);
+  const [displayedCourses, setDisplayedCourses] = useState(courses);
   const [showCourseDetails, setShowCourseDetails] = useState(null);
 
     function refreshCourses(searchString, searchScope) {
@@ -24,18 +24,20 @@ export default function CoursesModeMain({courses,updateCourse, openAddCourseDial
         } else if (searchScope==="Country" && courses[c].country.toUpperCase().includes(searchString.toUpperCase())) {
           coursesList[c] = courses[c];
         }
-        setFilteredCourses(coursesList);
+        setDisplayedCourses(coursesList);
       });
     }
 
-    function updateCourseDetails(c) {
+    function updateAndCloseCourseDetailsDialog(c) {
       updateCourse(c);
       const updatedCourses = {...courses};
       updatedCourses[showCourseDetails.id] = c;
-      setFilteredCourses(updatedCourses);
+      setDisplayedCourses(updatedCourses);
+      window.transitionFromDialog(null);
+      setShowCourseDetails(null);
     }
 
-    function showCourseDetailsDialog(c) {
+    function openCourseDetailsDialog(c) {
       window.transitionToDialog(null,"View/Edit Course Details",function(){});
       setShowCourseDetails(c);
     }
@@ -47,17 +49,19 @@ export default function CoursesModeMain({courses,updateCourse, openAddCourseDial
 
     return(
     (showCourseDetails === null) ? 
-    <>
+     <>
+     <h1 className="mode-page-header">Courses</h1>
      <CoursesModeSearchFilter updateSearchFilterVal={refreshCourses} />
-     <CoursesModeTable courses={filteredCourses} 
-                       numCourses={Object.keys(filteredCourses).length}
-                       showCourseDetails={showCourseDetailsDialog} />
+     <CoursesModeTable courses={displayedCourses} 
+                       numCourses={Object.keys(displayedCourses).length}
+                       showCourseDetails={openCourseDetailsDialog} />
       <button className="float-btn" onClick={openAddCourseDialog}>
         <FontAwesomeIcon icon="map-pin" />&nbsp;Add Course
       </button>
     </> :
      <CoursesModeDetails course={showCourseDetails}
-                         updateCourseDetails={updateCourseDetails}
+                         updateCourseDetails={updateAndCloseCourseDetailsDialog}
                          closeCourseDetails={closeCourseDetailsDialog}/>
+
     );
   }

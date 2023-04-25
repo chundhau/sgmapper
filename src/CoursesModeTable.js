@@ -35,7 +35,7 @@ import {useState, useEffect} from 'react';
                       <td><img src={Object.hasOwn(coursesToDisplay[c],'imageUrl') ? 
                                     coursesToDisplay[c].imageUrl : DefaultGolfCoursePic} 
                                alt={"Default golf course"} 
-                               className="img-fluid image-course" />
+                               className="img-fluid img-course" />
                       </td>
                       <td tabIndex="0">
                         <strong>{coursesToDisplay[c].shortName}</strong><br/>

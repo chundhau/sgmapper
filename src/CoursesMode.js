@@ -29,7 +29,7 @@ export default function CoursesMode() {
 
     /*************************************************************************
      * @function updateCourse
-     * @param course, an object containing updated course info from the
+     * @param course, an object containing updated course info 
      * obtained from the'Course Details" dialog 
      * @Desc 
      * Update the object in the courses database in local storage, and update

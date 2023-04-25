@@ -1,99 +1,219 @@
-import DefaultGolfCoursePic from './images/DefaultGolfCoursePic.jpg';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {useState, useRef} from 'react';
- 
+import {useState, useEffect, useRef} from 'react';
+import CoursesModeStarRating from './CoursesModeStarRating';
+import CoursesModeEditTextModal from './CoursesModeEditTextModal';
+import CoursesModeEditImageModal from './CoursesModeEditImageModal';
+   
  /*************************************************************************
  * File: coursesModeDetails.js
  * This file defines the CoursesModeDetails React component, which enables
- * users to view and edit course details.
+ * users to view and edit the full range of data stored on a golf course.
+ * Ultimately, the geodata on a golf course will be editable through a 
+ * geomap user interface in Mapbox. However, the geodata can also be
+ * entered by hand through this UI.
  ************************************************************************/
 
 export default function CoursesModeDetails({course, updateCourseDetails, closeCourseDetails}) {
 
-    const [courseImage, setCourseImage] = useState(Object.hasOwn(course,'imageUrl') ? course.imageUrl : DefaultGolfCoursePic );
-    const imageModal = useRef();
-    const newImageUrl = useRef();
-    const updateImage = useRef();
-    const previewImage = useRef();
-    const updatedCourse = {...course}; //For saving changes
+    const [updatedCourse, setUpdatedCourse] = useState(course);
+    const [showEditTextModal, setShowEditTextModal] = useState({show: false});
+    const [showEditImageModal, setShowEditImageModal] = useState(false);
     
-
-    function updateCourseImage() {
-        updatedCourse.imageUrl = courseImage;
-        updateCourseDetails(updatedCourse);
-        const bsModal = window.bootstrap.Modal.getInstance(imageModal.current);
-        bsModal.hide();
+    useEffect(() => {
+        const newUpdatedCourse = {...updatedCourse};
+        if (!Object.hasOwn(updatedCourse,'sgContactName'))
+            newUpdatedCourse.sgContactName = "";
+        if (!Object.hasOwn(updatedCourse,'sgContactEmail'))
+            newUpdatedCourse.sgContactEmail = "";
+        if (!Object.hasOwn(updatedCourse,'sgNotes'))
+            newUpdatedCourse.sgNotes = "";
+        if (!Object.hasOwn(updatedCourse,'sgFriendlinessRating'))
+            newUpdatedCourse.sgFriendlinessRating = 0;
+        if (!Object.hasOwn(updatedCourse,'tees'))
+            newUpdatedCourse.tees = {};
+        setUpdatedCourse(newUpdatedCourse);
+    },[]);
+   
+    function openTextEditModal(propertyDisplayName, propertyName, propertyData) {
+        setShowEditTextModal({show: true, 
+                          propDisplayName: propertyDisplayName,
+                          propName: propertyName,
+                          propData: propertyData});
     }
 
-    function cancelUpdateCourseImage() { //exit without saving
-        setCourseImage(Object.hasOwn(updatedCourse,'imageUrl') ? updatedCourse.imageUrl : DefaultGolfCoursePic);
-        const bsModal = window.bootstrap.Modal.getInstance(imageModal.current);
-        bsModal.hide();
+    function updateDataFromModal(newVal) {
+        updateCourseVal(showEditTextModal.propName,newVal);
+        setShowEditTextModal({show: false});
     }
 
-
-    function handleImageInput(event) {
-        setCourseImage(event.target.value);
+    function updateImageFromModal(newVal) {
+        updateCourseVal("imageUrl",newVal);
+        setShowEditImageModal(false);
     }
 
-    function invalidImage() {
-        updateImage.current.classList.add("disable-btn");
-        previewImage.current.setAttribute("alt","Invalid image");
+    function cancelUpdateTextFromModal() {
+        setShowEditTextModal(false);
     }
 
-    function validImage() {
-        updateImage.current.classList.remove("disable-btn");
+    function updateCourseVal(prop, val) {
+        const newUpdatedCourse = {...updatedCourse};
+        newUpdatedCourse[prop] = val;
+        setUpdatedCourse(newUpdatedCourse);
     }
 
     return (
-        <>
-        <div ref={imageModal} id="imageModal" data-bs-backdrop="static" className="modal fade" tabIndex="-1">
-                <div className="modal-dialog">
-                    <div className="modal-content">
-                    <div className="modal-header">
-                        <h5 className="modal-title">Update Course Image</h5>
-                        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div className="modal-body centered">
-                        <h6>Image Preview</h6>
-                        <img ref={previewImage} src={courseImage} alt="Preview" width="200" 
-                             onError={invalidImage} onLoad={validImage} />
-                        <br></br><br></br>
-                        <span>Enter URL of Course Image:</span><br></br>
-                        <input ref={newImageUrl} type="url" size="30" 
-                               value={courseImage} onChange={handleImageInput}/>
-                    </div>
-                    <div className="modal-footer">
-                        <button type="button" className="btn btn-secondary" 
-                                onClick={cancelUpdateCourseImage}>
-                            Cancel
-                        </button>
-                        <button ref={updateImage} type="button" className="btn btn-primary" 
-                                onClick={() => updateCourseImage(newImageUrl.current.value)}>
-                            Update Image
-                        </button>
-                    </div>
-                    </div>
-                </div>
-        </div>
-        <div className="image-with-button-container">
-            <img className="image-course" src={courseImage} alt="Golf Course" />
-            <button className="button-overlaid" data-bs-toggle="modal"
-                     data-bs-target="#imageModal">
-                <FontAwesomeIcon icon="camera"/>
+    <>  {showEditTextModal.show ? 
+          <CoursesModeEditTextModal 
+            title={"Update " + showEditTextModal.propDisplayName} 
+            prompt={"Enter new " + showEditTextModal.propDisplayName + ":"}
+            data={showEditTextModal.propData}
+            updateData = {updateDataFromModal} 
+            cancelUpdate={()=>setShowEditTextModal({show:false})} /> : null
+        }
+        {showEditImageModal ?
+          <CoursesModeEditImageModal 
+            title={"Update Course Image"}
+            prompt={"Enter new URL for Course Image"}
+            imageUrl={updatedCourse.imageUrl}
+            updateImage={updateImageFromModal}
+            cancelUpdate={()=>setShowEditImageModal(false)} /> : null
+        }
+        <div className="img-with-button-container">
+            <img className="img-course" src={updatedCourse.imageUrl} alt="Golf Course" />
+            <button className="btn-overlaid" onClick={()=>setShowEditImageModal(true)}>
+                <FontAwesomeIcon icon="edit"/>
             </button>
         </div>
         <div className="centered">
-        <h3>{course.shortName}</h3>
-        <address>{course.address}</address>
-        <label className="form-label" htmlFor="courseImageUrl">More details go here</label>
+            <div className="float-center">
+                <h3>{updatedCourse.shortName}</h3>&nbsp;
+                <button className="btn-theme" 
+                        onClick={()=>openTextEditModal("Course Name","shortName",
+                                     {val: updatedCourse.shortName,
+                                      type: "text",
+                                      size: "30",
+                                      emptyAllowed: false})}>
+                    <FontAwesomeIcon icon="edit"/>
+                </button>
+            </div>
+            <label className="bold" htmlFor="addr">Address:</label>
+            <div id="addr" className="float-center">
+                <div>{updatedCourse.address}</div>&nbsp;
+                <button className="btn-theme" 
+                         onClick={()=>openTextEditModal("Course Address","address",
+                         {val: updatedCourse.address,
+                          type: "text",
+                          size: "50",
+                          emptyAllowed: false})}>
+                    <FontAwesomeIcon icon="edit"/>
+                </button>
+            </div>
+            <label className="bold" htmlFor="state">State/Province:</label>
+            <div id="state" className="float-center">
+                <div>{updatedCourse.state}</div>&nbsp;
+                <button className="btn-theme"
+                        onClick={()=>openTextEditModal("Course State/Province","state",
+                        {val: updatedCourse.state,
+                         type: "text",
+                         size: "20",
+                         emptyAllowed: false})}>
+                    <FontAwesomeIcon icon="edit"/>
+                </button>
+            </div>
+            <label className="bold" htmlFor="country">Country:</label>
+            <div id="country" className="float-center">
+                <div>{updatedCourse.country}</div>&nbsp;
+                <button className="btn-theme"
+                        onClick={()=>openTextEditModal("Course Country","country",
+                                     {val: updatedCourse.country,
+                                      type: "text",
+                                      size: "20",
+                                      emptyAllowed: false})}>
+                    <FontAwesomeIcon icon="edit"/>
+                </button>
+            </div>
+            <label className="bold" htmlFor="phone">Phone Number:</label>
+            <div id="phone" className="float-center">
+                <div>{updatedCourse.phoneNumber}</div>&nbsp;
+                <button className="btn-theme"
+                         onClick={()=>openTextEditModal("Course Phone Number","phoneNumber",
+                                     {val: updatedCourse.phoneNumber,
+                                      type: "tel",
+                                      size: "15",
+                                      emptyAllowed: false})}>
+                    <FontAwesomeIcon icon="edit"/>
+                </button>
+            </div>
+            <label className="bold" htmlFor="sgContact">Speedgolf Contact Name:</label>
+                        <div id="state" className="float-center">
+                <div>{updatedCourse.sgContactName}</div>&nbsp;
+                <button className="btn-theme"
+                        onClick={()=>openTextEditModal("Speedgolf Contact Name","sgContactName",
+                        {val: updatedCourse.sgContactName,
+                         type: "text",
+                         size: "30",
+                         emptyAllowed: true})}>
+                    <FontAwesomeIcon icon="edit"/>
+                </button>
+            </div>
+            <label className="bold" htmlFor="sgContactEmail">Speedgolf Contact Email:</label>
+                        <div id="state" className="float-center">
+                <div>{updatedCourse.sgContactEmail}</div>&nbsp;
+                <button className="btn-theme"
+                        onClick={()=>openTextEditModal("Speedgolf Contact Email","sgContactEmail",
+                                     {val: updatedCourse.sgContactEmail,
+                                      type: "email",
+                                      size: "30",
+                                      emptyAllowed: true})}>
+                    <FontAwesomeIcon icon="edit"/>
+                </button>
+            </div>
+            <label className="bold" htmlFor="sgNotes">Speedgolf Notes:</label>
+                        <div id="state" className="float-center txt-wrap">
+                <div>{updatedCourse.sgNotes}</div>&nbsp;
+                <button className="btn-theme"
+                        onClick={()=>openTextEditModal("Speedgolf Notes","sgNotes",
+                        {val: updatedCourse.sgNotes,
+                         type: "textarea",
+                         size: "40",
+                         lines: "5",
+                         emptyAllowed: true})}>
+                    <FontAwesomeIcon icon="edit"/>
+                </button>
+            </div>
+            <label className="bold" htmlFor="sgFriendliness">Speedgolf Friendliness Rating:</label>
+            <div id="sgFriendliness" className="float-center">
+                <CoursesModeStarRating maxStars={5} numStars={updatedCourse.sgFriendlinessRating} />  
+                <button className="btn-theme"
+                        onClick={()=>openTextEditModal("Speedgolf Friendliness Rating","sgFriendlinessRating",
+                        {val: updatedCourse.sgFriendlinessRating,
+                         type: "number",
+                         min: "0",
+                         max: "5",
+                         emptyAllowed: false})}>
+                    <FontAwesomeIcon icon="edit"/>
+                </button>
+            </div>
+            <label className="bold" htmlFor="tees">Tees:&nbsp;</label>
+            <div className="float-center">
+                <select id="tees">
+                    <option value="no tees defined">Choose '+' to add a tee</option>
+                </select>&nbsp;
+                <button className="btn-theme"><FontAwesomeIcon icon="plus"/></button>&nbsp;
+                <button className="btn-theme"><FontAwesomeIcon icon="edit"/></button>&nbsp;
+                <button className="btn-theme"><FontAwesomeIcon icon="map" /></button>
+            </div>
         </div>
-        <div className="close-dialog-btn">
-            <button className="mode-page-btn action-dialog cancel-button"
-                    onClick={closeCourseDetails}><FontAwesomeIcon icon="xmark"/>&nbsp;Close</button>
-        </div>
-     </>
-        
+        <div className="mode-page-btn-container">
+            <button className="dialog-primary-btn"
+                type="button" onClick={()=>updateCourseDetails(updatedCourse)}>
+                <FontAwesomeIcon icon="save"/>&nbsp;Save Changes 
+            </button>
+            <button className="dialog-cancel-btn"
+                type="button" onClick={closeCourseDetails}>
+                <FontAwesomeIcon icon="xmark"/>&nbsp;Cancel</button>
+            </div>
+     </>    
     );
 
  };
