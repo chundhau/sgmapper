@@ -583,3 +583,7 @@ cursor: pointer;
     white-space: pre-wrap;
     text-align: left;
 }
+
+.notes-div {
+    width: 60%;
+}

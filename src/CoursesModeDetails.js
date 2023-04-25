@@ -21,10 +21,12 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
     
     useEffect(() => {
         const newUpdatedCourse = {...updatedCourse};
+        if (!Object.hasOwn(updatedCourse,'numHoles'))
+            newUpdatedCourse.numHoles = 18;
         if (!Object.hasOwn(updatedCourse,'sgContactName'))
-            newUpdatedCourse.sgContactName = "";
+            newUpdatedCourse.sgContactName = "none";
         if (!Object.hasOwn(updatedCourse,'sgContactEmail'))
-            newUpdatedCourse.sgContactEmail = "";
+            newUpdatedCourse.sgContactEmail = "none";
         if (!Object.hasOwn(updatedCourse,'sgNotes'))
             newUpdatedCourse.sgNotes = "";
         if (!Object.hasOwn(updatedCourse,'sgFriendlinessRating'))
@@ -144,6 +146,19 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
                     <FontAwesomeIcon icon="edit"/>
                 </button>
             </div>
+            <label className="bold" htmlFor="sgContact">Number of Holes:</label>
+                        <div id="state" className="float-center">
+                <div>{updatedCourse.numHoles}</div>&nbsp;
+                <button className="btn-theme"
+                        onClick={()=>openTextEditModal("Number of Holes","numHoles",
+                        {val: updatedCourse.numHoles,
+                         type: "number",
+                         min: "1",
+                         max: "22",
+                         emptyAllowed: false})}>
+                    <FontAwesomeIcon icon="edit"/>
+                </button>
+            </div>
             <label className="bold" htmlFor="sgContact">Speedgolf Contact Name:</label>
                         <div id="state" className="float-center">
                 <div>{updatedCourse.sgContactName}</div>&nbsp;
@@ -170,7 +185,7 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
             </div>
             <label className="bold" htmlFor="sgNotes">Speedgolf Notes:</label>
                         <div id="state" className="float-center txt-wrap">
-                <div>{updatedCourse.sgNotes}</div>&nbsp;
+                <div className="notes-div">{updatedCourse.sgNotes}</div>&nbsp;
                 <button className="btn-theme"
                         onClick={()=>openTextEditModal("Speedgolf Notes","sgNotes",
                         {val: updatedCourse.sgNotes,
