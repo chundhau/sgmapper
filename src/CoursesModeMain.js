@@ -32,7 +32,7 @@ export default function CoursesModeMain({courses,updateCourse, openAddCourseDial
       updateCourse(c);
       const updatedCourses = {...courses};
       updatedCourses[showCourseDetails.id] = c;
-      setDisplayedCourses(updatedCourses);
+      //setDisplayedCourses(updatedCourses);
       window.transitionFromDialog(null);
       setShowCourseDetails(null);
     }
@@ -53,7 +53,7 @@ export default function CoursesModeMain({courses,updateCourse, openAddCourseDial
      <h1 className="mode-page-header">Courses</h1>
      <CoursesModeSearchFilter updateSearchFilterVal={refreshCourses} />
      <CoursesModeTable courses={displayedCourses} 
-                       numCourses={Object.keys(displayedCourses).length}
+                       numCourses={Object.keys(courses).length}
                        showCourseDetails={openCourseDetailsDialog} />
       <button className="float-btn" onClick={openAddCourseDialog}>
         <FontAwesomeIcon icon="map-pin" />&nbsp;Add Course

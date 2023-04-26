@@ -212,19 +212,6 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
                     <FontAwesomeIcon icon="edit"/>
                 </button>
             </div>
-            <label className="bold" htmlFor="sgNotes">Speedgolf Notes:</label>
-                        <div id="state" className="float-center txt-wrap">
-                <div className="notes-div">{updatedCourse.sgNotes}</div>&nbsp;
-                <button className="btn-theme"
-                        onClick={()=>openTextEditModal("Speedgolf Notes","sgNotes",
-                        {val: updatedCourse.sgNotes,
-                         type: "textarea",
-                         size: "40",
-                         lines: "5",
-                         emptyAllowed: true})}>
-                    <FontAwesomeIcon icon="edit"/>
-                </button>
-            </div>
             <label className="bold" htmlFor="sgFriendliness">Speedgolf Friendliness Rating:</label>
             <div id="sgFriendliness" className="float-center">
                 <CoursesModeStarRating maxStars={5} numStars={updatedCourse.sgFriendlinessRating} />  
@@ -238,15 +225,19 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
                     <FontAwesomeIcon icon="edit"/>
                 </button>
             </div>
-            <label className="bold" htmlFor="tees">Tees:&nbsp;</label>
-            <div className="float-center">
-                <select id="tees">
-                    <option value="no tees defined">Choose '+' to add a tee</option>
-                </select>&nbsp;
-                <button className="btn-theme"><FontAwesomeIcon icon="plus"/></button>&nbsp;
-                <button className="btn-theme"><FontAwesomeIcon icon="edit"/></button>&nbsp;
-                <button className="btn-theme"><FontAwesomeIcon icon="map" /></button>
-            </div>
+            <label className="bold" htmlFor="sgNotes">Speedgolf Notes:</label>
+                        <div id="state" className="float-center txt-wrap">
+                <div className="notes-div">{updatedCourse.sgNotes}</div>&nbsp;
+                <button className="btn-theme"
+                        onClick={()=>openTextEditModal("Speedgolf Notes","sgNotes",
+                        {val: updatedCourse.sgNotes,
+                         type: "textarea",
+                         size: "40",
+                         lines: "5",
+                         emptyAllowed: true})}>
+                    <FontAwesomeIcon icon="edit"/>
+                </button>
+            </div>         
         </div>
         <div className="mode-page-btn-container">
             <button className="dialog-primary-btn"
