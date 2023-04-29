@@ -1,3 +1,4 @@
+import DefaultGolfCoursePic from './images/DefaultGolfCoursePic.jpg';
 import {useRef, useState, useEffect} from 'react';
  
  /*************************************************************************
@@ -55,7 +56,8 @@ return(
         </div>
         <div className="modal-body centered">
             <h6>Image Preview</h6>
-            <img ref={previewImageRef} src={val} alt="Preview" width="200" 
+            <img ref={previewImageRef} 
+                 src={val === "Default" ? DefaultGolfCoursePic : val} alt="Preview" width="200" 
                  onError={invalidImage} onLoad={validImage} />
             <br></br><br></br>
             <span>Enter URL of Course Image:</span><br></br>

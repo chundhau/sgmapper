@@ -32,9 +32,9 @@ import {useState, useEffect} from 'react';
             {Object.keys(coursesToDisplay).map((c) => {
                 return [
                     <tr key={c} className="d-flex">
-                      <td><img src={Object.hasOwn(coursesToDisplay[c],'imageUrl') ? 
-                                    coursesToDisplay[c].imageUrl : DefaultGolfCoursePic} 
-                               alt={"Default golf course"} 
+                      <td><img src={coursesToDisplay[c].imageUrl == "Default" ? 
+                                    DefaultGolfCoursePic : coursesToDisplay[c].imageUrl} 
+                               alt={coursesToDisplay[c].shortName} 
                                className="img-fluid img-course" />
                       </td>
                       <td tabIndex="0">

@@ -12,6 +12,7 @@ export default function CoursesMode() {
     const [showDialog, setShowDialog] = useState(false);
     const coursesDB = JSON.parse(localStorage.getItem("courses"));
     const [courses, setCourses] = useState(coursesDB == null ? {} : coursesDB);
+    const [displayedCourses, setDisplayedCourses] = useState(courses);
 
     /*************************************************************************
      * @function addCourse
@@ -25,6 +26,34 @@ export default function CoursesMode() {
         const newCourses = {...courses,[course.id]: course}; //build new object
         localStorage.setItem("courses",JSON.stringify(newCourses));
         setCourses(newCourses);
+        setDisplayedCourses(newCourses);
+    }
+  
+    /*************************************************************************
+     * @function filterCourses
+     * @param searchString, the target search string
+     * @param searchScope: the scope of the search (either "Name", "State",
+     *         or "Country"
+     * @Desc 
+     * Update displayedCourses to include only courses that meet search
+     * criteria.
+     *************************************************************************/
+    function filterCourses(searchString, searchScope) {
+        let coursesList = {};
+        if (searchString === "") {
+            coursesList = {...courses};
+        } else {
+            Object.keys(courses).forEach((c) => {
+            if (searchScope==="Name" && courses[c].shortName.toUpperCase().includes(searchString.toUpperCase())) {
+                coursesList[c] = courses[c];
+            } else if (searchScope==="State" && courses[c].state.toUpperCase().includes(searchString.toUpperCase())) {
+                coursesList[c] = courses[c]; 
+            } else if (searchScope==="Country" && courses[c].country.toUpperCase().includes(searchString.toUpperCase())) {
+                coursesList[c] = courses[c];
+            }
+            });
+        }
+        setDisplayedCourses(coursesList);
     }
 
     /*************************************************************************
@@ -40,6 +69,7 @@ export default function CoursesMode() {
         newCourses[course.id] = course;
         localStorage.setItem("courses",JSON.stringify(newCourses));
         setCourses(newCourses);
+        setDisplayedCourses(newCourses);
     }
     
     /*************************************************************************
@@ -76,8 +106,10 @@ export default function CoursesMode() {
       (showDialog) ?
          <CoursesModeAdd closeDialog={closeAddCourseDialog} /> :
          <> 
-           <CoursesModeMain courses={courses} 
+           <CoursesModeMain courses={displayedCourses} 
+                            numCourses={Object.keys(courses).length}
                             updateCourse={updateCourse}
+                            filterCourses={filterCourses}
                             openAddCourseDialog={openAddCourseDialog}/>
         </> 
     );

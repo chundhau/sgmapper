@@ -1,12 +1,10 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {useState} from 'react';
 
-export default function StarRating({maxStars, numStars}) {
-    const [starRating, setStarRating] = useState(numStars);
+export default function StarRating({numStars, maxStars}) {
     const starArray = Array.from({length: maxStars}, (_, i) => i + 1);
 
     return(
-        <div className="rating">
+        <div aria-label={numStars + " stars out of " + maxStars}>
             {starArray.map((i) => {
                 return(
                 <span key={i}

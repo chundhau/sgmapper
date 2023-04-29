@@ -147,6 +147,7 @@
         function getDetailsCallback(course, status) {
             if (status === window.google.maps.places.PlacesServiceStatus.OK) {
                 const courseDetails = {
+                    imageUrl: "Default",
                     shortName: autocomplete.courseChosen.name.substring(0, autocomplete.courseChosen.name.search(",")),
                     address: course.formatted_address,
                     state: course.address_components.filter(item => item.types.includes("administrative_area_level_1"))[0].long_name,
@@ -155,7 +156,17 @@
                     viewport: course.geometry.viewport,
                     phoneNumber: course.formatted_phone_number,
                     website: course.website,
-                    mapsUrl: course.url
+                    mapsUrl: course.url,
+                    numHoles: 18,
+                    sgContactName: "none",
+                    sgContactEmail: "none",
+                    sgFriendlinessRating: 0,
+                    sgMembership: false,
+                    sgRoundDiscount: false,
+                    sgStandingTeeTimes: false,
+                    sgPlay: "sgNotAllowed", 
+                    sgNotes: "none",
+                    tees: {}
                 };
                 const mergedCourse = Object.assign(autocomplete.courseChosen, courseDetails);
                 closeDialog(mergedCourse);

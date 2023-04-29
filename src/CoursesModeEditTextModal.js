@@ -20,6 +20,9 @@ import {useRef, useState, useEffect} from 'react';
  *     max:  Maximum value to accept (Number only)
  *     emptyAllowed: Whether blank response is allowed. If false, user will
  *                 not be allowed to save a blank value.
+ *     disallowed: array of values that are disallowed. The dialog should 
+ *                 disable the "Update" button if any of these values is
+ *                 entered.
  *   updateData: Function to call to update the data item with new val
  *               when user chooses "Update" button in dialog
  *   cancelUpdate: Function to call to cancel updating data when user
@@ -80,7 +83,10 @@ return(
                 Cancel
             </button>
             <button type="button" 
-                    className={"btn btn-primary" + (val === "" && !data.emptyAllowed ? " disabled" : "")}
+                    className={"btn btn-primary" + 
+                    (((val === "" && !data.emptyAllowed) || 
+                    (data.disallowed !== undefined && 
+                     data.disallowed.includes(val))) ? " disabled" : "")}
                     onClick={closeAndUpdate} >
                 Update
             </button>

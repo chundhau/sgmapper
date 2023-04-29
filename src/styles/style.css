@@ -520,12 +520,19 @@ cursor: pointer;
 /*************************************************************************
 * CSS CLASS FOR COURSES MODE DETAILS PAGE
 *************************************************************************/
-.float-center {
+.float-center-padding {
     display: flex;
     justify-content: center;
     align-items: center;
     padding-bottom: 1em;
+
     
+}
+
+.float-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .img-with-button-container {
