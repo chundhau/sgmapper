@@ -5,6 +5,7 @@
 * section addressing a specific user interface element or component.
 *************************************************************************/
 
+
 /*************************************************************************
 * GLOBAL CSS VARIABLES
 * These are global variable definitions for the theme colors and other
@@ -593,4 +594,16 @@ cursor: pointer;
 
 .notes-div {
     width: 60%;
+}
+
+.par-width {
+    width: 2em;
+}
+
+.dist-width {
+    width: 2.5em;
+}
+
+.time-width {
+    width: 3.5em;
 }

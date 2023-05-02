@@ -61,7 +61,7 @@ return(
                  onError={invalidImage} onLoad={validImage} />
             <br></br><br></br>
             <span>Enter URL of Course Image:</span><br></br>
-            <input type="url" size="30" 
+            <input type="url" size="30" className="centered"
                    value={val} onChange={handleChange}/>
         </div>
         <div className="modal-footer">

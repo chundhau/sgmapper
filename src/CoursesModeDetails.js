@@ -82,11 +82,11 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
                 </button>
             </li>
             <li className="nav-item" role="presentation">
-                <button className="nav-link" id="ratings-tab" 
-                        data-bs-toggle="tab" data-bs-target="#ratings" 
-                        type="button" role="tab" aria-controls="ratings" 
+                <button className="nav-link" id="reviews-tab" 
+                        data-bs-toggle="tab" data-bs-target="#reviews" 
+                        type="button" role="tab" aria-controls="reviews" 
                         aria-selected="false">
-                    Ratings
+                    Reviews
                 </button>
             </li>
         </ul>
@@ -98,9 +98,9 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
                 <CoursesModeDetailsSG course={updatedCourse} updateCourseVal={updateCourseVal}/> 
             </div>
             <div className="tab-pane fade" id="tees-holes-info" role="tabpanel" aria-labelledby="tees-holes-tab">
-                <CoursesModeDetailsTees numHoles={updatedCourse.numHoles} tees={updatedCourse.tees} updateTees={updateTees}/>
+                <CoursesModeDetailsTees course={updatedCourse} updateCourseVal={updateCourseVal}/>
             </div>
-            <div className="tab-pane fade" id="ratings" role="tabpanel" aria-labelledby="ratings-tab">
+            <div className="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
                 <h2 className="centered">Under construction</h2>
             </div>
         </div>

@@ -166,7 +166,10 @@
                     sgStandingTeeTimes: false,
                     sgPlay: "sgNotAllowed", 
                     sgNotes: "none",
-                    tees: {}
+                    tees: {},
+                    editor: [],
+                    createdAt: new Date(),
+                    modifiedAt: new Date()
                 };
                 const mergedCourse = Object.assign(autocomplete.courseChosen, courseDetails);
                 closeDialog(mergedCourse);

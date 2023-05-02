@@ -5,7 +5,7 @@ import CoursesModeSearch from './CoursesModeSearchFilter';
 import CoursesMode from './CoursesMode';
 import reportWebVitals from './reportWebVitals';
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faPlus, faMapPin, faGlobe, faMap, faPhone, faEye, faCamera, faXmark, faCircleXmark, faEdit, faSave, faStar } from '@fortawesome/free-solid-svg-icons'
+import { faPlus, faMapPin, faGlobe, faMap, faPhone, faEye, faCamera, faXmark, faCircleXmark, faEdit, faSave, faStar, faCheck, faCircleInfo } from '@fortawesome/free-solid-svg-icons'
 library.add(faPlus)
 library.add(faMapPin)
 library.add(faGlobe)
@@ -18,6 +18,8 @@ library.add(faCircleXmark)
 library.add(faEdit)
 library.add(faSave)
 library.add(faStar)
+library.add(faCheck)
+library.add(faCircleInfo)
 
 const coursesDiv = ReactDOM.createRoot(document.getElementById('coursesModeTab'));
 //const coursesSearchDiv = ReactDOM.createRoot(document.getElementById('coursesModeSearchDiv'));
