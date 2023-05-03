@@ -607,3 +607,17 @@ cursor: pointer;
 .time-width {
     width: 3.5em;
 }
+
+.geopt-width {
+    width: 4em;
+}
+
+.btn-green {
+    outline: 0;
+    color: green;
+}
+
+.btn-red {
+    outline: 0;     
+    color: red;
+}

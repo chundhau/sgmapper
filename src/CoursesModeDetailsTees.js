@@ -1,6 +1,7 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useState, useEffect, useRef} from 'react';
 import CoursesModeEditTextModal from './CoursesModeEditTextModal';
+import CoursesModeEditGeoPtModal from './CoursesModeEditGeoPtModal';
 import CoursesModeDetailsHoleMap from './CoursesModeDetailsHoleMap';
 
  /*************************************************************************
@@ -13,6 +14,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
 
     const yardsToMeters = 0.9144;
     const [addTeeDialog, setAddTeeDialog] = useState({show: false});
+    const [editGeoPtDialog, setEditGeoPtDialog] = useState({show: false});
     const [selectedTee, setSelectedTee] = 
       useState(Object.keys(course.tees) == 0 ? null: Object.keys(course.tees)[0]);
     const [distUnits, setDistUnits] = useState("yards");
@@ -76,11 +78,12 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
         const updatedTees = {...course.tees};
         updatedTees[teeName] = newTee;
         updateCourseVal("tees",updatedTees);
+        setSelectedTee(teeName);
         setAddTeeDialog({show: false});
     }
 
     function cancelAddTee() {
-
+        setAddTeeDialog({show: false});
     }
 
     function openAddTeeDialog() {
@@ -89,18 +92,56 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
             type: "text",
             size: 20,
             emptyAllowed: false,
-            disAllowed: Object(course.tees).keys
+            disallowed: Object.keys(course.tees)
         };
         setAddTeeDialog({show: true, data: dialogData});
+    }
+
+    function openGeoPtDialog(holeNum, prop) {
+        const feature = {flagLoc: "center of green",
+                         teeLoc: "center of teeing area"};
+        const verb = (Object.keys(course.tees[selectedTee].holes[holeNum-1][prop]).length === 0) ? 
+                        "Add" : "Edit";
+        const dialogData = {
+            show: true,
+            title: verb + " location of " + feature[prop] + " on Hole " + holeNum,
+            prompt: "Enter location of " + feature[prop] + " on Hole " + holeNum,
+            val: course.tees[selectedTee].holes[holeNum-1][prop],
+            buttonLabel: verb,
+            holeNum: holeNum,
+            prop: prop
+        }
+        setEditGeoPtDialog(dialogData);
+    }
+
+    function updateGeoData(val) {
+        const updatedTees = {...course.tees};
+        updatedTees[selectedTee].holes[editGeoPtDialog.holeNum-1][editGeoPtDialog.prop] = val;
+        updateCourseVal("tees",updatedTees);
+        setEditGeoPtDialog({show: false});
+    }
+
+    function cancelUpdateGeoData() {
+        setEditGeoPtDialog({show: false});
     }
 
     return(
         (addTeeDialog.show) ? 
             <CoursesModeEditTextModal title="New Tee"
                                       prompt="Enter new tee name:" 
+                                      buttonLabel="Add"
                                       data={addTeeDialog.data}
                                       updateData={addTee}
                                       cancelUpdate={cancelAddTee} /> :
+        editGeoPtDialog.show ?
+          <CoursesModeEditGeoPtModal title={editGeoPtDialog.title}
+                                     prompt={editGeoPtDialog.prompt}
+                                     value={editGeoPtDialog.val}
+                                     buttonLabel={editGeoPtDialog.buttonLabel}
+                                     viewport={course.viewport}
+                                     updateData={updateGeoData}
+                                     cancelUpdate={cancelUpdateGeoData} /> :
+
         <>
             <div className="mb-3 centered">
                 <label className="form-label" htmlFor="numHoles">Number of Holes:
@@ -141,14 +182,14 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                                type="radio" name="distYards" id="distYards" 
                                onChange={toggleUnits}
                                value="yards" checked={distUnits=="yards"} />
-                        <label className="form-check-label centered" for="distYards">
+                        <label className="form-check-label centered" htmlFor="distYards">
                           &nbsp;Yards
                         </label>&nbsp;
                         <input className="centered" 
                                type="radio" name="distMeters" id="distMeters" 
                                onChange={toggleUnits}
                                value="meters" checked={distUnits=="meters"}/>
-                        <label className="form-check-label centered" for="distMeters">
+                        <label className="form-check-label centered" htmlFor="distMeters">
                           &nbsp;Meters
                         </label>
                     </div>
@@ -268,6 +309,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                         <table className="table table-sm table-striped table-hover caption-top">
                         <caption>Table of Hole Info</caption>
                         <thead>
+                          <tr>
                           <th>Hole #</th>
                           <th title="Hole distance, as shown on scorecard">Golf Dist&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
                           <th title="Women's stroke par, as shown on scorecard">W Par&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
@@ -282,6 +324,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                           <th title="Vector of geopoints (latitude, longitude, and elevation) tracing ideal running path from center of previous green to tee">Trans Path&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
                           <th title="Vector of geopoints (latitude, longitude, and elevation) tracing ideal running path from tee to center of green">Golf Path&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
                           <th title="Vector of polygons demarcating hole features such as the tee box, bunkers, water hazards, and the green">Features&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
+                          </tr>
                         </thead>
                         <tbody>
                             {course.tees[selectedTee].holes.map((h,i) => { 
@@ -296,7 +339,11 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                                     <td><input type="number" disabled className="dist-width" value={h.runningDistance} onChange={(e) => handleHoleDataChange(e,i,"runningDistance")}/></td>
                                     <td><input type="number" disabled className="time-width" value={h.womensTimePar} onChange={(e) => handleHoleDataChange(e,i,"womensTimePar")}/></td>
                                     <td><input type="number" disabled className="time-width" value={h.womensTimePar} onChange={(e) => handleHoleDataChange(e,i,"mensTimePar")}/></td>                                    
-                                    <td><FontAwesomeIcon icon="edit"/></td>
+                                    <td><button className={"btn " +  (Object.keys(h.teeLoc).length !== 0 ? "btn-green" : "btn-red")} 
+                                                onClick={() => openGeoPtDialog(i+1,"teeLoc")} >
+                                            <FontAwesomeIcon icon={(Object.keys(h.teeLoc).length !== 0 ? "check" : "edit")}/>
+                                        </button>
+                                    </td>
                                     <td><FontAwesomeIcon icon="edit"/></td>
                                     <td><FontAwesomeIcon icon="edit"/></td>
                                     <td><FontAwesomeIcon icon="edit"/></td>

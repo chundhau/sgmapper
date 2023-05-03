@@ -30,7 +30,7 @@ import {useRef, useState, useEffect} from 'react';
  *         
  ************************************************************************/
 
-export default function CoursesModeEditTextModal({title, prompt, data, updateData, cancelUpdate}) {
+export default function CoursesModeEditTextModal({title, prompt, buttonLabel, data, updateData, cancelUpdate}) {
 const editModalRef = useRef();
 const [val, setVal] = useState(data.val == undefined ? "" : data.val);
 
@@ -49,7 +49,7 @@ function closeAndCancel() {
     cancelUpdate();
 }
 
-function closeAndUpdate() {
+function closeAndSave() {
     const bsModal =  window.bootstrap.Modal.getInstance(editModalRef.current);
     bsModal.hide();
     updateData(val);
@@ -85,10 +85,10 @@ return(
             <button type="button" 
                     className={"btn btn-primary" + 
                     (((val === "" && !data.emptyAllowed) || 
-                    (data.disallowed !== undefined && 
+                    (Array.isArray(data.disallowed) && 
                      data.disallowed.includes(val))) ? " disabled" : "")}
-                    onClick={closeAndUpdate} >
-                Update
+                    onClick={closeAndSave} >
+                {buttonLabel}
             </button>
         </div>
         </div>
