@@ -41,18 +41,18 @@ export default function CoursesModeDetailsSG({course, updateCourseVal}) {
             </div>
           </div>
           <div className="mb-3 centered">
-            <label className="form-label" htmlFor="contactEmail">Speedgolf Contact Email:
+            <label className="form-label" htmlFor="contactEmail">Speedgolf Contact Details:
               <input id="contactEmail" 
                      className="form-control centered"
                      type="email" 
                      size="50"
-                     name="sgContactEmail" 
+                     name="sgContactDetails" 
                      aria-describedby= "contactEmail-descr"
-                     value={course.sgContactEmail} 
+                     value={course.sgContactDetails} 
                      onChange={handleChange}/>  
             </label>    
             <div id="contactEmail-descr" className="form-text">
-                Email address of speedgolf contact person
+                Email address, phone number, and/or other means of eaching speedgolf contact person
             </div>
           </div>
           <div className="mb-3 centered">

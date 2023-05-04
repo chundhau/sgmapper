@@ -1,3 +1,4 @@
+import CourseReviewMockup from './images/CourseReview.jpg'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useState} from 'react';
 import CoursesModeDetailsBasic from './CoursesModeDetailsBasic';
@@ -101,7 +102,7 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
                 <CoursesModeDetailsTees course={updatedCourse} updateCourseVal={updateCourseVal}/>
             </div>
             <div className="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                <h2 className="centered">Under construction</h2>
+                <img src={CourseReviewMockup} alt="Mock up of course review page"/>
             </div>
         </div>
         <div className="mode-page-btn-container">

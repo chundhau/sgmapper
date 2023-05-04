@@ -7,6 +7,7 @@ import {useRef, useState, useEffect} from 'react';
  * The component accepts the following props:
  *   title: The title to display in the dialog's header
  *   prompt: The prompt to present to the user in the dialog's body
+ *   buttonLabel: The label that appears in the dialog's action button
  *   data: An object containing about the data to obtain through the dialog. 
  *   The data object consists of the following props:
  *     val: Value of the data item
@@ -62,7 +63,7 @@ return(
         <div className="modal-header">
             <h5 className="modal-title">{title}</h5>
             <button type="button" className="btn-close" aria-label="Close"
-                    onClick={cancelUpdate}></button>
+                    onClick={closeAndCancel}></button>
         </div>
         <div className="modal-body centered">
             <span>{prompt}</span><br></br>

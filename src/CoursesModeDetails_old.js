@@ -23,21 +23,21 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
     useEffect(() => {
         const newUpdatedCourse = {...updatedCourse};
         if (!Object.hasOwn(updatedCourse,'website'))
-            newUpdatedCourse.website = "none";
+            newUpdatedCourse.website = "";
         if (!Object.hasOwn(updatedCourse,'mapsUrl'))
-            newUpdatedCourse.mapsUrl = "none";
+            newUpdatedCourse.mapsUrl = "";
         if (!Object.hasOwn(updatedCourse,'numHoles'))
             newUpdatedCourse.numHoles = 18;
         if (!Object.hasOwn(updatedCourse,'sgContactName'))
-            newUpdatedCourse.sgContactName = "none";
-        if (!Object.hasOwn(updatedCourse,'sgContactEmail'))
-            newUpdatedCourse.sgContactEmail = "none";
+            newUpdatedCourse.sgContactName = "";
+        if (!Object.hasOwn(updatedCourse,'sgContactDetails'))
+            newUpdatedCourse.sgContactDetails = "";
         if (!Object.hasOwn(updatedCourse,'sgNotes'))
             newUpdatedCourse.sgNotes = "";
         if (!Object.hasOwn(updatedCourse,'sgFriendlinessRating'))
             newUpdatedCourse.sgFriendlinessRating = 0;
         if (!Object.hasOwn(updatedCourse,'tees'))
-            newUpdatedCourse.tees = {};
+            newUpdatedCourse.tees = "";
         setUpdatedCourse(newUpdatedCourse);
     },[]);
    
@@ -200,12 +200,12 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
                     <FontAwesomeIcon icon="edit"/>
                 </button>
             </div>
-            <label className="bold" htmlFor="sgContactEmail">Speedgolf Contact Email:</label>
+            <label className="bold" htmlFor="sgContactDetails">Speedgolf Contact Email:</label>
                         <div id="state" className="float-center">
-                <div>{updatedCourse.sgContactEmail}</div>&nbsp;
+                <div>{updatedCourse.sgContactDetails}</div>&nbsp;
                 <button className="btn-theme"
-                        onClick={()=>openTextEditModal("Speedgolf Contact Email","sgContactEmail",
-                                     {val: updatedCourse.sgContactEmail,
+                        onClick={()=>openTextEditModal("Speedgolf Contact Email","sgContactDetails",
+                                     {val: updatedCourse.sgContactDetails,
                                       type: "email",
                                       size: "30",
                                       emptyAllowed: true})}>

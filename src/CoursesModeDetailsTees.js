@@ -1,7 +1,9 @@
+import CourseMapper from './images/CourseMapper.jpg'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useState, useEffect, useRef} from 'react';
 import CoursesModeEditTextModal from './CoursesModeEditTextModal';
 import CoursesModeEditGeoPtModal from './CoursesModeEditGeoPtModal';
+import CoursesModeUploadGeoPathModal from './CoursesModeUploadGeoPathModal';
 import CoursesModeDetailsHoleMap from './CoursesModeDetailsHoleMap';
 
  /*************************************************************************
@@ -13,8 +15,9 @@ import CoursesModeDetailsHoleMap from './CoursesModeDetailsHoleMap';
 export default function CoursesModeDetailsTees({course, updateCourseVal }) {
 
     const yardsToMeters = 0.9144;
-    const [addTeeDialog, setAddTeeDialog] = useState({show: false});
+    const [addEditTeeDialog, setAddEditTeeDialog] = useState({show: false});
     const [editGeoPtDialog, setEditGeoPtDialog] = useState({show: false});
+    const [uploadGeoPathDialog, setUploadGeoPathDialog] = useState({show: false});
     const [selectedTee, setSelectedTee] = 
       useState(Object.keys(course.tees) == 0 ? null: Object.keys(course.tees)[0]);
     const [distUnits, setDistUnits] = useState("yards");
@@ -29,15 +32,20 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
         setSelectedTee(event.target.value);
     }
 
-    function handleHoleDataChange(e,index,prop) {
+    function handleHoleDataChange(e,index,prop, minVal, maxVal) {
         const newTees = {...course.tees};
-        newTees[selectedTee].holes[index][prop] = e.target.value;
+        let newVal = Number(e.target.value);
+        if (newVal < minVal)
+          newVal = minVal;
+        else if (newVal > maxVal)
+          newVal = maxVal;
+        newTees[selectedTee].holes[index][prop] = newVal;
         updateCourseVal("tees",newTees); 
     }
 
     function handleTeeDataChange(event) {
         const updatedTees = {...course.tees};
-        updatedTees[selectedTee][event.target.name] = event.target.value;
+        updatedTees[selectedTee][event.target.name] = Number(event.target.value);
         updateCourseVal("tees",updatedTees);
     }
 
@@ -45,62 +53,67 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
         setDistUnits(event.target.value);
     }
 
-    function addTee(teeName) {
-        const newTee = {
-            name: teeName,
-            finishLinePath: [],
-            golfDistance: 0,
-            runningDistance: 0,
-            mensStrokePar: 0,
-            womensStrokePar: 0,
-            womensTimePar: 0,
-            mensTimePar: 0,
-            mensSlope: 0,
-            womensSlope: 0,
-            mensRating: 0,
-            womensRating: 0,
-            holes: Array.from({length: course.numHoles}, (_, i) => ({
+    function addEditTee(teeName) {
+        const updatedTees = (course.tees == "" ? {} : {...course.tees});
+        if (addEditTeeDialog.prevTee !== "") {
+            updatedTees[teeName] = course.tees[addEditTeeDialog.prevTee];
+            delete updatedTees[addEditTeeDialog.prevTee];
+        } else {
+            const newTee = {
+              name: teeName,
+              finishLinePath: "",
+              golfDistance: "",
+              runningDistance: "",
+              mensStrokePar: "",
+              womensStrokePar: "",
+              womensTimePar: "",
+              mensTimePar: "",
+              mensSlope: "",
+              womensSlope: "",
+              mensRating: "",
+              womensRating: "",
+              holes: Array.from({length: course.numHoles}, (_, i) => ({
                 number: i+1,
                 name: "",
-                golfDistance: 0,
-                runningDistance: 0,
-                womensHandicap: 0,
-                mensHandicap: 0,
-                womensStrokePar: 0,
-                mensStrokePar: 0,
-                teeLoc: {},
-                flagLoc: {},
-                features: [],
-                golfPath: [],
-                transitionPath: []
+                golfDistance: "",
+                runningDistance: "",
+                womensHandicap: "",
+                mensHandicap: "",
+                womensStrokePar: "",
+                mensStrokePar: "",
+                teeLoc: "",
+                flagLoc: "",
+                features: "",
+                golfPath: "",
+                transitionPath: ""
             }))
+          };
+          updatedTees[teeName] = newTee;
         }
-        const updatedTees = {...course.tees};
-        updatedTees[teeName] = newTee;
         updateCourseVal("tees",updatedTees);
         setSelectedTee(teeName);
-        setAddTeeDialog({show: false});
+        setAddEditTeeDialog({show: false});
     }
 
-    function cancelAddTee() {
-        setAddTeeDialog({show: false});
+    function cancelAddEditTee() {
+        setAddEditTeeDialog({show: false});
     }
 
-    function openAddTeeDialog() {
+    function openAddEditTeeDialog(editing) {
         const dialogData = {
-            val: "",
+            val: (editing ? selectedTee : ""),
             type: "text",
             size: 20,
             emptyAllowed: false,
-            disallowed: Object.keys(course.tees)
+            disallowed: (course.tees == "" ? [] : Object.keys(course.tees))
         };
-        setAddTeeDialog({show: true, data: dialogData});
+        setAddEditTeeDialog({show: true, data: dialogData, prevTee: (editing ? selectedTee : "")});
     }
 
     function openGeoPtDialog(holeNum, prop) {
         const feature = {flagLoc: "center of green",
                          teeLoc: "center of teeing area"};
-        const verb = (Object.keys(course.tees[selectedTee].holes[holeNum-1][prop]).length === 0) ? 
+        const verb = (course.tees[selectedTee].holes[holeNum-1][prop] === "") ? 
                         "Add" : "Edit";
         const dialogData = {
             show: true,
@@ -114,6 +127,22 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
         setEditGeoPtDialog(dialogData);
     }
 
+    function openGeoPathDialog(holeNum, prop) {
+        const briefFeature = {transitionPath: "Transition Path",
+        golfPath: "Golf Path"};
+        const feature = {transitionPath: "path from center of previous green to center of teeing area",
+                         golfPath: "path from center of teeing area to center of green"};
+              const dialogData = {
+            show: true,
+            title: "Upload " + briefFeature[prop],
+            prompt: "Upload " + feature[prop],
+            buttonLabel: "Save",
+            holeNum: holeNum,
+            prop: prop
+        }
+        setUploadGeoPathDialog(dialogData);
+    }
+
     function updateGeoData(val) {
         const updatedTees = {...course.tees};
         updatedTees[selectedTee].holes[editGeoPtDialog.holeNum-1][editGeoPtDialog.prop] = val;
@@ -121,27 +150,46 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
         setEditGeoPtDialog({show: false});
     }
 
+    function saveGeoPath(val) {
+        const updatedTees = {...course.tees};
+        updatedTees[selectedTee].holes[uploadGeoPathDialog.holeNum-1][uploadGeoPathDialog.prop] = val;
+        updateCourseVal("tees",updatedTees);
+        setUploadGeoPathDialog({show: false});
+    }
+
     function cancelUpdateGeoData() {
         setEditGeoPtDialog({show: false});
     }
 
-    return(
-        (addTeeDialog.show) ? 
-            <CoursesModeEditTextModal title="New Tee"
-                                      prompt="Enter new tee name:" 
-                                      buttonLabel="Add"
-                                      data={addTeeDialog.data}
-                                      updateData={addTee}
-                                      cancelUpdate={cancelAddTee} /> :
-        editGeoPtDialog.show ?
-          <CoursesModeEditGeoPtModal title={editGeoPtDialog.title}
-                                     prompt={editGeoPtDialog.prompt}
-                                     value={editGeoPtDialog.val}
-                                     buttonLabel={editGeoPtDialog.buttonLabel}
-                                     viewport={course.viewport}
-                                     updateData={updateGeoData}
-                                     cancelUpdate={cancelUpdateGeoData} /> :
+    function cancelSaveGeoPath() {
+        setUploadGeoPathDialog({show: false});
+    }
 
+    return(
+        (addEditTeeDialog.show) ? 
+            <CoursesModeEditTextModal 
+              title={addEditTeeDialog.prevTee == "" ? "Add Tee" : "Update Tee Name"} 
+              prompt={addEditTeeDialog.prevTee == "" ? "Enter a new tee name:" : "Enter updated name for tee:"} 
+              buttonLabel={addEditTeeDialog.prevTee == "" ? "Add" : "Edit"}
+              data={addEditTeeDialog.data}
+              updateData={addEditTee}
+              cancelUpdate={cancelAddEditTee} /> :
+        editGeoPtDialog.show ?
+          <CoursesModeEditGeoPtModal 
+            title={editGeoPtDialog.title}
+            prompt={editGeoPtDialog.prompt}
+            value={editGeoPtDialog.val}
+            buttonLabel={editGeoPtDialog.buttonLabel}
+            viewport={course.viewport}
+            updateData={updateGeoData}
+            cancelUpdate={cancelUpdateGeoData} /> :
+        uploadGeoPathDialog.show ?
+          <CoursesModeUploadGeoPathModal 
+            title={uploadGeoPathDialog.title}
+            prompt={uploadGeoPathDialog.prompt}
+            buttonLabel={uploadGeoPathDialog.buttonLabel}
+            updateData={saveGeoPath}
+            cancelUpdate={cancelSaveGeoPath} /> :
         <>
             <div className="mb-3 centered">
                 <label className="form-label" htmlFor="numHoles">Number of Holes:
@@ -152,13 +200,18 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                         max="22"
                         name="numHoles" 
                         value={course.numHoles} 
-                        onChange={handleNumHolesChange} />
+                        onChange={handleNumHolesChange} 
+                        aria-describedby="numHoles-descr"
+                        disabled={course.tees == "" ? false: true}/>
                 </label>
+                <div id="numHoles-descr" className="form-text">
+                      Number of holes on the course. Once a set of tees has been added to the course, you may <i>not</i> change this value.
+                </div>
             </div>
             <div className="mb-3 centered">
                 <label className="form-label" htmlFor="tees">Selected Tees:</label><br></br>
                 <select className="form-select-sm centered" id="tees" onChange={handleSelectedTeeChange}>
-                    {Object.keys(course.tees).length === 0 ? 
+                    {course.tees === "" ? 
                       <option value="No tees defined">Choose '+' to add a tee</option> :
                     Object.keys(course.tees).map((t) => {
                       return [
@@ -167,9 +220,15 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                     })}
                 </select>&nbsp;
                 <button role="button" className="btn-theme" aria-label="Add New Tee"
-                        onClick={openAddTeeDialog}>               
+                        onClick={()=>openAddEditTeeDialog(false)} title="Add a set of tees">               
                   <FontAwesomeIcon icon="plus"/>
-                </button>
+                </button>&nbsp;
+                {course.tees == "" ? null :
+                  <button role="button" className="btn-theme" aria-label="Edit Name of Tee"
+                        onClick={()=>openAddEditTeeDialog(true)} title="Edit name of selected set of tees">               
+                    <FontAwesomeIcon icon="edit"/>
+                  </button>
+                }
             </div>
             <p></p>
             {selectedTee == null ? null :
@@ -196,17 +255,18 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                   <p></p>
                   <div className="mb-3 centered">
                     <label className="form-label" htmlFor="numHoles">Golf Distance:
-                    <input id="golfDistance" 
+                    <input id="golfDistance" disabled
                           className="form-control centered"
                           type="number" 
                           name="golfDistance" 
-                          value={distUnits == "yards" ? course.tees[selectedTee].golfDistance : 
-                                 course.tees[selectedTee].golfDistance * yardsToMeters} 
-                          onChange={handleTeeDataChange} 
+                          value={distUnits == "yards" ? course.tees[selectedTee].holes.reduce((acc,h)=>
+                                   acc + (h.golfDistance == "" ? 0 : Number(h.golfDistance)),0) : 
+                                   course.tees[selectedTee].holes.reduce((acc,h)=>
+                                    acc + (h.golfDistance == "" ? 0 : (Number(h.golfDistance) * yardsToMeters)),0)}  
                           aria-describedby="golfDistance-descr" />
                     </label>
                     <div id="golfDistance-descr" className="form-text">
-                      {"Total golf distance for the " + selectedTee + " tees , as listed on scorecard"}
+                      {"Total golf distance for the " + selectedTee + " tees. Calculated automatically based on golf distances entered for individual holes."}
                     </div>
                   </div>
                   <div className="mb-3 centered">
@@ -215,13 +275,14 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                           className="form-control centered"
                           type="number" 
                           name="runningDistance" 
-                          value={distUnits == "yards" ? course.tees[selectedTee].runningDistance : 
-                                 course.tees[selectedTee].runningDistance * yardsToMeters} 
-                          onChange={handleTeeDataChange} 
+                          value={distUnits == "yards" ? course.tees[selectedTee].holes.reduce((acc,h)=>
+                          {return acc + (h.runningDistance == "" ? 0 : h.runningDistance)}) : 
+                           course.tees[selectedTee].holes.reduce((acc,h)=>
+                            {return acc + (h.runningDistance == "" ? 0 : (h.runningDistance * yardsToMeters))})}   
                           aria-describedby="runningDistance-descr" />
                     </label>
                     <div id="runningDistance-descr" className="form-text">
-                      {"Total running distance for the " + selectedTee + " tees; autocalculated based on running distances entered for individual holes"}
+                      {"Total running distance for the " + selectedTee + " tees. Calculated automatically based on running distances entered for individual holes."}
                     </div>
                   </div>
                   </fieldset>
@@ -331,22 +392,66 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                                 return [
                                 <tr key={h.number}>
                                     <td>{h.number}</td>
-                                    <td><input type="number" className="dist-width" value={h.golfDistance} onChange={(e) => handleHoleDataChange(e,i,"golfDistance")}/></td>
-                                    <td><input type="number" className="par-width" value={h.womensStrokePar} onChange={(e) => handleHoleDataChange(e,i,"womensStrokePar")}/></td>
-                                    <td><input type="number" className="par-width" value={h.womensHandicap} onChange={(e) => handleHoleDataChange(e,i,"womensHandicap")}/></td>
-                                    <td><input type="number" className="par-width" value={h.mensStrokePar} onChange={(e) => handleHoleDataChange(e,i,"mensStrokePar")}/></td>
-                                    <td><input type="number" className="par-width" value={h.mensHandicap} onChange={(e) => handleHoleDataChange(e,i,"mensHandicap")}/></td>
-                                    <td><input type="number" disabled className="dist-width" value={h.runningDistance} onChange={(e) => handleHoleDataChange(e,i,"runningDistance")}/></td>
-                                    <td><input type="number" disabled className="time-width" value={h.womensTimePar} onChange={(e) => handleHoleDataChange(e,i,"womensTimePar")}/></td>
-                                    <td><input type="number" disabled className="time-width" value={h.womensTimePar} onChange={(e) => handleHoleDataChange(e,i,"mensTimePar")}/></td>                                    
-                                    <td><button className={"btn " +  (Object.keys(h.teeLoc).length !== 0 ? "btn-green" : "btn-red")} 
+                                    <td>
+                                        <input type="number" className="dist-width"  value={h.golfDistance}                                                    
+                                               onChange={(e) => handleHoleDataChange(e,i,"golfDistance",1,900)}/>
+                                    </td>
+                                    <td>
+                                        <input type="number" className="par-width"  value={h.womensStrokePar} 
+                                               onChange={(e) => handleHoleDataChange(e,i,"womensStrokePar",3,6)}/>
+                                    </td>
+                                    <td>
+                                        <input type="number" className="par-width" value={h.womensHandicap} 
+                                               onChange={(e) => handleHoleDataChange(e,i,"womensHandicap",1,course.numHoles)}/>
+                                    </td>
+                                    <td>
+                                        <input type="number" className="par-width"  value={h.mensStrokePar} 
+                                               onChange={(e) => handleHoleDataChange(e,i,"mensStrokePar",3,6)}/>
+                                    </td>
+                                    <td>
+                                        <input type="number" className="par-width" value={h.mensHandicap} 
+                                               onChange={(e) => handleHoleDataChange(e,i,"mensHandicap",1,course.numHoles)}/></td>
+                                    <td>
+                                        <input type="number" disabled className="dist-width" value={h.runningDistance}/>
+                                    </td>
+                                    <td>
+                                        <input type="number" disabled className="time-width" value={h.womensTimePar}/>
+                                    </td>
+                                    <td>
+                                        <input type="number" disabled className="time-width" value={h.womensTimePar}/>
+                                    </td>                                    
+                                    <td><button className="btn" 
                                                 onClick={() => openGeoPtDialog(i+1,"teeLoc")} >
-                                            <FontAwesomeIcon icon={(Object.keys(h.teeLoc).length !== 0 ? "check" : "edit")}/>
+                                            <FontAwesomeIcon icon="edit" />&nbsp;
+                                            <span className={(h.teeLoc !== "" ? "btn-green" : "btn-red")}>
+                                            <FontAwesomeIcon icon={(h.teeLoc !== "" ? "check" : "xmark")}/>
+                                            </span>
                                         </button>
                                     </td>
-                                    <td><FontAwesomeIcon icon="edit"/></td>
-                                    <td><FontAwesomeIcon icon="edit"/></td>
-                                    <td><FontAwesomeIcon icon="edit"/></td>
+                                    <td>
+                                        <button className="btn" onClick={() => openGeoPtDialog(i+1,"flagLoc")}>
+                                            <FontAwesomeIcon icon="edit" />&nbsp;
+                                            <span className={(h.flagLoc !== "" ? "btn-green" : "btn-red")}>
+                                            <FontAwesomeIcon icon={(h.flagLoc !== "" ? "check" : "xmark")}/>
+                                            </span>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button className="btn" onClick={() => openGeoPathDialog(i+1,"transitionPath")}>
+                                            <FontAwesomeIcon icon="edit" />&nbsp;
+                                            <span className={(h.transitionPath !== "" ? "btn-green" : "btn-red")}>
+                                            <FontAwesomeIcon icon={(h.transitionPath !== "" ? "check" : "xmark")}/>
+                                            </span>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button className="btn" onClick={() => openGeoPathDialog(i+1,"golfPath")}>
+                                            <FontAwesomeIcon icon="edit" />&nbsp;
+                                            <span className={(h.golfPath !== "" ? "btn-green" : "btn-red")}>
+                                            <FontAwesomeIcon icon={(h.golfPath !== "" ? "check" : "xmark")}/>
+                                            </span>
+                                        </button>
+                                    </td>
                                     <td><FontAwesomeIcon icon="edit"/></td>
                                 </tr>
                                 ];
