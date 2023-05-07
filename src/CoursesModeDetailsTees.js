@@ -1,10 +1,12 @@
-import CourseMapper from './images/CourseMapper.jpg'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useState, useEffect, useRef} from 'react';
 import CoursesModeEditTextModal from './CoursesModeEditTextModal';
 import CoursesModeEditGeoPtModal from './CoursesModeEditGeoPtModal';
 import CoursesModeUploadGeoPathModal from './CoursesModeUploadGeoPathModal';
 import CoursesModeDetailsHoleMap from './CoursesModeDetailsHoleMap';
+import {parRunPaceWomen, parRunPaceMen, 
+        parShotBoxSecWomen, parShotBoxSecMen, 
+        getHoleRunningStats} from './speedgolfCalculations';
 
  /*************************************************************************
  * File: coursesModeDetailsBasic.js
@@ -16,7 +18,6 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
 
     const yardsToMeters = 0.9144;
     const [addEditTeeDialog, setAddEditTeeDialog] = useState({show: false});
-    const [editGeoPtDialog, setEditGeoPtDialog] = useState({show: false});
     const [uploadGeoPathDialog, setUploadGeoPathDialog] = useState({show: false});
     const [selectedTee, setSelectedTee] = 
       useState(Object.keys(course.tees) == 0 ? null: Object.keys(course.tees)[0]);
@@ -76,11 +77,15 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                 number: i+1,
                 name: "",
                 golfDistance: "",
-                runningDistance: "",
+                runDistance: "",
+                transRunDistance: "",
+                golfRunDistance: "",
                 womensHandicap: "",
                 mensHandicap: "",
                 womensStrokePar: "",
                 mensStrokePar: "",
+                womensTimePar: "",
+                mensTimePar: "",
                 teeLoc: "",
                 flagLoc: "",
                 features: "",
@@ -110,23 +115,6 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
         setAddEditTeeDialog({show: true, data: dialogData, prevTee: (editing ? selectedTee : "")});
     }
 
-    function openGeoPtDialog(holeNum, prop) {
-        const feature = {flagLoc: "center of green",
-                         teeLoc: "center of teeing area"};
-        const verb = (course.tees[selectedTee].holes[holeNum-1][prop] === "") ? 
-                        "Add" : "Edit";
-        const dialogData = {
-            show: true,
-            title: verb + " location of " + feature[prop] + " on Hole " + holeNum,
-            prompt: "Enter location of " + feature[prop] + " on Hole " + holeNum,
-            val: course.tees[selectedTee].holes[holeNum-1][prop],
-            buttonLabel: verb,
-            holeNum: holeNum,
-            prop: prop
-        }
-        setEditGeoPtDialog(dialogData);
-    }
-
     function openGeoPathDialog(holeNum, prop) {
         const briefFeature = {transitionPath: "Transition Path",
         golfPath: "Golf Path"};
@@ -143,30 +131,74 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
         setUploadGeoPathDialog(dialogData);
     }
 
-    function updateGeoData(val) {
-        const updatedTees = {...course.tees};
-        updatedTees[selectedTee].holes[editGeoPtDialog.holeNum-1][editGeoPtDialog.prop] = val;
-        updateCourseVal("tees",updatedTees);
-        setEditGeoPtDialog({show: false});
-    }
-
     function saveGeoPath(val) {
         const updatedTees = {...course.tees};
-        updatedTees[selectedTee].holes[uploadGeoPathDialog.holeNum-1][uploadGeoPathDialog.prop] = val;
+        const thisHole = {...updatedTees[selectedTee].holes[uploadGeoPathDialog.holeNum-1]};
+        const prevHole = (uploadGeoPathDialog.holeNum > 1 ? 
+            {...updatedTees[selectedTee].holes[uploadGeoPathDialog.holeNum-2]} : null);
+        if (uploadGeoPathDialog.prop === 'golfPath') {
+            if (thisHole.transitionPath !== "" &&
+                Object.keys(thisHole.transitionPath).length > 0) { 
+                //adjust start of golf path to match prev trans path
+                const transPath = thisHole.transitionPath;
+                val[0].lat = transPath[transPath.length-1].lat;
+                val[0].lng = transPath[transPath.length-1].lng;
+                val[0].elv = transPath[transPath.length-1].elv;
+            }
+            thisHole.golfPath = val;
+            thisHole.teeLoc = {...val[0]};
+            thisHole.flagLoc = {...val[val.length-1]};
+            if (uploadGeoPathDialog.holeNum == 1 && thisHole.transitionPath == "") {
+                thisHole.transitionPath = {}; //Special case: Force empty trans path for Hole #1
+            }
+        } else { //uploadGeoPathDialog.prop === 'transitionPath
+            if (uploadGeoPathDialog.holeNum > 1 &&  prevHole.golfPath !== "") {
+                //adjust start of trans path to match end of prev golf path
+                val[0].lat = prevHole.golfPath[prevHole.golfPath.length-1].lat;
+                val[0].lng = prevHole.golfPath[prevHole.golfPath.length-1].lng;
+                val[0].elv = prevHole.golfPath[prevHole.golfPath.length-1].elv;
+            }
+            thisHole.transitionPath = val;
+            thisHole.teeLoc = {...val[val.length-1]};
+        } 
+        if (thisHole.transitionPath !== "" &&
+            thisHole.golfPath !== "") { //Compute running distance and time pars!
+                const womenHoleRunStats = 
+                  getHoleRunningStats(thisHole.transitionPath, thisHole.golfPath,
+                    thisHole.womensStrokePar, parRunPaceWomen, parShotBoxSecWomen);
+                const menHoleRunStats = 
+                  getHoleRunningStats(thisHole.transitionPath, thisHole.golfPath,
+                    thisHole.mensStrokePar, parRunPaceMen, parShotBoxSecMen);
+                thisHole.runDistance = Math.round(womenHoleRunStats.holeRunDistance);
+                thisHole.transRunDistance = Math.round(womenHoleRunStats.transPathRunDistance);
+                thisHole.golfRunDistance = Math.round(womenHoleRunStats.golfPathRunDistance);
+                thisHole.womensTimePar = Math.round(womenHoleRunStats.holeTimePar);
+                thisHole.mensTimePar = Math.round(menHoleRunStats.holeTimePar);
+        }
+        updatedTees[selectedTee].holes[uploadGeoPathDialog.holeNum-1] = thisHole;
         updateCourseVal("tees",updatedTees);
         setUploadGeoPathDialog({show: false});
-    }
-
-    function cancelUpdateGeoData() {
-        setEditGeoPtDialog({show: false});
     }
 
     function cancelSaveGeoPath() {
         setUploadGeoPathDialog({show: false});
     }
 
+    function toTimePar(sec) {
+        const intSec = parseInt(sec);
+        return (Math.floor(intSec/60)) + ":" + (intSec % 60 < 10 ? "0" + intSec % 60 : intSec % 60);
+    }
+
+    function toYards(ft) {
+        return Math.round(parseInt(ft)/3);
+    }
+
+    function toMeters(ft) {
+        return Math.round(parseInt(ft)/3.28084);
+    }
+
     return(
-        (addEditTeeDialog.show) ? 
+        addEditTeeDialog.show ? 
             <CoursesModeEditTextModal 
               title={addEditTeeDialog.prevTee == "" ? "Add Tee" : "Update Tee Name"} 
               prompt={addEditTeeDialog.prevTee == "" ? "Enter a new tee name:" : "Enter updated name for tee:"} 
@@ -174,15 +206,6 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
               data={addEditTeeDialog.data}
               updateData={addEditTee}
               cancelUpdate={cancelAddEditTee} /> :
-        editGeoPtDialog.show ?
-          <CoursesModeEditGeoPtModal 
-            title={editGeoPtDialog.title}
-            prompt={editGeoPtDialog.prompt}
-            value={editGeoPtDialog.val}
-            buttonLabel={editGeoPtDialog.buttonLabel}
-            viewport={course.viewport}
-            updateData={updateGeoData}
-            cancelUpdate={cancelUpdateGeoData} /> :
         uploadGeoPathDialog.show ?
           <CoursesModeUploadGeoPathModal 
             title={uploadGeoPathDialog.title}
@@ -234,7 +257,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
             {selectedTee == null ? null :
                 <div>
                   <fieldset className="centered">
-                  <legend>{"Distances for " + selectedTee + " Tees"}</legend>
+                  <legend>{"Distances and Pars from the " + selectedTee + " Tees"}</legend>
                     <label>Distance Unit</label>
                     <div className="form-check" role="radiogroup">
                         <input className="centered" 
@@ -260,13 +283,41 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                           type="number" 
                           name="golfDistance" 
                           value={distUnits == "yards" ? course.tees[selectedTee].holes.reduce((acc,h)=>
-                                   acc + (h.golfDistance == "" ? 0 : Number(h.golfDistance)),0) : 
+                                   acc + (h.golfDistance == "" ? 0 : h.golfDistance),0) : 
                                    course.tees[selectedTee].holes.reduce((acc,h)=>
-                                    acc + (h.golfDistance == "" ? 0 : (Number(h.golfDistance) * yardsToMeters)),0)}  
+                                    acc + (h.golfDistance == "" ? 0 : (h.golfDistance * yardsToMeters)),0)}  
                           aria-describedby="golfDistance-descr" />
                     </label>
                     <div id="golfDistance-descr" className="form-text">
-                      {"Total golf distance for the " + selectedTee + " tees. Calculated automatically based on golf distances entered for individual holes."}
+                      {"Total golf distance from the " + selectedTee + " tees. Calculated automatically based on golf distances entered for individual holes."}
+                    </div>
+                  </div>
+                  <div className="mb-3 centered">
+                    <label className="form-label" htmlFor="womensGolfPar">Women's Golf Par:
+                    <input id="womensGolfPar" disabled
+                          className="form-control centered"
+                          type="number" 
+                          name="womensGolfPar" 
+                          value={course.tees[selectedTee].holes.reduce((acc,h)=>
+                                   acc + (h.womensStrokePar == "" ? 0 : Number(h.womensStrokePar)),0)}  
+                          aria-describedby="womensGolfPar-descr" />
+                    </label>
+                    <div id="womensGolfPar-descr" className="form-text">
+                      {"Total women's golf par from the " + selectedTee + " tees. Calculated automatically based on golf pars entered for individual holes."}
+                    </div>
+                  </div>
+                  <div className="mb-3 centered">
+                    <label className="form-label" htmlFor="mensGolfPar">Men's Golf Par:
+                    <input id="mensGolfPar" disabled
+                          className="form-control centered"
+                          type="number" 
+                          name="mensGolfPar" 
+                          value={course.tees[selectedTee].holes.reduce((acc,h)=>
+                                   acc + (h.mensStrokePar == "" ? 0 : Number(h.mensStrokePar)),0)}  
+                          aria-describedby="mensGolfPar-descr" />
+                    </label>
+                    <div id="womensGolfPar-descr" className="form-text">
+                      {"Total women's golf par from the " + selectedTee + " tees. Calculated automatically based on golf pars entered for individual holes."}
                     </div>
                   </div>
                   <div className="mb-3 centered">
@@ -275,16 +326,45 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                           className="form-control centered"
                           type="number" 
                           name="runningDistance" 
-                          value={distUnits == "yards" ? course.tees[selectedTee].holes.reduce((acc,h)=>
-                          {return acc + (h.runningDistance == "" ? 0 : h.runningDistance)}) : 
+                          value={distUnits === "yards" ? Math.round((course.tees[selectedTee].holes.reduce((acc,h)=>
+                          acc + (h.runDistance == "" ? 0 : h.runDistance),0))/3) : (
                            course.tees[selectedTee].holes.reduce((acc,h)=>
-                            {return acc + (h.runningDistance == "" ? 0 : (h.runningDistance * yardsToMeters))})}   
+                            acc + (h.runDistance == "" ? 0 : (h.runDistance)),0))/3.28084}   
                           aria-describedby="runningDistance-descr" />
                     </label>
                     <div id="runningDistance-descr" className="form-text">
-                      {"Total running distance for the " + selectedTee + " tees. Calculated automatically based on running distances entered for individual holes."}
+                      {"Total running distance from the " + selectedTee + " tees. Calculated automatically based on running distances entered for individual holes."}
                     </div>
                   </div>
+                  <div className="mb-3 centered">
+                    <label className="form-label" htmlFor="womensTimePar">Women's Time Par:
+                    <input id="womensTimePar" disabled
+                          className="form-control centered"
+                          type="text" 
+                          name="womensTimePar" 
+                          value={toTimePar(course.tees[selectedTee].holes.reduce((acc,h)=>
+                                   acc + (h.womensTimePar == "" ? 0 : h.womensTimePar),0))}  
+                          aria-describedby="womensTimePar-descr" />
+                    </label>
+                    <div id="womensTimePar-descr" className="form-text">
+                      {"Total women's time par from the " + selectedTee + " tees. Calculated automatically based on time pars computed for individual holes."}
+                    </div>
+                  </div>
+                  <div className="mb-3 centered">
+                    <label className="form-label" htmlFor="mensTimePar">Men's Time Par:
+                    <input id="mensTimePar" disabled
+                          className="form-control centered"
+                          type="text" 
+                          name="mensTimePar" 
+                          value={toTimePar(course.tees[selectedTee].holes.reduce((acc,h)=>
+                                   acc + (h.mensTimePar == "" ? 0 : h.mensTimePar),0))}  
+                          aria-describedby="mensTimePar-descr" />
+                    </label>
+                    <div id="womensTimePar-descr" className="form-text">
+                      {"Total men's time par from the " + selectedTee + " tees. Calculated automatically based on time pars computed for individual holes."}
+                    </div>
+                  </div>
+                  
                   </fieldset>
                   <fieldset className="centered">
                     <legend>{"Course Rating/Slope for " + selectedTee + " Tees"}</legend>
@@ -318,10 +398,10 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                   </div>
                   <div className="mb-3 centered">
                     <label className="form-label" htmlFor="numHoles">Women's Course Slope:
-                    <input id="womensRating" 
+                    <input id="womensSlope" 
                           className="form-control centered"
                           type="number" 
-                          name="womensRating" 
+                          name="womensSlope" 
                           value={course.tees[selectedTee].womensSlope} 
                           onChange={handleTeeDataChange} 
                           aria-describedby="womensSlope-descr" />
@@ -335,7 +415,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                     <input id="mensSlope" 
                           className="form-control centered"
                           type="number" 
-                          name="mensRating" 
+                          name="mensSlope" 
                           value={course.tees[selectedTee].mensSlope} 
                           onChange={handleTeeDataChange} 
                           aria-describedby="mensSlope-descr" />
@@ -346,7 +426,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                   </div>
                   </fieldset>
                   <fieldset className="centered">
-                    <legend>{"Hole-by-Hole Data for " + selectedTee + " Tees"}</legend>
+                    <legend>{"Hole Data for the" + selectedTee + " Tees"}</legend>
                     <ul className="nav nav-tabs" id="table-tab" role="tablist">
                         <li className="nav-item" role="presentation">
                             <button className="nav-link active" 
@@ -380,10 +460,10 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                           <th title="Running distance. Computed automatically based on transition path and golf path">Run Dist&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
                           <th title="Women's time par. Computed automatically based on hole's running distance and topography">W TPar&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
                           <th title="Women's time par. Computed automatically based on hole's running distance and topography">M TPar&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
-                          <th title="Latitude, longitude, and elevation of tee">Tee Loc&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
-                          <th title="Latitude, longitude, and elevation of center of green">Flag Loc&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
                           <th title="Vector of geopoints (latitude, longitude, and elevation) tracing ideal running path from center of previous green to tee">Trans Path&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
+                          <th title="Transition path running distance. Computed automatically based on transition path">Trans Path Dist&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
                           <th title="Vector of geopoints (latitude, longitude, and elevation) tracing ideal running path from tee to center of green">Golf Path&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
+                          <th title="Golf path running distance. Computed automatically based on golf path">Golf Path Dist&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
                           <th title="Vector of polygons demarcating hole features such as the tee box, bunkers, water hazards, and the green">Features&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
                           </tr>
                         </thead>
@@ -412,30 +492,16 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                                         <input type="number" className="par-width" value={h.mensHandicap} 
                                                onChange={(e) => handleHoleDataChange(e,i,"mensHandicap",1,course.numHoles)}/></td>
                                     <td>
-                                        <input type="number" disabled className="dist-width" value={h.runningDistance}/>
+                                        <input type="number" disabled className="dist-width" value={toYards(h.runDistance)}/>
                                     </td>
                                     <td>
-                                        <input type="number" disabled className="time-width" value={h.womensTimePar}/>
+                                        <input type="text" disabled className="time-width" 
+                                               value={h.womensTimePar == "" ? "" : toTimePar(h.womensTimePar)}/>
                                     </td>
                                     <td>
-                                        <input type="number" disabled className="time-width" value={h.womensTimePar}/>
+                                        <input type="text" disabled className="time-width" 
+                                               value={h.mensTimePar == "" ? "" : toTimePar(h.mensTimePar)}/>
                                     </td>                                    
-                                    <td><button className="btn" 
-                                                onClick={() => openGeoPtDialog(i+1,"teeLoc")} >
-                                            <FontAwesomeIcon icon="edit" />&nbsp;
-                                            <span className={(h.teeLoc !== "" ? "btn-green" : "btn-red")}>
-                                            <FontAwesomeIcon icon={(h.teeLoc !== "" ? "check" : "xmark")}/>
-                                            </span>
-                                        </button>
-                                    </td>
-                                    <td>
-                                        <button className="btn" onClick={() => openGeoPtDialog(i+1,"flagLoc")}>
-                                            <FontAwesomeIcon icon="edit" />&nbsp;
-                                            <span className={(h.flagLoc !== "" ? "btn-green" : "btn-red")}>
-                                            <FontAwesomeIcon icon={(h.flagLoc !== "" ? "check" : "xmark")}/>
-                                            </span>
-                                        </button>
-                                    </td>
                                     <td>
                                         <button className="btn" onClick={() => openGeoPathDialog(i+1,"transitionPath")}>
                                             <FontAwesomeIcon icon="edit" />&nbsp;
@@ -445,12 +511,18 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                                         </button>
                                     </td>
                                     <td>
+                                        <input type="number" disabled className="dist-width" value={toYards(h.transRunDistance)}/>
+                                    </td>
+                                    <td>
                                         <button className="btn" onClick={() => openGeoPathDialog(i+1,"golfPath")}>
                                             <FontAwesomeIcon icon="edit" />&nbsp;
                                             <span className={(h.golfPath !== "" ? "btn-green" : "btn-red")}>
                                             <FontAwesomeIcon icon={(h.golfPath !== "" ? "check" : "xmark")}/>
                                             </span>
                                         </button>
+                                    </td>
+                                    <td>
+                                        <input type="number" disabled className="dist-width" value={toYards(h.golfRunDistance)}/>
                                     </td>
                                     <td><FontAwesomeIcon icon="edit"/></td>
                                 </tr>

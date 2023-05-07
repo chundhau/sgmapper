@@ -82,14 +82,6 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
                     Tees & Holes Info
                 </button>
             </li>
-            <li className="nav-item" role="presentation">
-                <button className="nav-link" id="reviews-tab" 
-                        data-bs-toggle="tab" data-bs-target="#reviews" 
-                        type="button" role="tab" aria-controls="reviews" 
-                        aria-selected="false">
-                    Reviews
-                </button>
-            </li>
         </ul>
         <div className="tab-content" id="detailsTabContent">
             <div className="tab-pane fade show active" id="basic-info" role="tabpanel" aria-labelledby="home-tab">
@@ -100,9 +92,6 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
             </div>
             <div className="tab-pane fade" id="tees-holes-info" role="tabpanel" aria-labelledby="tees-holes-tab">
                 <CoursesModeDetailsTees course={updatedCourse} updateCourseVal={updateCourseVal}/>
-            </div>
-            <div className="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                <img src={CourseReviewMockup} alt="Mock up of course review page"/>
             </div>
         </div>
         <div className="mode-page-btn-container">
