@@ -621,3 +621,40 @@ cursor: pointer;
     outline: 0;     
     color: red;
 }
+
+/*************************************************************************
+* MapBox CSS
+*************************************************************************/
+/* MapBox.css */
+body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  #map {
+    height: 500px;
+    width: 100%;
+  }
+  
+  .mapboxgl-canvas .mapboxgl-draw-line {
+    stroke-width: 4px;
+    stroke: red;
+  }
+  
+  .calculation-box {
+    height: 75px;
+    width: 150px;
+
+    bottom: 40px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    text-align: left;
+  }
+  
+  p {
+    font-family: 'Open Sans';
+    margin: 0;
+    font-size: 13px;
+  }
+  

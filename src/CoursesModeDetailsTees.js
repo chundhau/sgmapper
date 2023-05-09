@@ -2,7 +2,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useState} from 'react';
 import CoursesModeEditTextModal from './CoursesModeEditTextModal';
 import CoursesModeUploadGeoPathModal from './CoursesModeUploadGeoPathModal';
-import CoursesModeDetailsHoleMap from './CoursesModeDetailsHoleMap';
+import CoursesModeDetailsMap from './CoursesModeDetailsMap';
 import {parRunPaceWomen, parRunPaceMen, 
         parShotBoxSecWomen, parShotBoxSecMen, 
         getHoleRunningStats} from './speedgolfCalculations';
@@ -543,7 +543,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                         </table>
                         </div>
                         <div className="tab-pane fade" id="hole-map" role="tabpanel" aria-labelledby="map-tab">
-                            <CoursesModeDetailsHoleMap course={course} updateCourseVal={updateCourseVal}/>
+                            <CoursesModeDetailsMap location={course.geoLocation} />
                         </div>
                     </div>
                   </fieldset>
