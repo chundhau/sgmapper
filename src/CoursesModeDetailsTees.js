@@ -1,7 +1,6 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {useState, useEffect, useRef} from 'react';
+import {useState} from 'react';
 import CoursesModeEditTextModal from './CoursesModeEditTextModal';
-import CoursesModeEditGeoPtModal from './CoursesModeEditGeoPtModal';
 import CoursesModeUploadGeoPathModal from './CoursesModeUploadGeoPathModal';
 import CoursesModeDetailsHoleMap from './CoursesModeDetailsHoleMap';
 import {parRunPaceWomen, parRunPaceMen, 
@@ -20,7 +19,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
     const [addEditTeeDialog, setAddEditTeeDialog] = useState({show: false});
     const [uploadGeoPathDialog, setUploadGeoPathDialog] = useState({show: false});
     const [selectedTee, setSelectedTee] = 
-      useState(Object.keys(course.tees) == 0 ? null: Object.keys(course.tees)[0]);
+      useState(course.tees === "" ? "No tees defined": Object.keys(course.tees)[0]);
     const [distUnits, setDistUnits] = useState("yards");
 
     function handleNumHolesChange(event) {
@@ -55,7 +54,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
     }
 
     function addEditTee(teeName) {
-        const updatedTees = (course.tees == "" ? {} : {...course.tees});
+        const updatedTees = (course.tees === "" ? {} : {...course.tees});
         if (addEditTeeDialog.prevTee !== "") {
             updatedTees[teeName] = course.tees[addEditTeeDialog.prevTee];
             delete updatedTees[addEditTeeDialog.prevTee];
@@ -110,7 +109,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
             type: "text",
             size: 20,
             emptyAllowed: false,
-            disallowed: (course.tees == "" ? [] : Object.keys(course.tees))
+            disallowed: (course.tees === "" ? [] : Object.keys(course.tees))
         };
         setAddEditTeeDialog({show: true, data: dialogData, prevTee: (editing ? selectedTee : "")});
     }
@@ -148,7 +147,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
             thisHole.golfPath = val;
             thisHole.teeLoc = {...val[0]};
             thisHole.flagLoc = {...val[val.length-1]};
-            if (uploadGeoPathDialog.holeNum == 1 && thisHole.transitionPath == "") {
+            if (uploadGeoPathDialog.holeNum === 1 && thisHole.transitionPath === "") {
                 thisHole.transitionPath = {}; //Special case: Force empty trans path for Hole #1
             }
         } else { //uploadGeoPathDialog.prop === 'transitionPath
@@ -190,19 +189,30 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
     }
 
     function toYards(ft) {
-        return Math.round(parseInt(ft)/3);
+      if (ft === "")
+        return "";
+      return Math.round(parseInt(ft)/3);
     }
 
     function toMeters(ft) {
-        return Math.round(parseInt(ft)/3.28084);
+      if (ft === "")
+        return "";
+      return Math.round(parseInt(ft)/3.28084);
+    }
+
+    function toMiles(ft) {
+      if (ft === "")
+        return "";
+      return (parseInt(ft)/5280).toFixed(2);
+
     }
 
     return(
         addEditTeeDialog.show ? 
             <CoursesModeEditTextModal 
-              title={addEditTeeDialog.prevTee == "" ? "Add Tee" : "Update Tee Name"} 
-              prompt={addEditTeeDialog.prevTee == "" ? "Enter a new tee name:" : "Enter updated name for tee:"} 
-              buttonLabel={addEditTeeDialog.prevTee == "" ? "Add" : "Edit"}
+              title={addEditTeeDialog.prevTee === "" ? "Add Tee" : "Update Tee Name"} 
+              prompt={addEditTeeDialog.prevTee === "" ? "Enter a new tee name:" : "Enter updated name for tee:"} 
+              buttonLabel={addEditTeeDialog.prevTee === "" ? "Add" : "Edit"}
               data={addEditTeeDialog.data}
               updateData={addEditTee}
               cancelUpdate={cancelAddEditTee} /> :
@@ -225,7 +235,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                         value={course.numHoles} 
                         onChange={handleNumHolesChange} 
                         aria-describedby="numHoles-descr"
-                        disabled={course.tees == "" ? false: true}/>
+                        disabled={course.tees === "" ? false: true}/>
                 </label>
                 <div id="numHoles-descr" className="form-text">
                       Number of holes on the course. Once a set of tees has been added to the course, you may <i>not</i> change this value.
@@ -233,7 +243,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
             </div>
             <div className="mb-3 centered">
                 <label className="form-label" htmlFor="tees">Selected Tees:</label><br></br>
-                <select className="form-select-sm centered" id="tees" onChange={handleSelectedTeeChange}>
+                <select className="form-select-sm centered" value={selectedTee} id="tees" onChange={handleSelectedTeeChange}>
                     {course.tees === "" ? 
                       <option value="No tees defined">Choose '+' to add a tee</option> :
                     Object.keys(course.tees).map((t) => {
@@ -242,19 +252,19 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                       ]
                     })}
                 </select>&nbsp;
-                <button role="button" className="btn-theme" aria-label="Add New Tee"
+                <button className="btn-theme" aria-label="Add New Tee"
                         onClick={()=>openAddEditTeeDialog(false)} title="Add a set of tees">               
                   <FontAwesomeIcon icon="plus"/>
                 </button>&nbsp;
-                {course.tees == "" ? null :
-                  <button role="button" className="btn-theme" aria-label="Edit Name of Tee"
+                {course.tees === "" ? null :
+                  <button className="btn-theme" aria-label="Edit Name of Tee"
                         onClick={()=>openAddEditTeeDialog(true)} title="Edit name of selected set of tees">               
                     <FontAwesomeIcon icon="edit"/>
                   </button>
                 }
             </div>
             <p></p>
-            {selectedTee == null ? null :
+            {selectedTee === "No tees defined" ? null :
                 <div>
                   <fieldset className="centered">
                   <legend>{"Distances and Pars from the " + selectedTee + " Tees"}</legend>
@@ -263,14 +273,14 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                         <input className="centered" 
                                type="radio" name="distYards" id="distYards" 
                                onChange={toggleUnits}
-                               value="yards" checked={distUnits=="yards"} />
+                               value="yards" checked={distUnits==="yards"} />
                         <label className="form-check-label centered" htmlFor="distYards">
                           &nbsp;Yards
                         </label>&nbsp;
                         <input className="centered" 
                                type="radio" name="distMeters" id="distMeters" 
                                onChange={toggleUnits}
-                               value="meters" checked={distUnits=="meters"}/>
+                               value="meters" checked={distUnits==="meters"}/>
                         <label className="form-check-label centered" htmlFor="distMeters">
                           &nbsp;Meters
                         </label>
@@ -282,10 +292,10 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                           className="form-control centered"
                           type="number" 
                           name="golfDistance" 
-                          value={distUnits == "yards" ? course.tees[selectedTee].holes.reduce((acc,h)=>
-                                   acc + (h.golfDistance == "" ? 0 : h.golfDistance),0) : 
+                          value={distUnits === "yards" ? course.tees[selectedTee].holes.reduce((acc,h)=>
+                                   acc + (h.golfDistance === "" ? 0 : h.golfDistance),0) : 
                                    course.tees[selectedTee].holes.reduce((acc,h)=>
-                                    acc + (h.golfDistance == "" ? 0 : (h.golfDistance * yardsToMeters)),0)}  
+                                    acc + (h.golfDistance === "" ? 0 : (h.golfDistance * yardsToMeters)),0)}  
                           aria-describedby="golfDistance-descr" />
                     </label>
                     <div id="golfDistance-descr" className="form-text">
@@ -299,7 +309,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                           type="number" 
                           name="womensGolfPar" 
                           value={course.tees[selectedTee].holes.reduce((acc,h)=>
-                                   acc + (h.womensStrokePar == "" ? 0 : Number(h.womensStrokePar)),0)}  
+                                   acc + (h.womensStrokePar === "" ? 0 : Number(h.womensStrokePar)),0)}  
                           aria-describedby="womensGolfPar-descr" />
                     </label>
                     <div id="womensGolfPar-descr" className="form-text">
@@ -313,7 +323,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                           type="number" 
                           name="mensGolfPar" 
                           value={course.tees[selectedTee].holes.reduce((acc,h)=>
-                                   acc + (h.mensStrokePar == "" ? 0 : Number(h.mensStrokePar)),0)}  
+                                   acc + (h.mensStrokePar === "" ? 0 : Number(h.mensStrokePar)),0)}  
                           aria-describedby="mensGolfPar-descr" />
                     </label>
                     <div id="womensGolfPar-descr" className="form-text">
@@ -326,10 +336,10 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                           className="form-control centered"
                           type="number" 
                           name="runningDistance" 
-                          value={distUnits === "yards" ? Math.round((course.tees[selectedTee].holes.reduce((acc,h)=>
-                          acc + (h.runDistance == "" ? 0 : h.runDistance),0))/3) : (
-                           course.tees[selectedTee].holes.reduce((acc,h)=>
-                            acc + (h.runDistance == "" ? 0 : (h.runDistance)),0))/3.28084}   
+                          value={distUnits === "yards" ? toMiles(course.tees[selectedTee].holes.reduce((acc,h)=>
+                          acc + (h.runDistance === "" ? 0 : h.runDistance),0)) : 
+                           toMeters(course.tees[selectedTee].holes.reduce((acc,h)=>
+                            acc + (h.runDistance === "" ? 0 : (h.runDistance)),0))}   
                           aria-describedby="runningDistance-descr" />
                     </label>
                     <div id="runningDistance-descr" className="form-text">
@@ -343,7 +353,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                           type="text" 
                           name="womensTimePar" 
                           value={toTimePar(course.tees[selectedTee].holes.reduce((acc,h)=>
-                                   acc + (h.womensTimePar == "" ? 0 : h.womensTimePar),0))}  
+                                   acc + (h.womensTimePar === "" ? 0 : h.womensTimePar),0))}  
                           aria-describedby="womensTimePar-descr" />
                     </label>
                     <div id="womensTimePar-descr" className="form-text">
@@ -357,7 +367,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                           type="text" 
                           name="mensTimePar" 
                           value={toTimePar(course.tees[selectedTee].holes.reduce((acc,h)=>
-                                   acc + (h.mensTimePar == "" ? 0 : h.mensTimePar),0))}  
+                                   acc + (h.mensTimePar === "" ? 0 : h.mensTimePar),0))}  
                           aria-describedby="mensTimePar-descr" />
                     </label>
                     <div id="womensTimePar-descr" className="form-text">
@@ -383,20 +393,6 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                     </div>
                   </div>
                   <div className="mb-3 centered">
-                    <label className="form-label" htmlFor="numHoles">Men's Course Rating:
-                    <input id="mensRating" 
-                          className="form-control centered"
-                          type="number" 
-                          name="mensRating" 
-                          value={course.tees[selectedTee].mensRating} 
-                          onChange={handleTeeDataChange} 
-                          aria-describedby="mensRating-descr" />
-                    </label>
-                    <div id="mensRating-descr" className="form-text">
-                    {"Men's course rating for the " + selectedTee + " tee, as listed on scorecard"}
-                    </div>
-                  </div>
-                  <div className="mb-3 centered">
                     <label className="form-label" htmlFor="numHoles">Women's Course Slope:
                     <input id="womensSlope" 
                           className="form-control centered"
@@ -408,6 +404,20 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                     </label>
                     <div id="womensSlope-descr" className="form-text">
                     {"Women's course slope for the " + selectedTee + " tee, as listed on scorecard"}
+                    </div>
+                  </div>
+                   <div className="mb-3 centered">
+                    <label className="form-label" htmlFor="numHoles">Men's Course Rating:
+                    <input id="mensRating" 
+                          className="form-control centered"
+                          type="number" 
+                          name="mensRating" 
+                          value={course.tees[selectedTee].mensRating} 
+                          onChange={handleTeeDataChange} 
+                          aria-describedby="mensRating-descr" />
+                    </label>
+                    <div id="mensRating-descr" className="form-text">
+                    {"Men's course rating for the " + selectedTee + " tee, as listed on scorecard"}
                     </div>
                   </div>
                   <div className="mb-3 centered">
@@ -426,7 +436,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                   </div>
                   </fieldset>
                   <fieldset className="centered">
-                    <legend>{"Hole Data for the" + selectedTee + " Tees"}</legend>
+                    <legend>{"Hole Data for the " + selectedTee + " Tees"}</legend>
                     <ul className="nav nav-tabs" id="table-tab" role="tablist">
                         <li className="nav-item" role="presentation">
                             <button className="nav-link active" 
@@ -496,11 +506,11 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                                     </td>
                                     <td>
                                         <input type="text" disabled className="time-width" 
-                                               value={h.womensTimePar == "" ? "" : toTimePar(h.womensTimePar)}/>
+                                               value={h.womensTimePar === "" ? "" : toTimePar(h.womensTimePar)}/>
                                     </td>
                                     <td>
                                         <input type="text" disabled className="time-width" 
-                                               value={h.mensTimePar == "" ? "" : toTimePar(h.mensTimePar)}/>
+                                               value={h.mensTimePar === "" ? "" : toTimePar(h.mensTimePar)}/>
                                     </td>                                    
                                     <td>
                                         <button className="btn" onClick={() => openGeoPathDialog(i+1,"transitionPath")}>
