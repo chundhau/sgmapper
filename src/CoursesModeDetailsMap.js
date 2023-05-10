@@ -1,5 +1,5 @@
 // MapBox.js
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import * as turf from '@turf/turf';
@@ -10,7 +10,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 
 export default function CoursesModeDetailsMap({holes, mapCenter})  {
-    
+
+  const [editHole, setEditHole] = useState({holeNum: 0});
+  const [profileHole, setProfileHole] = useState(0);
   const mapContainer = useRef(null);
   const distanceContainer = useRef(null);
 
@@ -42,7 +44,7 @@ export default function CoursesModeDetailsMap({holes, mapCenter})  {
         const data = draw.getAll();
         if (data.features.length > 0) {
           const line = data.features[0];
-          const distance = turf.length(line, { units: 'miles' });
+          const distance = turf.length(line, { units: 'feet' });
           //distanceContainer.current.innerHTML = `${distance.toFixed(2)} miles`;
         }// } else {
         //   distanceContainer.current.innerHTML = "0.00 miles";
@@ -68,7 +70,8 @@ export default function CoursesModeDetailsMap({holes, mapCenter})  {
       map.on('render', () => {
         map.resize();
     });
-      
+    
+    //TO DO: This doesn't obtain correct elevation. Please fix!
     function getElevation(coords, callback) {
         const queryCoords = coords.join(',');
         const url = `https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/${queryCoords}.json?layers=contour&limit=50&access_token=${mapboxgl.accessToken}`;
@@ -160,6 +163,7 @@ export default function CoursesModeDetailsMap({holes, mapCenter})  {
         <table className="table table-light table-sm">
           <thead>
             <th>#</th>
+            <th>Profile</th>
             <th>Transition</th>
             <th>Golf</th>
           </thead>
@@ -168,23 +172,29 @@ export default function CoursesModeDetailsMap({holes, mapCenter})  {
               return(
                 <tr key={h.number}>
                 <td>{h.number}</td>
-                <td>
-                <span className="btn-green"><FontAwesomeIcon icon="check"/></span>&nbsp;
-                    <button className="btn btn-outline-secondary btn-sm">
-                      <FontAwesomeIcon icon="edit"/>
-                    </button>
-                    <button className="btn btn-outline-secondary btn-sm">
+                <td> 
+                    <button className="btn btn-outline-secondary btn-sm"
+                            disabled={h.transitionPath === "" || h.golfPath === ""}
+                            onClick={()=>setProfileHole(h.number)}>
                       <FontAwesomeIcon icon="chart-line"/>
-                    </button>
+                    </button></td>
+                <td>
+                  <span className={h.transitionPath === "" ? "btn-red" : "btn-green"}>
+                    <FontAwesomeIcon icon={h.transitionPath === "" ? "xmark" :"check"}/>
+                  </span>&nbsp;
+                  <button className="btn btn-outline-secondary btn-sm"
+                            onClick={()=>setEditHole(h.number,"transitionPath")}>
+                      <FontAwesomeIcon icon="edit"/>
+                   </button>
                 </td>
                 <td>
-                <span className="btn-red"><FontAwesomeIcon icon="xmark"/></span>&nbsp;
-                    <button className="btn btn-outline-secondary btn-sm">
+                  <span className={h.transitionPath === "" ? "btn-red" : "btn-green"}>
+                    <FontAwesomeIcon icon={h.golfPath === "" ? "xmark" :"check"}/>
+                  </span>&nbsp;
+                  <button className="btn btn-outline-secondary btn-sm"
+                            onClick={()=>setEditHole(h.number,"golfPath")}>
                       <FontAwesomeIcon icon="edit"/>
-                    </button>
-                    <button className="btn btn-outline-secondary btn-sm">
-                      <FontAwesomeIcon icon="chart-line"/>
-                    </button>
+                   </button>
                 </td>
                 </tr>
             );
