@@ -155,17 +155,29 @@ export default function CoursesModeDetailsMap({holes, mapCenter})  {
     };
   }, []);
 
+  function handleProfileClick(holeNum) {
+    if (profileHole === holeNum) {
+      setProfileHole(0);
+    }
+    else {
+      setProfileHole(holeNum);
+    }
+  }
+  
   return (
      
     <div className="map-container">
       <div className="map-pane">
         <h5>Hole Paths</h5>
+        <div className="table-responsive">
         <table className="table table-light table-sm">
           <thead>
+            <tr>
             <th>#</th>
             <th>Profile</th>
             <th>Transition</th>
             <th>Golf</th>
+            </tr>
           </thead>
           <tbody>
             {holes.map((h) => {
@@ -173,15 +185,15 @@ export default function CoursesModeDetailsMap({holes, mapCenter})  {
                 <tr key={h.number}>
                 <td>{h.number}</td>
                 <td> 
-                    <button className="btn btn-outline-secondary btn-sm"
+                    <button className={"btn btn-sm " + (profileHole===h.number ? "btn-primary" : "btn-outline-secondary")}
                             disabled={h.transitionPath === "" || h.golfPath === ""}
-                            onClick={()=>setProfileHole(h.number)}>
+                            onClick={()=>handleProfileClick(h.number)}>
                       <FontAwesomeIcon icon="chart-line"/>
                     </button></td>
                 <td>
-                  <span className={h.transitionPath === "" ? "btn-red" : "btn-green"}>
-                    <FontAwesomeIcon icon={h.transitionPath === "" ? "xmark" :"check"}/>
-                  </span>&nbsp;
+                    <FontAwesomeIcon icon={h.transitionPath === "" ? "xmark" :"check"}
+                                     className={h.transitionPath === "" ? "btn-red" : "btn-green"}/>
+                  &nbsp;
                   <button className="btn btn-outline-secondary btn-sm"
                             onClick={()=>setEditHole(h.number,"transitionPath")}>
                       <FontAwesomeIcon icon="edit"/>
@@ -202,9 +214,16 @@ export default function CoursesModeDetailsMap({holes, mapCenter})  {
           </tbody>
         </table>
         </div>
-        <div ref={mapContainer} className="map-box">
         </div>
-    </div>
-     
+        <div className="map-box-container">
+          <div ref={mapContainer} className="map-box-full"></div>
+          <div className="hole-profile" hidden={profileHole===0}>
+            <div className="flex-container">
+              <div><h5>{"Hole #" + profileHole + " Elevation Profile"}</h5></div>
+              <div><button onClick={()=>setProfileHole(0)}><FontAwesomeIcon icon="xmark"/></button></div>
+            </div>
+          </div>
+       </div>
+     </div>
   );
 };

@@ -515,9 +515,8 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                                     <td>
                                         <button className="btn" onClick={() => openGeoPathDialog(i+1,"transitionPath")}>
                                             <FontAwesomeIcon icon="edit" />&nbsp;
-                                            <span className={(h.transitionPath !== "" ? "btn-green" : "btn-red")}>
-                                            <FontAwesomeIcon icon={(h.transitionPath !== "" ? "check" : "xmark")}/>
-                                            </span>
+                                            <FontAwesomeIcon icon={(h.transitionPath !== "" ? "check" : "xmark")}
+                                                             className={h.transitionPath !== "" ? "btn-green" : "btn-red"}/>
                                         </button>
                                     </td>
                                     <td>
@@ -526,9 +525,8 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                                     <td>
                                         <button className="btn" onClick={() => openGeoPathDialog(i+1,"golfPath")}>
                                             <FontAwesomeIcon icon="edit" />&nbsp;
-                                            <span className={(h.golfPath !== "" ? "btn-green" : "btn-red")}>
-                                            <FontAwesomeIcon icon={(h.golfPath !== "" ? "check" : "xmark")}/>
-                                            </span>
+                                            <FontAwesomeIcon icon={(h.golfPath !== "" ? "check" : "xmark")}
+                                                             className={h.golfPath !== "" ? "btn-green" : "btn-red"}/>
                                         </button>
                                     </td>
                                     <td>
