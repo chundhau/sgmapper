@@ -5,23 +5,24 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import * as turf from '@turf/turf';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 
-export default function CoursesModeDetailsMap({location}) {
+
+export default function CoursesModeDetailsMap({holes, mapCenter})  {
     
   const mapContainer = useRef(null);
   const distanceContainer = useRef(null);
 
   useEffect(() => {
-
     mapboxgl.accessToken = 'pk.eyJ1IjoidWRkeWFuIiwiYSI6ImNsZzY3MG1tZjAzbnczY3FjN2h0amp0MjUifQ.h7bnjg6dqjrJeFqNPvJyuA';
-    // Initialize the map and the drawing tool
     const map = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/satellite-v9',
-      center: [location.lng, location.lat],
+      center: [mapCenter.lng, mapCenter.lat],
       zoom: 15,
     });
+
 
     const draw = new MapboxDraw({
         displayControlsDefault: false,
@@ -36,18 +37,18 @@ export default function CoursesModeDetailsMap({location}) {
       let markers = [];
       let isDrawingStopped = false;
       
+
     function updateLine() {
         const data = draw.getAll();
         if (data.features.length > 0) {
           const line = data.features[0];
           const distance = turf.length(line, { units: 'miles' });
-          distanceContainer.current.innerHTML = `${distance.toFixed(2)} miles`;
-        } else {
-          distanceContainer.current.innerHTML = "0.00 miles";
-        }
+          //distanceContainer.current.innerHTML = `${distance.toFixed(2)} miles`;
+        }// } else {
+        //   distanceContainer.current.innerHTML = "0.00 miles";
+        // }
       }
-      
-      //TODO put starting positing and ending position snapping       
+           
       map.on('draw.create', () => {
         updateLine();
       });
@@ -63,7 +64,11 @@ export default function CoursesModeDetailsMap({location}) {
       map.on('draw.update', () => {
         updateLine();
       });
-  
+
+      map.on('render', () => {
+        map.resize();
+    });
+      
     function getElevation(coords, callback) {
         const queryCoords = coords.join(',');
         const url = `https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/${queryCoords}.json?layers=contour&limit=50&access_token=${mapboxgl.accessToken}`;
@@ -89,6 +94,7 @@ export default function CoursesModeDetailsMap({location}) {
           .catch(error => console.error(error));
       }
       
+      
       function addMarker(coords) {
         const el = document.createElement('div');
         el.className = 'marker';
@@ -106,6 +112,8 @@ export default function CoursesModeDetailsMap({location}) {
             const popup = new mapboxgl.Popup({ offset: 25, closeButton: false, closeOnClick: false })
               .setLngLat(coords)
               .setHTML(
+                //`Longitude: ${coords.lng.toFixed(4)}<br>Latitude: ${coords.lat.toFixed(4)}<br>Elevation: ${elevation.toFixed(2)} meters`
+                //`Longitude: ${coords.lng.toFixed(4)}<br>Latitude: ${coords.lat.toFixed(4)}<br>Elevation: ${(elevation * 3.28084).toFixed(2)} feet`
                 `Longitude: ${coords.lng}<br>Latitude: ${coords.lat}<br>Elevation: ${(elevation * 3.28084)} feet`
             )
               .addTo(map);
@@ -134,7 +142,9 @@ export default function CoursesModeDetailsMap({location}) {
         } else {
           isDrawingStopped = false;
         }
-      });   
+      });
+      
+      
 
     // Cleanup on unmount
     return () => {
@@ -143,13 +153,48 @@ export default function CoursesModeDetailsMap({location}) {
   }, []);
 
   return (
-    <>
-      <div ref={mapContainer} id="map" />
-      <div className="calculation-box">
-        <p>Click the map to draw a Line.</p>
-        <div ref={distanceContainer} id="calculated-distance" />
-      </div>
-    </>
+     
+    <div className="map-container">
+      <div className="map-pane">
+        <h5>Hole Paths</h5>
+        <table className="table table-light table-sm">
+          <thead>
+            <th>#</th>
+            <th>Transition</th>
+            <th>Golf</th>
+          </thead>
+          <tbody>
+            {holes.map((h) => {
+              return(
+                <tr key={h.number}>
+                <td>{h.number}</td>
+                <td>
+                <span className="btn-green"><FontAwesomeIcon icon="check"/></span>&nbsp;
+                    <button className="btn btn-outline-secondary btn-sm">
+                      <FontAwesomeIcon icon="edit"/>
+                    </button>
+                    <button className="btn btn-outline-secondary btn-sm">
+                      <FontAwesomeIcon icon="chart-line"/>
+                    </button>
+                </td>
+                <td>
+                <span className="btn-red"><FontAwesomeIcon icon="xmark"/></span>&nbsp;
+                    <button className="btn btn-outline-secondary btn-sm">
+                      <FontAwesomeIcon icon="edit"/>
+                    </button>
+                    <button className="btn btn-outline-secondary btn-sm">
+                      <FontAwesomeIcon icon="chart-line"/>
+                    </button>
+                </td>
+                </tr>
+            );
+            })}
+          </tbody>
+        </table>
+        </div>
+        <div ref={mapContainer} className="map-box">
+        </div>
+    </div>
+     
   );
-}
-
+};

@@ -543,7 +543,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                         </table>
                         </div>
                         <div className="tab-pane fade" id="hole-map" role="tabpanel" aria-labelledby="map-tab">
-                            <CoursesModeDetailsMap location={course.geoLocation} />
+                            <CoursesModeDetailsMap holes={course.tees[selectedTee].holes} mapCenter={course.geoLocation} />
                         </div>
                     </div>
                   </fieldset>
