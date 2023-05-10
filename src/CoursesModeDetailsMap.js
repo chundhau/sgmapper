@@ -9,12 +9,26 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 
 
-export default function CoursesModeDetailsMap({holes, mapCenter})  {
+export default function CoursesModeDetailsMap({holes, mapCenter, updatePath})  {
 
-  const [editHole, setEditHole] = useState({holeNum: 0});
+  const [editPath, setEditPath] = useState(null);
   const [profileHole, setProfileHole] = useState(0);
   const mapContainer = useRef(null);
   const distanceContainer = useRef(null);
+
+  function handleEditPath(holeNum, path) { 
+      const mapboxDraw =  new MapboxDraw({
+        displayControlsDefault: false,
+        defaultMode: 'draw_line_string',
+      });
+      setEditPath({holeNum: holeNum,
+                   pathType: path,
+                   draw: mapboxDraw,
+                   markers: [],
+                   drawAdded: false,
+                   isDrawingStopped: false,
+      });
+  }
 
   useEffect(() => {
     mapboxgl.accessToken = 'pk.eyJ1IjoidWRkeWFuIiwiYSI6ImNsZzY3MG1tZjAzbnczY3FjN2h0amp0MjUifQ.h7bnjg6dqjrJeFqNPvJyuA';
@@ -25,23 +39,23 @@ export default function CoursesModeDetailsMap({holes, mapCenter})  {
       zoom: 15,
     });
 
+    if (editPath !== null && !editPath.drawAdded) { //Add draw
+      map.addControl(editPath.draw);
+      setEditPath({...editPath, drawAdded: true});
+    }
 
-    const draw = new MapboxDraw({
-        displayControlsDefault: false,
-        controls: {
-          line_string: true,
-          trash: true,
-        },
-        defaultMode: 'draw_line_string',
-      });
-      map.addControl(draw);
+    // const draw = new MapboxDraw({
+    //     displayControlsDefault: false,
+    //     defaultMode: 'draw_line_string',
+    //   });
+    //   map.addControl(draw);
       
-      let markers = [];
-      let isDrawingStopped = false;
+    //   let markers = [];
+    //   let isDrawingStopped = false;
       
 
     function updateLine() {
-        const data = draw.getAll();
+        const data = editPath.draw.getAll();
         if (data.features.length > 0) {
           const line = data.features[0];
           const distance = turf.length(line, { units: 'feet' });
@@ -51,19 +65,19 @@ export default function CoursesModeDetailsMap({holes, mapCenter})  {
         // }
       }
            
-      map.on('draw.create', () => {
+      map.on('editPath.draw.create', () => {
         updateLine();
       });
       
-      map.on('draw.delete', () => {
-        markers.forEach(marker => {
-          marker.remove();
-        });
-        markers = [];
-        updateLine();
-      });
+      // map.on('editPath.draw.delete', () => {
+      //   markers.forEach(marker => {
+      //     marker.remove();
+      //   });
+      //   markers = [];
+      //   updateLine();
+      // });
       
-      map.on('draw.update', () => {
+      map.on('editPath.draw.update', () => {
         updateLine();
       });
 
@@ -110,40 +124,45 @@ export default function CoursesModeDetailsMap({holes, mapCenter})  {
           .setLngLat(coords)
           .addTo(map);
       
-        el.addEventListener('mouseenter', () => {
-          getElevation(coords.toArray(), elevation => {
-            const popup = new mapboxgl.Popup({ offset: 25, closeButton: false, closeOnClick: false })
-              .setLngLat(coords)
-              .setHTML(
-                //`Longitude: ${coords.lng.toFixed(4)}<br>Latitude: ${coords.lat.toFixed(4)}<br>Elevation: ${elevation.toFixed(2)} meters`
-                //`Longitude: ${coords.lng.toFixed(4)}<br>Latitude: ${coords.lat.toFixed(4)}<br>Elevation: ${(elevation * 3.28084).toFixed(2)} feet`
-                `Longitude: ${coords.lng}<br>Latitude: ${coords.lat}<br>Elevation: ${(elevation * 3.28084)} feet`
-            )
-              .addTo(map);
+        // el.addEventListener('mouseenter', () => {
+        //   getElevation(coords.toArray(), elevation => {
+        //     const popup = new mapboxgl.Popup({ offset: 25, closeButton: false, closeOnClick: false })
+        //       .setLngLat(coords)
+        //       .setHTML(
+        //         //`Longitude: ${coords.lng.toFixed(4)}<br>Latitude: ${coords.lat.toFixed(4)}<br>Elevation: ${elevation.toFixed(2)} meters`
+        //         //`Longitude: ${coords.lng.toFixed(4)}<br>Latitude: ${coords.lat.toFixed(4)}<br>Elevation: ${(elevation * 3.28084).toFixed(2)} feet`
+        //         `Longitude: ${coords.lng}<br>Latitude: ${coords.lat}<br>Elevation: ${(elevation * 3.28084)} feet`
+        //     )
+        //       .addTo(map);
       
-            el.addEventListener('mouseleave', () => {
-              popup.remove();
-            });
-          });
-        });
-      
-        markers.push(marker);
+        //     el.addEventListener('mouseleave', () => {
+        //       popup.remove();
+        //     });
+        //   });
+        // });
+        const newMarkers = editPath.markers.push(marker);
+        setEditPath({...editPath, markers: newMarkers});
       }
       
       map.on('click', (e) => {
         if (e.originalEvent.detail === 2) {
-          draw.changeMode('simple_select');
-          isDrawingStopped = true;
-        } else if (!isDrawingStopped) {
+          editPath.draw.changeMode('simple_select');
+          setEditPath({...editPath,isDrawingStopped: true});
+        } else if (!editPath.isDrawingStopped) {
           addMarker(e.lngLat);
         }
       });
       
       map.on('draw.modechange', (e) => {
         if (e.mode === 'simple_select') {
-          isDrawingStopped = true;
+          //I think this is what triggers the end of the path drawing episode.
+          //Our job here is to save the path to the correct prop of the current hole.
+          //I think the markers persist until explicitly deleted.
+          //Need to convert a marker object to our coord object with lat, lng, elv props
+          setEditPath(null); //Done with drawing this path!
+          updatePath(editPath.holeNum, editPath.pathType,editPath.markers);
         } else {
-          isDrawingStopped = false;
+          setEditPath({...editPath, isDrawingStopped: false});
         }
       });
       
@@ -163,7 +182,7 @@ export default function CoursesModeDetailsMap({holes, mapCenter})  {
       setProfileHole(holeNum);
     }
   }
-  
+
   return (
      
     <div className="map-container">
@@ -195,7 +214,7 @@ export default function CoursesModeDetailsMap({holes, mapCenter})  {
                                      className={h.transitionPath === "" ? "btn-red" : "btn-green"}/>
                   &nbsp;
                   <button className="btn btn-outline-secondary btn-sm"
-                            onClick={()=>setEditHole(h.number,"transitionPath")}>
+                            onClick={()=>handleEditPath(h.number,"transitionPath")}>
                       <FontAwesomeIcon icon="edit"/>
                    </button>
                 </td>
@@ -204,7 +223,7 @@ export default function CoursesModeDetailsMap({holes, mapCenter})  {
                     <FontAwesomeIcon icon={h.golfPath === "" ? "xmark" :"check"}/>
                   </span>&nbsp;
                   <button className="btn btn-outline-secondary btn-sm"
-                            onClick={()=>setEditHole(h.number,"golfPath")}>
+                            onClick={()=>handleEditPath(h.number,"golfPath")}>
                       <FontAwesomeIcon icon="edit"/>
                    </button>
                 </td>

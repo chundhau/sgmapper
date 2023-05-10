@@ -130,7 +130,15 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
         setUploadGeoPathDialog(dialogData);
     }
 
-    function saveGeoPath(val) {
+    function updatePathFromMap(holeNum,pathType,pathCoords) {
+      const updatedTees = {...course.tees};
+      const thisHole = {...updatedTees[selectedTee].holes[holeNum]};
+      thisHole[pathType] = pathCoords;
+      updatedTees[selectedTee].holes[holeNum] = thisHole;
+      updateCourseVal("tees",updatedTees);
+    } 
+
+    function updatePathFromTable(val) {
         const updatedTees = {...course.tees};
         const thisHole = {...updatedTees[selectedTee].holes[uploadGeoPathDialog.holeNum-1]};
         const prevHole = (uploadGeoPathDialog.holeNum > 1 ? 
@@ -221,7 +229,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
             title={uploadGeoPathDialog.title}
             prompt={uploadGeoPathDialog.prompt}
             buttonLabel={uploadGeoPathDialog.buttonLabel}
-            updateData={saveGeoPath}
+            updateData={updatePathFromTable}
             cancelUpdate={cancelSaveGeoPath} /> :
         <>
             <div className="mb-3 centered">
@@ -541,7 +549,7 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
                         </table>
                         </div>
                         <div className="tab-pane fade" id="hole-map" role="tabpanel" aria-labelledby="map-tab">
-                            <CoursesModeDetailsMap holes={course.tees[selectedTee].holes} mapCenter={course.geoLocation} />
+                            <CoursesModeDetailsMap holes={course.tees[selectedTee].holes} mapCenter={course.geoLocation} updatePath={updatePathFromMap} />
                         </div>
                     </div>
                   </fieldset>
