@@ -132,9 +132,9 @@ export default function CoursesModeDetailsTees({course, updateCourseVal }) {
 
     function updatePathFromMap(holeNum,pathType,pathCoords) {
       const updatedTees = {...course.tees};
-      const thisHole = {...updatedTees[selectedTee].holes[holeNum]};
+      const thisHole = {...updatedTees[selectedTee].holes[holeNum-1]};
       thisHole[pathType] = pathCoords;
-      updatedTees[selectedTee].holes[holeNum] = thisHole;
+      updatedTees[selectedTee].holes[holeNum-1] = thisHole;
       updateCourseVal("tees",updatedTees);
     } 
 

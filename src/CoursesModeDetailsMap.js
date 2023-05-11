@@ -6,6 +6,8 @@ import * as turf from '@turf/turf';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+//import * as dotenv from 'dotenv';
+//dotenv.config();
 
 
 
@@ -17,16 +19,8 @@ export default function CoursesModeDetailsMap({holes, mapCenter, updatePath})  {
   const distanceContainer = useRef(null);
 
   function handleEditPath(holeNum, path) { 
-      const mapboxDraw =  new MapboxDraw({
-        displayControlsDefault: false,
-        defaultMode: 'draw_line_string',
-      });
       setEditPath({holeNum: holeNum,
-                   pathType: path,
-                   draw: mapboxDraw,
-                   markers: [],
-                   drawAdded: false,
-                   isDrawingStopped: false,
+                   pathType: path
       });
   }
 
@@ -34,42 +28,87 @@ export default function CoursesModeDetailsMap({holes, mapCenter, updatePath})  {
     mapboxgl.accessToken = 'pk.eyJ1IjoidWRkeWFuIiwiYSI6ImNsZzY3MG1tZjAzbnczY3FjN2h0amp0MjUifQ.h7bnjg6dqjrJeFqNPvJyuA';
     const map = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/satellite-v9',
+      style: 'mapbox://styles/mapbox/satellite-streets-v12',
+      //'mapbox://styles/mapbox/satellite-v9',
       center: [mapCenter.lng, mapCenter.lat],
       zoom: 15,
     });
 
-    if (editPath !== null && !editPath.drawAdded) { //Add draw
-      map.addControl(editPath.draw);
-      setEditPath({...editPath, drawAdded: true});
-    }
 
-    // const draw = new MapboxDraw({
-    //     displayControlsDefault: false,
-    //     defaultMode: 'draw_line_string',
-    //   });
-    //   map.addControl(draw);
+    const draw = new MapboxDraw({
+        displayControlsDefault: false,
+        defaultMode: editPath === null ? 'simple_select' : 'draw_line_string'
+      });
+      map.addControl(draw);
       
-    //   let markers = [];
-    //   let isDrawingStopped = false;
-      
+      let markers = [];
+      let coords = [];
+      let isDrawingStopped = (editPath === null ? true : false);
 
+      function displayPath(path,pathCount,lineColor,label) {
+        for(let i = 0; i < path.length-1; i++) {
+          map.addSource(`route${pathCount+i}`, {
+            'type': 'geojson',
+            'data': {
+              'type': 'Feature',
+              'properties': {title: label},
+              'geometry': {
+                'type': 'LineString',
+                'coordinates': [[path[i].lng, path[i].lat],
+                                [path[i+1].lng, path[i+1].lat]]
+              }
+            }
+          });
+          map.addLayer({
+            'id': `route${pathCount+i}`,
+            'type': 'line',
+            'source': `route${pathCount+i}`,
+            'layout': {
+              'line-join': 'round',
+              'line-cap': 'round',
+            },
+            'paint': {
+              'line-color': lineColor,
+              'line-width': 3
+            },
+            
+          })
+        }
+      }
+
+      function displayAllDefinedPaths() {
+        let pathCount = 0;
+        for (let h = 0; h < holes.length; h++) {
+          if (holes[h].transitionPath !== "") {
+            displayPath(holes[h].transitionPath,pathCount,"#FFFF00","Hole" + (h+1) + " Transition");
+            pathCount += holes[h].transitionPath.length;
+          }
+          if (holes[h].golfPath !== "") {
+            displayPath(holes[h].golfPath,pathCount, '#FF0000',"Hole " + (h+1) + " Golf");
+            pathCount += holes[h].golfPath.length;
+          }
+        }
+
+            
+        
+      }
+      
     function updateLine() {
-        const data = editPath.draw.getAll();
+        const data = draw.getAll();
         if (data.features.length > 0) {
           const line = data.features[0];
-          const distance = turf.length(line, { units: 'feet' });
+          //const distance = turf.length(line, { units: 'feet' });
           //distanceContainer.current.innerHTML = `${distance.toFixed(2)} miles`;
         }// } else {
         //   distanceContainer.current.innerHTML = "0.00 miles";
         // }
       }
            
-      map.on('editPath.draw.create', () => {
+      map.on('draw.create', () => {
         updateLine();
       });
       
-      // map.on('editPath.draw.delete', () => {
+      // map.on('draw.delete', () => {
       //   markers.forEach(marker => {
       //     marker.remove();
       //   });
@@ -77,40 +116,24 @@ export default function CoursesModeDetailsMap({holes, mapCenter, updatePath})  {
       //   updateLine();
       // });
       
-      map.on('editPath.draw.update', () => {
+      map.on('draw.update', () => {
         updateLine();
       });
+
+      map.on('load', () => {
+        map.addSource('mapbox-dem', {
+          'type': 'raster-dem',
+          'url': 'mapbox://mapbox.terrain-rgb',
+          'tileSize': 256,
+          'maxzoom': 15
+          });
+          map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1 });
+          displayAllDefinedPaths();
+      })
 
       map.on('render', () => {
         map.resize();
     });
-    
-    //TO DO: This doesn't obtain correct elevation. Please fix!
-    function getElevation(coords, callback) {
-        const queryCoords = coords.join(',');
-        const url = `https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/${queryCoords}.json?layers=contour&limit=50&access_token=${mapboxgl.accessToken}`;
-      
-        fetch(url)
-          .then(response => response.json())
-          .then(data => {
-            const features = data.features;
-            if (features.length > 0) {
-              const elevations = features.map(feature => feature.properties.ele);
-              // Calculates the closest elevation to the provided coordinates using the reduce method
-              //it checks if the absolute difference between the current elevation (curr) and the provided coordinate's elevation (coords[2]) is 
-              //less than the absolute difference between the previous elevation (prev) and the provided coordinate's elevation.
-               //If it is, it returns the current elevation; otherwise, it returns the previous elevation.
-              const closestElevation = elevations.reduce((prev, curr) =>
-                Math.abs(curr - coords[2]) < Math.abs(prev - coords[2]) ? curr : prev
-              );
-              callback(closestElevation);
-            } else {
-              callback(0);
-            }
-          })
-          .catch(error => console.error(error));
-      }
-      
       
       function addMarker(coords) {
         const el = document.createElement('div');
@@ -123,56 +146,26 @@ export default function CoursesModeDetailsMap({holes, mapCenter, updatePath})  {
         const marker = new mapboxgl.Marker(el)
           .setLngLat(coords)
           .addTo(map);
-      
-        // el.addEventListener('mouseenter', () => {
-        //   getElevation(coords.toArray(), elevation => {
-        //     const popup = new mapboxgl.Popup({ offset: 25, closeButton: false, closeOnClick: false })
-        //       .setLngLat(coords)
-        //       .setHTML(
-        //         //`Longitude: ${coords.lng.toFixed(4)}<br>Latitude: ${coords.lat.toFixed(4)}<br>Elevation: ${elevation.toFixed(2)} meters`
-        //         //`Longitude: ${coords.lng.toFixed(4)}<br>Latitude: ${coords.lat.toFixed(4)}<br>Elevation: ${(elevation * 3.28084).toFixed(2)} feet`
-        //         `Longitude: ${coords.lng}<br>Latitude: ${coords.lat}<br>Elevation: ${(elevation * 3.28084)} feet`
-        //     )
-        //       .addTo(map);
-      
-        //     el.addEventListener('mouseleave', () => {
-        //       popup.remove();
-        //     });
-        //   });
-        // });
-        const newMarkers = editPath.markers.push(marker);
-        setEditPath({...editPath, markers: newMarkers});
       }
       
       map.on('click', (e) => {
         if (e.originalEvent.detail === 2) {
-          editPath.draw.changeMode('simple_select');
-          setEditPath({...editPath,isDrawingStopped: true});
-        } else if (!editPath.isDrawingStopped) {
+          draw.changeMode('simple_select'); //Line is done
+          isDrawingStopped = true;
+          updatePath(editPath.holeNum, editPath.pathType, coords);
+          setEditPath(null);
+        } else if (!isDrawingStopped) {
+          const elev = map.queryTerrainElevation(e.lngLat, { exaggerated: false }) * 3.280839895 // convert meters to feet
+          coords.push({lat: e.lngLat.lat, lng: e.lngLat.lng, elv: elev });
           addMarker(e.lngLat);
         }
       });
-      
-      map.on('draw.modechange', (e) => {
-        if (e.mode === 'simple_select') {
-          //I think this is what triggers the end of the path drawing episode.
-          //Our job here is to save the path to the correct prop of the current hole.
-          //I think the markers persist until explicitly deleted.
-          //Need to convert a marker object to our coord object with lat, lng, elv props
-          setEditPath(null); //Done with drawing this path!
-          updatePath(editPath.holeNum, editPath.pathType,editPath.markers);
-        } else {
-          setEditPath({...editPath, isDrawingStopped: false});
-        }
-      });
-      
-      
 
     // Cleanup on unmount
     return () => {
       map.remove();
     };
-  }, []);
+  }, [editPath]);
 
   function handleProfileClick(holeNum) {
     if (profileHole === holeNum) {
