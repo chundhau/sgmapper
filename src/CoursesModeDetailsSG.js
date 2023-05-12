@@ -52,7 +52,7 @@ export default function CoursesModeDetailsSG({course, updateCourseVal}) {
                      onChange={handleChange}/>  
             </label>    
             <div id="contactEmail-descr" className="form-text">
-                Email address, phone number, and/or other means of eaching speedgolf contact person
+                Email address, phone number, and/or other means of reaching speedgolf contact person
             </div>
           </div>
           <div className="mb-3 centered">
