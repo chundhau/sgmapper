@@ -1,8 +1,6 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import DefaultGolfCoursePic from './images/DefaultGolfCoursePic.jpg';
+import DefaultGolfCoursePic from './../images/DefaultGolfCoursePic.jpg';
 import {useState} from 'react';
-import CoursesModeStarRating from './CoursesModeStarRating';
-import CoursesModeEditTextModal from './CoursesModeEditTextModal';
 import CoursesModeEditImageModal from './CoursesModeEditImageModal';
    
  /*************************************************************************
@@ -17,6 +15,19 @@ export default function CoursesModeDetailsBasic({course, updateCourseVal}) {
     
     function handleChange(event) {
         updateCourseVal(event.target.name, event.target.value);
+    }
+
+    /*************************************************************************
+     * @function handleNumHolesChange
+     * @param event, the event object returned by the event handler
+     * @Desc 
+     * Update numHoles with value entered by user, constraining it to equal
+     * an integer between 1 and 22.
+     *************************************************************************/
+    function handleNumHolesChange(event) {
+        let val = (Number(event.target.value) > 22 ? 22 : 
+                    (Number(event.target.value) < 1 ? 1 : Number(event.target.value)));
+        updateCourseVal(event.target.name, val);
     }
 
     function updateImageFromModal(newVal) {
@@ -97,6 +108,23 @@ export default function CoursesModeDetailsBasic({course, updateCourseVal}) {
                         value={course.phoneNumber} 
                         onChange={handleChange}/>
                 </label>
+            </div>
+            <div className="mb-3 centered">
+                <label className="form-label" htmlFor="numHoles">Number of Holes:
+                <input id="numHoles" 
+                        className="form-control centered"
+                        type="number" 
+                        min="1"
+                        max="22"
+                        name="numHoles" 
+                        value={course.numHoles} 
+                        onChange={handleChange} 
+                        aria-describedby="numHoles-descr"
+                        disabled={course.tees === "" ? false: true}/>
+                </label>
+                <div id="numHoles-descr" className="form-text">
+                      Note: Once a set of tees has been added to the course, you may <i>not</i> change this value.
+                </div>
             </div>
             <div className="mb-3 centered">
                 <label className="form-label" htmlFor="website">Website:

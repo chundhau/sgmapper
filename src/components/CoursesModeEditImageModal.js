@@ -1,4 +1,4 @@
-import DefaultGolfCoursePic from './images/DefaultGolfCoursePic.jpg';
+import DefaultGolfCoursePic from './../images/DefaultGolfCoursePic.jpg';
 import {useRef, useState, useEffect} from 'react';
  
  /*************************************************************************

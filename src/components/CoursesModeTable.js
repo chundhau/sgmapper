@@ -1,5 +1,5 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import DefaultGolfCoursePic from './images/DefaultGolfCoursePic.jpg';
+import DefaultGolfCoursePic from './../images/DefaultGolfCoursePic.jpg';
 import {useState, useEffect} from 'react';
 
  /*************************************************************************

@@ -1,9 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './styles/style.css';
-import CoursesModeSearch from './CoursesModeSearchFilter';
-import CoursesMode from './CoursesMode';
-import reportWebVitals from './reportWebVitals';
+import CoursesMode from './components/CoursesMode';
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faPlus, faMapPin, faGlobe, faMap, faPhone, faEye, faCamera, faXmark, faCircleXmark, faEdit, faSave, faStar, faCheck, faCircleInfo, faArrowPointer, faChartLine } from '@fortawesome/free-solid-svg-icons'
 library.add(faPlus)

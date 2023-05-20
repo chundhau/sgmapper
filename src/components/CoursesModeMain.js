@@ -10,7 +10,7 @@ import {useState,useEffect} from 'react';
  * the main page (courses table) of SpeedScore's "Courses" mode
  ************************************************************************/
 
-export default function CoursesModeMain({courses,numCourses,updateCourse, filterCourses, openAddCourseDialog}) {  
+export default function CoursesModeMain({courses,numCourses, updateCourse, filterCourses, openAddCourseDialog}) {  
   //const [displayedCourses, setDisplayedCourses] = useState(courses);
   const [showCourseDetails, setShowCourseDetails] = useState(null);
 

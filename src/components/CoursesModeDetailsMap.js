@@ -9,8 +9,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 //import * as dotenv from 'dotenv';
 //dotenv.config();
 
-
-
 export default function CoursesModeDetailsMap({holes, mapCenter, updatePath})  {
 
   const [editPath, setEditPath] = useState(null);

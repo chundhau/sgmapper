@@ -548,6 +548,10 @@ cursor: pointer;
     font-weight: bold;
 }
 
+.font-small {
+    font-size: small;
+}
+
 .img-course {
     width: 300px;
     height: auto;
@@ -666,6 +670,11 @@ cursor: pointer;
   .flex-container {
     display: flex;
     justify-content: space-between;
+  } 
+
+  .flex-container-centered {
+    display: flex;
+    justify-content: center;
   } 
 
   .mapboxgl-canvas .mapboxgl-draw-line {

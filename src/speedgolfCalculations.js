@@ -1,3 +1,8 @@
+ /*************************************************************************
+ * File: speedgolfCacluations.js
+ * This file defines constants and functions that are useful for computing
+ * speedgolf pars.
+ ************************************************************************/
 const parRunPaceMinMen = 7;
 const parRunPaceSecMen = 0;
 export const parRunPaceMen = (parRunPaceMinMen * 60) + parRunPaceSecMen;
