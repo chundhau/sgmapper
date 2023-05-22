@@ -88,9 +88,10 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
                 mensTimePar: "",
                 teeLoc: "",
                 flagLoc: "",
-                features: "",
                 golfPath: "",
-                transitionPath: ""
+                transitionPath: "",
+                green: "",
+                teebox: ""
             })),
             numHolesGolfDataComplete: 0,
             numHolesPathDataComplete: 0,
@@ -301,29 +302,33 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
                 </button>
             </li>
             <li className="nav-item" role="presentation">
-                <button className="nav-link" id="tees-tab" 
+                    <button className={"nav-link" + ((selectedTee === null) ? " disabled":"")} 
+                        id="tees-tab" 
                         data-bs-toggle="tab" data-bs-target="#tees-info" 
                         type="button" role="tab" aria-controls="tees-info" 
+                        disabled={selectedTee === null}
                         aria-selected="false">
                     Tees Info
                 </button>
             </li>
             <li className="nav-item" role="presentation">
-                <button className="nav-link" id="holes-table-tab" 
+                <button className={"nav-link" + ((selectedTee === null) ? " disabled":"")}
+                        id="holes-table-tab" 
                         data-bs-toggle="tab" data-bs-target="#holes-info" 
                         type="button" role="tab" aria-controls="holes-info" 
-                        disabled={selectedTee === "No tees defined"}
+                        disabled={selectedTee === null}
                         aria-selected="false">
                     Holes Info
                 </button>
             </li>
             <li className="nav-item" role="presentation">
-                <button className="nav-link" id="holes-map-tab" 
+                <button className={"nav-link" + ((selectedTee === null) ? " disabled":"")} 
+                        id="holes-map-tab" 
                         data-bs-toggle="tab" data-bs-target="#path-map" 
                         type="button" role="tab" aria-controls="path-map" 
                         disabled={selectedTee === null}
                         aria-selected="false">
-                    Running Info
+                    Course Map
                 </button>
             </li>
         </ul>
@@ -352,7 +357,9 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
                                            updatePath={updatePath} />}
             </div>
         </div>
+        <br/>
         <div className="mode-page-btn-container">
+
             <button className="dialog-primary-btn"
                 type="button" onClick={()=>updateCourseDetails(updatedCourse)}>
                 <FontAwesomeIcon icon="save"/>&nbsp;Save Changes 

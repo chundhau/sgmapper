@@ -244,24 +244,19 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
         <div className="table-responsive">
         <table className="table table-light table-sm w-auto">
           <thead>
-            <tr>
-            <th>#</th>
-            <th>Profile</th>
-            <th>Trans</th>
-            <th>Golf</th>
+            <tr className="font-small">
+            <th>Hole</th>
+            <th>Trans<br/>Path</th>
+            <th>Tee<br/>Box</th>
+            <th>Golf<br/>Path</th>
+            <th>Green</th>
             </tr>
           </thead>
           <tbody>
             {holes.map((h) => {
               return(
-                <tr key={h.number}>
+                <tr key={h.number} onClick={((h.transitionPath === "" || h.golfPath === "") ? null: ()=>handleProfileClick(h.number))}>
                 <td>{h.number}</td>
-                <td> 
-                    <button className={"btn btn-sm " + (profileHole===h.number ? "btn-primary" : "btn-outline-secondary")}
-                            disabled={h.transitionPath === "" || h.golfPath === ""}
-                            onClick={()=>handleProfileClick(h.number)}>
-                      <FontAwesomeIcon icon="chart-line"/>
-                    </button></td>
                 <td>
                   <button className={"btn btn-sm" + ((h.transitionPath === "") ? "" : " btn-green")}
                           aria-label={"Hole " + h.holeNum + " transition path " + 
@@ -271,10 +266,26 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
                    </button>
                 </td>
                 <td>
+                  <button className={"btn btn-sm" + ((h.teebox === "") ? "" : " btn-green")}
+                          aria-label={"Hole " + h.holeNum + " teebox outline " + 
+                                      ((h.teebox === "") ? "(not yet defined)":"(defined)")}
+                            onClick={()=>handleEditPath(h.number,"teebox")}>
+                      <FontAwesomeIcon icon="edit"/>
+                   </button>
+                </td>
+                <td>
                   <button className={"btn btn-sm" + ((h.golfPath === "") ? "" : " btn-green")}
                           aria-label={"Hole " + h.holeNum + " golf path " + 
                                       ((h.golfPath === "") ? "(not yet defined)":"(defined)")}
                             onClick={()=>handleEditPath(h.number,"golfPath")}>
+                      <FontAwesomeIcon icon="edit"/>
+                   </button>
+                </td>
+                <td>
+                  <button className={"btn btn-sm" + ((h.green === "") ? "" : " btn-green")}
+                          aria-label={"Hole " + h.holeNum + " green outline " + 
+                                      ((h.green === "") ? "(not yet defined)":"(defined)")}
+                            onClick={()=>handleEditPath(h.number,"green")}>
                       <FontAwesomeIcon icon="edit"/>
                    </button>
                 </td>
