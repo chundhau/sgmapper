@@ -530,6 +530,12 @@ cursor: pointer;
     
 }
 
+.table-narrow {
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .float-center {
     display: flex;
     justify-content: center;
@@ -636,12 +642,15 @@ cursor: pointer;
  }
   
   .map-pane {
-    width: 15%;
-    height: 100%;
+    z-index: 100;
+    position: absolute;
+    height: 778px;
+    width: 250px;
+    top: 258px;
   }
   
   .map-box-container {
-    width: 85%;
+    width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;

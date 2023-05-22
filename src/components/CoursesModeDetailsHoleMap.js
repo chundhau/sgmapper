@@ -37,8 +37,9 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
       });
       map.addControl(draw);
     
-      //Vertices of path currently being defined
+      //Vertices and markers in path currently being defined
       let coords = []; 
+
       //Boolean indicating whether a path is currently being defined
       let isDrawingStopped = (editPath === null ? true : false);
 
@@ -240,14 +241,13 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
   return ( 
     <div className="map-container">
       <div className="map-pane">
-        <h5>Hole Paths</h5>
         <div className="table-responsive">
-        <table className="table table-light table-sm">
+        <table className="table table-light table-sm w-auto">
           <thead>
             <tr>
             <th>#</th>
             <th>Profile</th>
-            <th>Transition</th>
+            <th>Trans</th>
             <th>Golf</th>
             </tr>
           </thead>
@@ -263,19 +263,17 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
                       <FontAwesomeIcon icon="chart-line"/>
                     </button></td>
                 <td>
-                    <FontAwesomeIcon icon={h.transitionPath === "" ? "xmark" :"check"}
-                                     className={h.transitionPath === "" ? "btn-red" : "btn-green"}/>
-                  &nbsp;
-                  <button className="btn btn-outline-secondary btn-sm"
+                  <button className={"btn btn-sm" + ((h.transitionPath === "") ? "" : " btn-green")}
+                          aria-label={"Hole " + h.holeNum + " transition path " + 
+                                      ((h.transitionPath === "") ? "(not yet defined)":"(defined)")}
                             onClick={()=>handleEditPath(h.number,"transitionPath")}>
                       <FontAwesomeIcon icon="edit"/>
                    </button>
                 </td>
                 <td>
-                  <span className={h.transitionPath === "" ? "btn-red" : "btn-green"}>
-                    <FontAwesomeIcon icon={h.golfPath === "" ? "xmark" :"check"}/>
-                  </span>&nbsp;
-                  <button className="btn btn-outline-secondary btn-sm"
+                  <button className={"btn btn-sm" + ((h.golfPath === "") ? "" : " btn-green")}
+                          aria-label={"Hole " + h.holeNum + " golf path " + 
+                                      ((h.golfPath === "") ? "(not yet defined)":"(defined)")}
                             onClick={()=>handleEditPath(h.number,"golfPath")}>
                       <FontAwesomeIcon icon="edit"/>
                    </button>
@@ -288,7 +286,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
         </div>
         </div>
         <div className="map-box-container">
-          <div ref={mapContainer} className="map-box-full"></div>
+          <div ref={mapContainer} className="map-box-full"><p/><p/></div>
           <div className="hole-profile" hidden={profileHole===0}>
             <div className="flex-container">
               <div><h5>{"Hole #" + profileHole + " Elevation Profile"}</h5></div>

@@ -102,32 +102,32 @@ export default function CoursesModeDetailsTees({numHoles, tees, updateTees,
                     tees[selectedTee].numHolesPathDataComplete + 
                     " holes with complete running path data)"}</i>
                 </legend>
-                <table className="table table-sm table-striped table-hover caption-top">
+                <table className="table table-sm table-bordered table-narrow">
                   <tbody>
                     <tr>
-                      <td>Golf Distance:</td>
-                      <td>{distUnits==="Imperial" ? 
+                      <td className="text-end bold">Golf Distance:</td>
+                      <td className="text-start">{distUnits==="Imperial" ? 
                               Conversions.toYards(computeTotal("golfDistance")) + " yards":
                               Conversions.toMeters(computeTotal("golfDistance")) + " meters"}
                       </td>
                     </tr>
                     <tr>
-                      <td>Running Distance:</td>
-                      <td>{distUnits==="Imperial" ? 
-                              Conversions.toMiles(computeTotal("runningDistance")) + " miles" :
-                              Conversions.toKilometers(computeTotal("runningDistance")) + " km"}
+                      <td className="text-end bold">Running Distance:</td>
+                      <td className="text-start">{distUnits==="Imperial" ? 
+                              Conversions.toMiles(computeTotal("runDistance")) + " miles" :
+                              Conversions.toKilometers(computeTotal("runDistance")) + " km"}
                       </td>
                     </tr>
                     <tr>
-                      <td>Stroke Par:</td>
-                      <td>
+                      <td className="text-end bold">Stroke Par :</td>
+                      <td className="text-start">
                         {computeTotal("womensStrokePar") + " (women), " + 
                           computeTotal("mensStrokePar") + " (men)"}
                       </td>
                     </tr>
                     <tr>
-                      <td>Time Par:</td>
-                      <td>
+                      <td className="text-end bold">Time Par:</td>
+                      <td className="text-start">
                         {Conversions.toTimePar(computeTotal("womensTimePar")) + " (women), " + 
                           Conversions.toTimePar(computeTotal("mensStrokePar")) + " (men)"}
                       </td>
