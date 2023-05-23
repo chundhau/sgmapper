@@ -1,5 +1,6 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import * as Conversions from '../conversions';
+import * as SGCalcs from '../speedgolfCalculations';
 
  /*************************************************************************
  * File: coursesModeDetailsBasic.js
@@ -9,14 +10,27 @@ import * as Conversions from '../conversions';
 
 export default function CoursesModeDetailsHoleTable({selectedTee, holes, updateHoles, distUnits}) {
 
-    function handleHoleDataChange(e,index,prop, minVal, maxVal) {
-        const newHoles = {...holes};
+    function handleHoleDataChange(e, index, prop, minVal, maxVal) {
+        const newHoles = [...holes];
         let newVal = Number(e.target.value);
         if (newVal < minVal)
           newVal = minVal;
         else if (newVal > maxVal)
           newVal = maxVal;
-        newHoles[index][prop] = newVal;
+        if (prop === 'golfDistance') { //need to convert to feet
+            newHoles[index][prop] = (distUnits === "Imperial" ? 
+              Conversions.yardsToFeet(newVal) : Conversions.metersToFeet(newVal));
+        } else if (prop === 'womensStrokePar') { //need also to change womensTimePar, which depends on stroke par
+            newHoles[index].womensStrokePar = newVal;
+            const stats = SGCalcs.getHoleRunningStats(newHoles[index].transitionPath, newHoles[index].golfPath,newVal,newHoles[index].mensStrokePar);
+            newHoles[index].womensTimePar = stats.womensTimePar;
+        } else if (prop === 'mensStrokePar') { //need also to change mensTimePar, which depends on stroke par
+            newHoles[index].mensStrokePar = newVal;
+            const stats = SGCalcs.getHoleRunningStats(newHoles[index].transitionPath, newHoles[index].golfPath,newHoles[index].womensStrokePar, newVal);
+            newHoles[index].mensTimePar = stats.mensTimePar;
+        } else {
+            newHoles[index][prop] = newVal;
+        }
         updateHoles(newHoles); 
     }
 
@@ -47,8 +61,10 @@ export default function CoursesModeDetailsHoleTable({selectedTee, holes, updateH
                 <tr key={h.number}>
                     <td>{h.number}</td>
                     <td>
-                        <input type="number" className="dist-width"  value={h.golfDistance}                                                    
-                                onChange={(e) => handleHoleDataChange(e,i,"golfDistance",1,900)}/>
+                        <input type="number" className="dist-width"  
+                               value={((distUnits === "Imperial") ? Conversions.toYards(h.golfDistance) :
+                                        Conversions.toMeters(h.golfDistance))}                                                    
+                               onChange={(e) => handleHoleDataChange(e,i,"golfDistance",1,900)}/>
                     </td>
                     <td>
                         <input type="number" className="par-width"  value={h.womensStrokePar} 

@@ -91,7 +91,10 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
                 golfPath: "",
                 transitionPath: "",
                 green: "",
-                teebox: ""
+                teebox: "",
+                runDistance: "",
+                transRunDistance: "",
+                golfRunDistance: "",
             })),
             numHolesGolfDataComplete: 0,
             numHolesPathDataComplete: 0,
@@ -175,6 +178,43 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
     }
 
     /*************************************************************************
+     * @function updateNumHolesGolfDataComplete
+     * @param newHoles, the updated holes array
+     * @Desc 
+     * Return the number of holes for which we have complete golf data (i.e.,
+     * golfDistance, womensStrokePar, and mensStrokePar data)
+     *************************************************************************/
+    function updateNumHolesGolfDataComplete(newHoles) {
+        let count = 0;
+        for (let i=0; i < newHoles.length; ++i) {
+            if (newHoles[i].golfDistance !== "" && 
+                newHoles[i].womensStrokePar !== "" &&
+                newHoles[i].mensStrokePar !== "") {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /*************************************************************************
+     * @function updateNumHolesGolfDataComplete
+     * @param newHoles, the updated holes array
+     * @Desc 
+     * Return the number of holes for which we have complete path data (i.e.,
+     * transitionPath and golfPath data)
+     *************************************************************************/
+    function updateNumHolesPathDataComplete(newHoles) {
+        let count = 0;
+        for (let i=0; i < newHoles.length; ++i) {
+            if (newHoles[i].transitionPath !== "" && 
+                newHoles[i].golfPath !== "") {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /*************************************************************************
      * @function updateTees
      * @param newTees, a tee object
      * @Desc 
@@ -194,6 +234,7 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
     function updateHoles(newHoles) {
         const newTees = {...course.tees};
         newTees[selectedTee].holes = newHoles;
+        newTees[selectedTee].numHolesGolfDataComplete = updateNumHolesGolfDataComplete(newHoles);
         updateCourseVal("tees",newTees); 
       }
 
@@ -219,12 +260,13 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
           const runStats = SGCalcs.getHoleRunningStats(thisHole.transitionPath, thisHole.golfPath,
                thisHole.womensStrokePar, thisHole.mensStrokePar);
           thisHole.runDistance = runStats.runDistance;
-          thisHole.transRunDistance = runStats.transRunDistance;
-          thisHole.golfRunDistance = runStats.golfRunDistance;
+          thisHole.transRunDistance = runStats.transPathRunDistance;
+          thisHole.golfRunDistance = runStats.golfPathRunDistance;
           thisHole.womensTimePar = runStats.womensTimePar;
           thisHole.mensTimePar = runStats.mensTimePar;
         }
         updatedTees[selectedTee].holes[holeNum-1] = thisHole;
+        updatedTees[selectedTee].numHolesPathDataComplete = updateNumHolesPathDataComplete(updatedTees[selectedTee].holes);
         updateTees(updatedTees);
       } 
   
@@ -348,7 +390,7 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
             <div className="tab-pane fade" id="holes-info" role="tabpanel" aria-labelledby="holes-table-tab">
               {selectedTee === null ? null : 
                 <CoursesModeDetailsHoleTable selectedTee={selectedTee} holes={updatedCourse.tees[selectedTee].holes} 
-                                             updateHoles={updateHoles} disUnits={distUnits}/>}
+                                             updateHoles={updateHoles} distUnits={distUnits}/>}
             </div>
             <div className="tab-pane fade" id="path-map" role="tabpanel" aria-labelledby="holes-map-tab">
               {selectedTee === null ? null:

@@ -15,7 +15,7 @@ export function toTimePar(sec) {
 export function toYards(ft) {
   if (ft === "")
     return "";
-  return Math.round(parseInt(ft)/3);
+  return Math.round(Number(ft)/3);
 }
 
 export function toMiles(ft) {
@@ -36,4 +36,12 @@ export function toKilometers(ft) {
     return "";
   return (parseInt(ft)/3280.84).toFixed(2);
 
+}
+
+export function yardsToFeet(yards) {
+  return yards * 3;
+}
+
+export function metersToFeet(meters) {
+  return meters * 3.28084;
 }

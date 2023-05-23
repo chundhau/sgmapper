@@ -3,9 +3,6 @@
  * This file defines the CoursesModeDetailsTees React component, which enables
  * users to view and edit information on the golf course's tee sets.
  ************************************************************************/
-
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {useState} from 'react';
 import * as Conversions from './../conversions';
 
 export default function CoursesModeDetailsTees({numHoles, tees, updateTees, 
@@ -20,7 +17,7 @@ export default function CoursesModeDetailsTees({numHoles, tees, updateTees,
      *************************************************************************/
         function handleTeeDataChange(event) {
           const updatedTees = {...tees};
-          tees[event.target.name] = Number(event.target.value);
+          updatedTees[selectedTee][event.target.name] = Number(event.target.value);
           updateTees(updatedTees);
       }
 
@@ -129,7 +126,7 @@ export default function CoursesModeDetailsTees({numHoles, tees, updateTees,
                       <td className="text-end bold">Time Par:</td>
                       <td className="text-start">
                         {Conversions.toTimePar(computeTotal("womensTimePar")) + " (women), " + 
-                          Conversions.toTimePar(computeTotal("mensStrokePar")) + " (men)"}
+                          Conversions.toTimePar(computeTotal("mensTimePar")) + " (men)"}
                       </td>
                     </tr>
                   </tbody>

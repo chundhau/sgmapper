@@ -106,28 +106,32 @@ export function getSegmentTimePar(distance, percentGradient, parPace) {
  * Time par is calculated by considering each path segment in a path
  * @param transPath -- array of georcoords defining transition  
  *        running path from center of previous green to tee box
- * @param strokePar -- the stroke par for the hole
  * @param golfPath -- array of geocoords defining golf running path
  *        from tee box to center of green. 
- * @param parRunningPace -- the par running pace (in seconds per mile)
- * @param parShotBoxSec -- "par" time in shot box, in seconds. 
- *        Multipled by stroke par to obtain total "par" time in shot box
+ * @param womensStrokePar -- women's stroke par for the hole
+ * @param mensStrokePar -- men's stroke par for the hole
  * @returns Object with the following props: 
- *          --transitionRunDistance
- *          --transitionTimePar
- *          --golfRunDistance
- *          --golfTimePar
- *          --holeRunDistance
- *          --holeTimePar
+ *          --transPathRunDistance
+ *          --transPathWomensTimePar,
+ *          --transPathMensTimePar,
+ *          --golfPathRunDistance
+ *          --golfPathWomensTimePar
+ *          --golfPathMensTimePar
+ *          --runDistance
+ *          --womensTimePar
+ *          --mensTimePar
  ********************************************************************/
-export function getHoleRunningStats(transPath, golfPath, strokePar, parRunPace, parShotBoxSec) {
+export function getHoleRunningStats(transPath, golfPath, womensStrokePar, mensStrokePar) {
     let stats = {
         transPathRunDistance: 0,
-        transPathTimePar: 0,
+        transPathWomensTimePar: 0,
+        transPathMensTimePar: 0,
         golfPathRunDistance: 0,
-        golfPathTimePar: 0,
-        holeRunDistance: 0,
-        holeTimePar: 0
+        golfPathWomensTimePar: 0,
+        golfPathMensTimePar: 0,
+        runDistance: 0,
+        womensTimePar: 0,
+        mensTimePar: 0
     };
 
     //Get stats for transition path
@@ -135,19 +139,23 @@ export function getHoleRunningStats(transPath, golfPath, strokePar, parRunPace, 
         let segDist = getDistance([transPath[i], transPath[i+1]]);
         stats.transPathRunDistance += segDist;
         let segPctGrad = getPercentGradient([transPath[i], transPath[i+1]], segDist);
-        stats.transPathTimePar += getSegmentTimePar(segDist,segPctGrad, parRunPace);
+        stats.transPathWomensTimePar += getSegmentTimePar(segDist,segPctGrad, parRunPaceWomen);
+        stats.transPathMensTimePar += getSegmentTimePar(segDist,segPctGrad, parRunPaceMen);
     }
     //Get stats for golf path
     for (let i = 0; i < golfPath.length-1; i++) {
         let segDist = getDistance([golfPath[i], golfPath[i+1]]);
         stats.golfPathRunDistance += segDist;
         let segPctGrad = getPercentGradient([golfPath[i], golfPath[i+1]], segDist);
-        stats.golfPathTimePar += getSegmentTimePar(segDist,segPctGrad, parRunPace);
+        stats.golfPathWomensTimePar += getSegmentTimePar(segDist,segPctGrad, parRunPaceWomen);
+        stats.golfPathMensTimePar += getSegmentTimePar(segDist,segPctGrad, parRunPaceMen);
     }
     //Compute total hole distance and time par
-    stats.holeRunDistance = stats.transPathRunDistance + stats.golfPathRunDistance;
-    stats.holeTimePar = stats.transPathTimePar + stats.golfPathTimePar + 
-                        (strokePar * parShotBoxSec);
+    stats.runDistance = stats.transPathRunDistance + stats.golfPathRunDistance;
+    stats.womensTimePar = stats.transPathWomensTimePar + stats.golfPathWomensTimePar + 
+                        (womensStrokePar * parShotBoxSecWomen);
+    stats.mensTimePar = stats.transPathMensTimePar + stats.golfPathMensTimePar + 
+                        (mensStrokePar * parShotBoxSecMen);
     return stats;
 }
 
