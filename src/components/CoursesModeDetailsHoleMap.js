@@ -1,3 +1,9 @@
+ /*************************************************************************
+ * File: coursesModeDetailsHoleMap.js
+ * This file defines the CoursesModeDetails React component, which enables
+ * users to view and edit the basic data on a golf course.
+ ************************************************************************/
+
 import React, { useEffect, useState, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
@@ -14,6 +20,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
   const [zoom, setZoom] = useState(15);
   const [lng, setLng] = useState(mapCenter.lng);
   const [lat, setLat] = useState(mapCenter.lat);
+  const [status, setStatus] = useState({mode: null, pathLength: null, autoAdvance: null})
   const mapContainer = useRef(null);
   const map = useRef(null);
 
@@ -262,71 +269,97 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
 
   return ( 
     <div className="map-container">
-      <div className="map-pane">
-        <div className="table-responsive">
-        <table className="table table-light table-sm w-auto">
-          <thead>
-            <tr className="font-small">
-            <th>Hole</th>
-            <th>Trans<br/>Path</th>
-            <th>Tee<br/>Box</th>
-            <th>Golf<br/>Path</th>
-            <th>Green</th>
-            </tr>
-          </thead>
-          <tbody>
-            {holes.map((h) => {
-              return(
-                <tr key={h.number} onClick={((h.transitionPath === "" || h.golfPath === "") ? null: ()=>handleProfileClick(h.number))}>
-                <td>{h.number}</td>
-                <td>
-                  <button className={"btn btn-sm" + ((h.transitionPath === "") ? "" : " btn-green")}
-                          aria-label={"Hole " + h.holeNum + " transition path " + 
-                                      ((h.transitionPath === "") ? "(not yet defined)":"(defined)")}
-                            onClick={()=>handleEditPath(h.number,"transitionPath")}>
-                      <FontAwesomeIcon icon="edit"/>
+      <table className="table table-light table-sm w-auto">
+        <thead>
+          <tr className="font-small">
+          <th>Hole</th>
+          <th>Trans<br/>Path</th>
+          <th>Tee<br/>Box</th>
+          <th>Golf<br/>Path</th>
+          <th>Green</th>
+          </tr>
+        </thead>
+        <tbody>
+          {holes.map((h) => {
+            return(
+              <tr key={h.number}>
+              <td><button className="btn btn-sm" disabled={(h.transitionPath === "" || h.golfPath === "")}
+                          onClick={()=>handleProfileClick(h.number)}>
+                   {h.number}
                    </button>
-                </td>
-                <td>
-                  <button className={"btn btn-sm" + ((h.teebox === "") ? "" : " btn-green")}
-                          aria-label={"Hole " + h.holeNum + " teebox outline " + 
-                                      ((h.teebox === "") ? "(not yet defined)":"(defined)")}
-                            onClick={()=>handleEditPath(h.number,"teebox")}>
-                      <FontAwesomeIcon icon="edit"/>
-                   </button>
-                </td>
-                <td>
-                  <button className={"btn btn-sm" + ((h.golfPath === "") ? "" : " btn-green")}
-                          aria-label={"Hole " + h.holeNum + " golf path " + 
-                                      ((h.golfPath === "") ? "(not yet defined)":"(defined)")}
-                            onClick={()=>handleEditPath(h.number,"golfPath")}>
-                      <FontAwesomeIcon icon="edit"/>
-                   </button>
-                </td>
-                <td>
-                  <button className={"btn btn-sm" + ((h.green === "") ? "" : " btn-green")}
-                          aria-label={"Hole " + h.holeNum + " green outline " + 
-                                      ((h.green === "") ? "(not yet defined)":"(defined)")}
-                            onClick={()=>handleEditPath(h.number,"green")}>
-                      <FontAwesomeIcon icon="edit"/>
-                   </button>
-                </td>
-                </tr>
-            );
-            })}
-          </tbody>
-        </table>
+              </td>
+              <td>
+                <button className={"btn btn-sm" + ((h.transitionPath !== "") ? " btn-green" : "")}
+                        aria-label={"Hole " + h.holeNum + " transition path " + 
+                                    ((h.transitionPath === "") ? "(not yet defined)":"(defined)")}
+                          onClick={((h.transitionPath === "") ? ()=>handleEditPath(h.number,"transitionPath") : null)}>
+                    <FontAwesomeIcon icon={((h.transitionPath === "") ? "edit" : "check")}/>
+                </button>
+              </td>
+              <td>
+              <button className={"btn btn-sm" + ((h.teebox !== "") ? " btn-green" : "")}
+                        aria-label={"Hole " + h.holeNum + " tee box " + 
+                                    ((h.transitionPath === "") ? "(not yet defined)":"(defined)")}
+                          onClick={((h.transitionPath === "") ? ()=>handleEditPath(h.number,"teebox") : null)}>
+                    <FontAwesomeIcon icon={((h.teebox === "") ? "edit" : "check")}/>
+                </button>
+              </td>
+              <td>
+              <button className={"btn btn-sm" + ((h.golfPath !== "") ? " btn-green" : "")}
+                        aria-label={"Hole " + h.holeNum + " golf path " + 
+                                    ((h.golfPath === "") ? "(not yet defined)":"(defined)")}
+                          onClick={((h.golfPath === "") ? ()=>handleEditPath(h.number,"golfPath") : null)}>
+                    <FontAwesomeIcon icon={((h.golfPath === "") ? "edit" : "check")}/>
+                </button>
+              </td>
+              <td>
+              <button className={"btn btn-sm" + ((h.green !== "") ? " btn-green" : "")}
+                        aria-label={"Hole " + h.holeNum + " green " + 
+                                    ((h.green === "") ? "(not yet defined)":"(defined)")}
+                          onClick={((h.green === "") ? ()=>handleEditPath(h.number,"green") : null)}>
+                    <FontAwesomeIcon icon={((h.green === "") ? "edit" : "check")}/>
+                </button>
+              </td>
+              </tr>
+          );
+          })}
+        </tbody>
+      </table>
+      <div className="map-box-container">
+        <div ref={mapContainer} className="map-box-full">
+        {status.mode !== null ? 
+          <div className="status-box">
+            <span className="txt-small-bold">Defining Hole 1 Transition Path...</span>
+            <br/>
+            <span>Click to start path and to define points along path; double-click to end path</span>
+            <div className="txt-small small-pad">Path Length: 230 yards</div>
+            <div className="form-check form-switch">
+              <div className="layout-inline-block">
+                <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked={status.autoAdvance}/>
+              </div>
+              <label className="form-check-label" htmlFor="flexSwitchCheckChecked">Auto-advance path</label>
+            </div>
+          </div> : 
+          <div className="status-box">
+            <span className="txt-small-bold">Tips:</span>
+            <ul className="txt-small txt-align-left">
+              <li>Click on a <FontAwesomeIcon icon="edit" /> icon in side panel to define
+                  a&nbsp;<span className="txt-yellow bg-black">transition path</span>, <span className="txt-red">golf path</span>,&nbsp;
+                  <span className="txt-blue">tee box</span>, or&nbsp;<span className="txt-green bg-black">green</span></li>
+              <li>A <FontAwesomeIcon icon="check" className="btn-green"/> icon in side panel means the path, tee box, or green has been defined. To redefine it, you must first delete it on map by selecting it and hitting 'delete' key.</li>
+              <li>Click on a hole # to show/hide elevation profile view of hole. (Available only if transition path AND golf path are defined for hole.)</li>
+            </ul>
+          </div>
+        }
+
         </div>
-        </div>
-        <div className="map-box-container">
-          <div ref={mapContainer} className="map-box-full"><p/><p/></div>
-          <div className="hole-profile" hidden={profileHole===0}>
+        <div className="hole-profile" hidden={profileHole===0}>
             <div className="flex-container">
               <div><h5>{"Hole #" + profileHole + " Elevation Profile"}</h5></div>
               <div><button onClick={()=>setProfileHole(0)}><FontAwesomeIcon icon="xmark"/></button></div>
             </div>
-          </div>
-       </div>
-     </div>
+        </div>
+      </div>
+    </div>
   );
 };

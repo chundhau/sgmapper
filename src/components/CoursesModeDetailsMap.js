@@ -227,6 +227,11 @@ export default function CoursesModeDetailsMap({holes, mapCenter, updatePath})  {
         </div>
         <div className="map-box-container">
           <div ref={mapContainer} className="map-box-full"></div>
+          <div className="status-box">
+            <p>Defining Hole 1 Transition Path...</p>
+            <div id="calculated-distance" />
+          </div>
+      </div>
           <div className="hole-profile" hidden={profileHole===0}>
             <div className="flex-container">
               <div><h5>{"Hole #" + profileHole + " Elevation Profile"}</h5></div>

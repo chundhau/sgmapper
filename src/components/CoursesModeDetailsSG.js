@@ -147,7 +147,7 @@ export default function CoursesModeDetailsSG({course, updateCourseVal}) {
           </fieldset>
           <div className="mb-3 centered">
           <label htmlFor="sgNotes" className="centered">Speedgolf Notes:</label><br></br>
-          <textarea id="sgNotes" className="text-wrap" rows="5" cols="50" 
+          <textarea id="sgNotes" className="text-wrap" rows="7" cols="75" 
                     name="sgNotes" value={course.sgNotes} onChange={handleChange} 
                     aria-describedby='notes-descr'/>
            <div id="notes-descr" className="form-text">

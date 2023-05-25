@@ -370,7 +370,7 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
                         type="button" role="tab" aria-controls="path-map" 
                         disabled={selectedTee === null}
                         aria-selected="false">
-                    Course Map
+                    Hole Map
                 </button>
             </li>
         </ul>
