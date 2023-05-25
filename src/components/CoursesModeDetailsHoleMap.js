@@ -20,9 +20,24 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
   const [zoom, setZoom] = useState(15);
   const [lng, setLng] = useState(mapCenter.lng);
   const [lat, setLat] = useState(mapCenter.lat);
-  const [status, setStatus] = useState({mode: null, pathLength: null, autoAdvance: null})
+  const [status, setStatus] = useState({mode: "select", selection: null, pathLength: null, autoAdvance: null});
   const mapContainer = useRef(null);
   const map = useRef(null);
+  //line colors for hole features
+  const lineColor = {
+    golfPath: '#FF0000',
+    transitionPath: '#FFFF00',
+    teebox: '#0000FF',
+    green: '#90EE90',
+  };
+  //text labels for hole features
+  const featureLabel = {
+    golfPath: 'Golf',
+    transitionPath: 'Transition',
+    teebox: 'Tee',
+    green: 'Green',
+
+  };
 
   //const distanceContainer = useRef(null);
 
@@ -32,12 +47,12 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
       });
   }
 
-
-  //Instantiate the map and draw objects
+  //All of the Mapbox functionality is defined in useEffect() because it has to 
+  //happen after render, and because it has to be updated after changes to
+  //status state variable.
   useEffect(() => {
     
     //Instantiate a mapbox Map object and attach to mapContainer DOM element
-  
      map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/satellite-streets-v12',
@@ -59,7 +74,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
       'maxzoom': 15
       });
       map.current.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1 });
-      displayAllDefinedPaths();
+      displayAllDefinedFeatures();
     });
 
     map.current.on('render', () => {
@@ -87,73 +102,136 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
     
     map.current.addControl(draw);
 
-    let coords = []; //Coordinates of path
-
+    let coords = []; //Coordinates of path currently being defined
     //Whether a path is currently being defined
     let isDrawingStopped = (editPath === null ? true : false);
 
-  /*************************************************************************
-   * @function displayPath
-   * @param path, an array of geocoord objects with 'lat' and 'lng' props.
-   * @param segmentCount, an integer indicating the next available unique
-   * label for a path segment. 
-   * @param lineColor, a hex value indicating the color of the path
-   * @param label, a textual label for the path
+    /*************************************************************************
+   * @function displayFeature
+   * @param feature, an array of geocoord objects with 'lat' and 'lng' props.
+   * @param lineColor, a hex value indicating the color of the feature.
+   * @param id, a unique id to assign to the feature
+   * @param label, a textual label for the feature that includes the feature
+   *        type as a substring: 'Golf', 'Transition', 'Green' or 'Tee'
+   * @returns the unique id of the feature displayed
    * @Desc 
-   * Display a path (transition or golf) on the map
-   * TO DO: Show path label
+   * Display a feature (transition path, teebox, golf path, or green) on the 
+   * map; label the feature on the map (TO DO)
    *************************************************************************/
-    function displayPath(path, segmentCount, lineColor, label) {
-      for(let i = 0; i < path.length-1; i++) {
-        map.current.addSource(`route${segmentCount+i}`, {
-          'type': 'geojson',
-          'data': {
-            'type': 'Feature',
-            'properties': {title: label},
-            'geometry': {
-              'type': 'LineString',
-              'coordinates': [[path[i].lng, path[i].lat],
-                              [path[i+1].lng, path[i+1].lat]]
-            }
+  function displayFeature(holeNum, featureCoords, featureType) {
+    if (featureCoords.length == 0) return;
+    const geojson = {
+        'type': 'geojson',
+        'data': { 
+          'type': 'Feature',
+          'properties': {
+            'label': `Hole ${holeNum} ${featureLabel[featureType]}`
+          },
+          'geometry': {
+            'type': 'LineString',
+            'coordinates': featureCoords.map(pt => [pt.lng, pt.lat])                 
           }
-        });
-        map.current.addLayer({
-          'id': `route${segmentCount+i}`,
-          'type': 'line',
-          'source': `route${segmentCount+i}`,
-          'layout': {
-            'line-join': 'round',
-            'line-cap': 'round',
-          },
-          'paint': {
-            'line-color': lineColor,
-            'line-width': 3
-          },
-          
-        })
-      }
+        }
+      };
+    const id = `H${holeNum}${featureType}`;
+    map.current.addSource(id,geojson); 
+    //Add line segment
+    map.current.addLayer({
+      'id': id,
+      'type': 'line',
+      'source': id,
+      'layout': {
+        'line-join': 'round',
+        'line-cap': 'round',
+      },
+      'paint': {
+        'line-color': lineColor[featureType],
+        'line-width': 3
+      },
+    });
+    if (featureType==='golfPath' || featureType==='transitionPath') {
+      //Add path label layer
+      map.current.addLayer({
+        'id': id + "_label",
+        'type': "symbol",
+        'source': id,
+        'layout': {
+          'symbol-placement': 'line-center',
+          'text-max-angle': 90,
+          'text-offset': [1,1],
+          "text-font": ["Arial Unicode MS Regular"],
+          "text-field": '{label}',
+          "text-size": 12,
+        },
+        'paint': {
+          'text-color': '#FFFFFF',
+          'text-halo-color': '#000000',
+          'text-halo-width': 0.5,
+          'text-halo-blur': 0.5
+        }
+      });
     }
+    if (featureType==='golfPath') {
+      //Add _draggable!_ tee and flag markers
+      const teePopup = new mapboxgl.Popup()
+        .setText(`Hole ${holeNum} Tee`)
+        .addTo(map.current);
+      const tee = new mapboxgl.Marker({
+        color: "#3bb2d0",
+        symbol: holeNum,
+        draggable: true
+      }).setLngLat([featureCoords[0].lng, 
+          featureCoords[0].lat])
+        .addTo(map.current)
+        .setPopup(teePopup);
+      const flagPopup = new mapboxgl.Popup()
+        .setText(`Hole ${holeNum} Flag`)
+        .addTo(map.current);
+      const flag = new mapboxgl.Marker({
+        color: "#3bb2d0",
+        symbol: holeNum,
+        draggable: true
+      }).setLngLat([featureCoords[featureCoords.length-1].lng, 
+          featureCoords[featureCoords.length-1].lat])
+        .addTo(map.current)
+        .setPopup(flagPopup);
+  }
+  return id;
+}
 
   /*************************************************************************
-   * @function displayAllDefinedPaths
+   * @function displayAllDefinedFeatures
    * @Desc 
-   * Display all the paths defined in the holes array (component prop).
-   * Maintain a segment counter to ensure each path segment has a unique
-   * id, per Mapbox requirements
+   * Display all the features defined in the holes array (component prop).
+   * Give each feature a unique id so that click handlers can be defined on
+   * them. Give each feature a distinctive color according to our 
+   * color legend: yellow for trans path, blue for tee box, red for 
+   * golf path, and bright green for green.
    *************************************************************************/
-    function displayAllDefinedPaths() {
-      let segmentCount = 0;
-      for (let h = 0; h < holes.length; h++) {
-        if (holes[h].transitionPath !== "") {
-          displayPath(holes[h].transitionPath,segmentCount,"#FFFF00","Hole" + (h+1) + " Transition");
-          segmentCount += holes[h].transitionPath.length;
-        }
-        if (holes[h].golfPath !== "") {
-          displayPath(holes[h].golfPath,segmentCount, '#FF0000',"Hole " + (h+1) + " Golf");
-          segmentCount += holes[h].golfPath.length;
-        }
+  function displayAllDefinedFeatures() {
+
+    for (let h = 0; h < holes.length; h++) {
+      if (holes[h].transitionPath !== "") {
+        displayFeature(h+1,holes[h].transitionPath,'transitionPath');
+      }
+      if (holes[h].golfPath !== "") {
+        displayFeature(h+1,holes[h].golfPath,'golfPath');
+      }
+      if (holes[h].teebox !== "") {
+        displayFeature(h+1,holes[h].teebox,'teebox');
+      }
+      if (holes[h].green!== "") {
+        displayFeature(h+1,holes[h].green,'green');
       }   
     }
+  }
+
+  // function toggleSelectedLayer(id) {
+  //   if (map.current.getPaintProperty(id,'line-width') === 3)
+  //     map.current.setPaintProperty(id,'line-width',6);
+  //   else 
+  //     map.current.setPaintProperty(id,'line-width',6);
+  // }
 
   /*************************************************************************
    * @function updateLine
@@ -273,10 +351,10 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
         <thead>
           <tr className="font-small">
           <th>Hole</th>
-          <th>Trans<br/>Path</th>
-          <th>Tee<br/>Box</th>
-          <th>Golf<br/>Path</th>
-          <th>Green</th>
+          <th><span className="txt-yellow bg-black">Trans<br/>Path</span></th>
+          <th><span className="txt-blue">Tee<br/>Box</span></th>
+          <th><span className="txt-red">Golf<br/>Path</span></th>
+          <th><span className="txt-green bg-black">Green</span></th>
           </tr>
         </thead>
         <tbody>
@@ -293,7 +371,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
                         aria-label={"Hole " + h.holeNum + " transition path " + 
                                     ((h.transitionPath === "") ? "(not yet defined)":"(defined)")}
                           onClick={((h.transitionPath === "") ? ()=>handleEditPath(h.number,"transitionPath") : null)}>
-                    <FontAwesomeIcon icon={((h.transitionPath === "") ? "edit" : "check")}/>
+                    <FontAwesomeIcon icon={((h.transitionPath === "") ? "plus" : "check")}/>
                 </button>
               </td>
               <td>
@@ -301,7 +379,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
                         aria-label={"Hole " + h.holeNum + " tee box " + 
                                     ((h.transitionPath === "") ? "(not yet defined)":"(defined)")}
                           onClick={((h.transitionPath === "") ? ()=>handleEditPath(h.number,"teebox") : null)}>
-                    <FontAwesomeIcon icon={((h.teebox === "") ? "edit" : "check")}/>
+                    <FontAwesomeIcon icon={((h.teebox === "") ? "plus" : "check")}/>
                 </button>
               </td>
               <td>
@@ -309,7 +387,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
                         aria-label={"Hole " + h.holeNum + " golf path " + 
                                     ((h.golfPath === "") ? "(not yet defined)":"(defined)")}
                           onClick={((h.golfPath === "") ? ()=>handleEditPath(h.number,"golfPath") : null)}>
-                    <FontAwesomeIcon icon={((h.golfPath === "") ? "edit" : "check")}/>
+                    <FontAwesomeIcon icon={((h.golfPath === "") ? "plus" : "check")}/>
                 </button>
               </td>
               <td>
@@ -317,7 +395,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
                         aria-label={"Hole " + h.holeNum + " green " + 
                                     ((h.green === "") ? "(not yet defined)":"(defined)")}
                           onClick={((h.green === "") ? ()=>handleEditPath(h.number,"green") : null)}>
-                    <FontAwesomeIcon icon={((h.green === "") ? "edit" : "check")}/>
+                    <FontAwesomeIcon icon={((h.green === "") ? "plus" : "check")}/>
                 </button>
               </td>
               </tr>
@@ -327,7 +405,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
       </table>
       <div className="map-box-container">
         <div ref={mapContainer} className="map-box-full">
-        {status.mode !== null ? 
+        {status.mode !=="select" ? 
           <div className="status-box">
             <span className="txt-small-bold">Defining Hole 1 Transition Path...</span>
             <br/>
@@ -340,14 +418,14 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
               <label className="form-check-label" htmlFor="flexSwitchCheckChecked">Auto-advance path</label>
             </div>
           </div> : 
-          <div className="status-box">
+          <div className="status-box" tabIndex="0">     
             <span className="txt-small-bold">Tips:</span>
             <ul className="txt-small txt-align-left">
-              <li>Click on a <FontAwesomeIcon icon="edit" /> icon in side panel to define
-                  a&nbsp;<span className="txt-yellow bg-black">transition path</span>, <span className="txt-red">golf path</span>,&nbsp;
-                  <span className="txt-blue">tee box</span>, or&nbsp;<span className="txt-green bg-black">green</span></li>
-              <li>A <FontAwesomeIcon icon="check" className="btn-green"/> icon in side panel means the path, tee box, or green has been defined. To redefine it, you must first delete it on map by selecting it and hitting 'delete' key.</li>
-              <li>Click on a hole # to show/hide elevation profile view of hole. (Available only if transition path AND golf path are defined for hole.)</li>
+              <li>Click on a <FontAwesomeIcon icon="plus" /> icon in side panel to define a hole's
+                  &nbsp;<span className="txt-yellow bg-black">Transition Path</span>, <span className="txt-red">Golf Path</span>,&nbsp;
+                  <span className="txt-blue">Tee Box</span>, or&nbsp;<span className="txt-green bg-black">Green</span></li>
+              <li>A <FontAwesomeIcon icon="check" className="btn-green"/> icon in side panel means the hole's path, tee box, or green has been defined. To redefine it, first delete it on map by selecting it and hitting 'delete' key.</li>
+              <li>Click on a hole # to show/hide elevation profile of hole. (Available only if transition path AND golf path are defined for hole.)</li>
             </ul>
           </div>
         }
