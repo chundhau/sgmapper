@@ -119,8 +119,8 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
     function handleFlagDragEnd(holeNum, flagMarker) {
       const lngLat = flagMarker.getLngLat();
       const elv = map.current.queryTerrainElevation(lngLat, {exaggerated: false}) * 3.280839895;
-      const golfLayerId = ((holeNum < 10) ? `H$0{holeNum}golfPath`:  `H${holeNum}golfPath`);
-      const transLayerId = ((holeNum < 10) ? `H$0{holeNum}transitionPath`:  `H${holeNum}transitionPath`);
+      const golfLayerId = ((holeNum < 10) ? `H0${holeNum}golfPath`:  `H${holeNum}golfPath`);
+      const transLayerId = ((holeNum < 10) ? `H0${holeNum}transitionPath`:  `H${holeNum}transitionPath`);
       if (holes[holeNum-1].golfPath !== "") {
         map.current.removeLayer(golfLayerId);
         map.current.removeLayer(golfLayerId + "_label");
