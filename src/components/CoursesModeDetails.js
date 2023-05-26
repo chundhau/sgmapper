@@ -396,7 +396,8 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
               {selectedTee === null ? null:
                 <CoursesModeDetailsHoleMap holes={updatedCourse.tees[selectedTee].holes} 
                                            mapCenter={updatedCourse.geoLocation}
-                                           updatePath={updatePath} />}
+                                           updatePath={updatePath} 
+                                           distUnits={distUnits} />}
             </div>
         </div>
         <br/>

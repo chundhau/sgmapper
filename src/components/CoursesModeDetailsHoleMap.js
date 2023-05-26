@@ -12,11 +12,12 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
 import FontawesomeMarker from 'mapbox-gl-fontawesome-markers'
 import * as SGCalcs from '../speedgolfCalculations'
+import * as Conversions from '../conversions'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 mapboxgl.accessToken = 'pk.eyJ1IjoidWRkeWFuIiwiYSI6ImNsZzY3MG1tZjAzbnczY3FjN2h0amp0MjUifQ.h7bnjg6dqjrJeFqNPvJyuA';
 
 
-export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath})  {
+export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath, distUnits})  {
 
   const [editPath, setEditPath] = useState(null);
   const [profileHole, setProfileHole] = useState(0);
@@ -63,6 +64,8 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
       zoom: zoom
     });
 
+    const pathIds = [];
+    const pathPopup = new mapboxgl.Popup({closeButton: false});
 
   /*************************************************************************
    * @function on load handler
@@ -108,19 +111,16 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
     let isDrawingStopped = (editPath === null ? true : false);
 
     function handleTeeDrag(holeNum) {
-     
-      
     }
 
     function handleFlagDrag(holeNum) {
-
     }
 
     function handleFlagDragEnd(holeNum, flagMarker) {
       const lngLat = flagMarker.getLngLat();
       const elv = map.current.queryTerrainElevation(lngLat, {exaggerated: false}) * 3.280839895;
-      const golfLayerId = `H${holeNum}golfPath`;
-      const transLayerId = `H${holeNum+1}transitionPath`;
+      const golfLayerId = ((holeNum < 10) ? `H$0{holeNum}golfPath`:  `H${holeNum}golfPath`);
+      const transLayerId = ((holeNum < 10) ? `H$0{holeNum}transitionPath`:  `H${holeNum}transitionPath`);
       if (holes[holeNum-1].golfPath !== "") {
         map.current.removeLayer(golfLayerId);
         map.current.removeLayer(golfLayerId + "_label");
@@ -168,14 +168,14 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
    
    /*************************************************************************
    * @function displayFeature
-   * @param feature, an array of geocoord objects with 'lat' and 'lng' props.
-   * @param lineColor, a hex value indicating the color of the feature.
-   * @param id, a unique id to assign to the feature
-   * @param label, a textual label for the feature that includes the feature
-   *        type as a substring: 'Golf', 'Transition', 'Green' or 'Tee'
-   * @param createMarkers, a boolean indicating whether to create tee and
+   * @param the holeNum associated with the feature to add to the map
+   * @param featureCoords, an array of geocoord objects (with 'lat' 
+   *        and 'lng' props) that define the feature.
+   * @param featureType, the type of feature to add to the map 
+   *        ('transitionPath', 'teebox', 'golfPath', or 'green')
+   * @param createMarkers, a boolean indicating whether to create fresh tee and
    *        green markers (used only when featureType==='golfPath')
-   * @returns the unique id of the feature displayed
+   * @returns the unique id of the feature added to the map
    * @Desc 
    * Display a feature (transition path, teebox, golf path, or green) on the 
    * map; label the feature on the map (TO DO)
@@ -195,7 +195,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
         }
       }
     };
-    const id = `H${holeNum}${featureType}`;
+    const id = ((holeNum < 10) ? `H0${holeNum}${featureType}`: `H${holeNum}${featureType}`);
     map.current.addSource(id,geojson); 
     //Add path layer
     map.current.addLayer({
@@ -212,7 +212,8 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
       },
     });
     if (featureType==='golfPath' || featureType==='transitionPath') {
-      //Add path label layer
+      //Add path label layer and add to pathIds array to enable
+      //popup on event hover
       map.current.addLayer({
         'id': id + "_label",
         'type': "symbol",
@@ -232,12 +233,14 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
           'text-halo-blur': 0.5
         }
       });
+      pathIds.push(id);
+      console.dir(pathIds);
     }
+    
     if (featureType==='golfPath' && createMarkers) {
       //Add _draggable!_ tee and flag markers
-      // const teePopup = new mapboxgl.Popup()
-      //   .setText(`Hole ${holeNum} Tee`)
-      //   .addTo(map.current);
+      const teePopup = new mapboxgl.Popup({closeButton: false, maxWidth: 'none'})
+        .setText(`Hole ${holeNum} Tee`);
       const tee = new FontawesomeMarker({
         icon: 'fas fa-golf-ball-tee',
         iconColor: 'white',
@@ -245,10 +248,10 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
         draggable: true
       }).setLngLat([featureCoords[0].lng, 
           featureCoords[0].lat])
-         .addTo(map.current);
-      // const flagPopup = new mapboxgl.Popup()
-      //   .setText(`Hole ${holeNum} Flag`)
-      //   .addTo(map.current);
+         .setPopup(teePopup)
+         .addTo(map.current)
+      const flagPopup = new mapboxgl.Popup({closeButton: false, maxWidth: 'none'})
+        .setText(`Hole ${holeNum} Flag`);
       const flag = new FontawesomeMarker({
           icon: 'fas fa-flag',
           iconColor: 'white',
@@ -256,11 +259,21 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
           draggable: true
         }).setLngLat([featureCoords[featureCoords.length-1].lng, 
                       featureCoords[featureCoords.length-1].lat])
+           .setPopup(flagPopup)
            .addTo(map.current);
       tee.on('drag', ()=>handleTeeDrag(holeNum,tee));
       tee.on('dragend',()=>handleTeeDragEnd(holeNum,tee));
       flag.on('drag', ()=>handleFlagDrag(holeNum,flag));
       flag.on('dragend',()=>handleFlagDragEnd(holeNum,flag));
+      flag.on('mouseenter',()=>{alert("entering markder!")});
+      const teeDiv = tee.getElement();
+      const flagDiv = flag.getElement();
+      teeDiv.addEventListener('mouseenter',()=>tee.togglePopup());
+      teeDiv.addEventListener('mouseleave',()=>tee.togglePopup());
+      teeDiv.addEventListener('click',()=>tee.togglePopup());
+      flagDiv.addEventListener('mouseenter',()=>flag.togglePopup());
+      flagDiv.addEventListener('mouseleave',()=>flag.togglePopup());
+      teeDiv.addEventListener('click',()=>tee.togglePopup());
     }
   //const sampledPath2 = SGCalcs.getSampledPath(map.current,sampledPath,50);
     return id;
@@ -389,6 +402,25 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
       }
     });
 
+    //Beginnings of code to display path length on mouseenter
+    map.current.on("mouseenter", pathIds, (e) => {
+      map.current.getCanvas().style.cursor = 'pointer';
+      const id = e.features[0].layer.id;
+      const hNum = parseInt(id.substr(1,2));
+      const distProp = ((id[3] === 'g') ? 'golfRunDistance' : 'transRunDistance');
+      const dist = ((distUnits === 'Imperial') ? `${Conversions.toYards(holes[hNum-1][distProp])} yards` :
+                    `${Conversions.toMeters(holes[hNum-1][distProp])} meters`);
+      //alert("in mousenter with id = " + id + ", hNum = " + hNum + ", dist = " + dist);
+      pathPopup.setText(`Running distance: ${dist}`)
+        .setLngLat(e.lngLat)
+        .addTo(map.current);
+    });
+
+    map.current.on("mouseleave", pathIds, (e) => {
+      map.current.getCanvas().style.cursor = '';
+      pathPopup.remove();
+    });
+
   // Cleanup on unmount
   return () => {
     map.current.remove();
@@ -411,6 +443,10 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
         setProfileHole(holeNum);
         }
     }
+
+    // function handleKeyPress(event) {
+    //   alert("Key pressed!");
+    // }
 
   return ( 
     <div className="map-container">
