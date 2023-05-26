@@ -3,6 +3,8 @@
  * This file defines constants and functions that are useful for computing
  * speedgolf pars.
  ************************************************************************/
+
+import mapboxgl from 'mapbox-gl';
 const parRunPaceMinMen = 7;
 const parRunPaceSecMen = 0;
 export const parRunPaceMen = (parRunPaceMinMen * 60) + parRunPaceSecMen;
@@ -159,3 +161,44 @@ export function getHoleRunningStats(transPath, golfPath, womensStrokePar, mensSt
     return stats;
 }
 
+function computeDestinationPoint(start, end, d2) {
+    let xa = start.lng
+    let ya = start.lat
+    let xb = end.lng
+    let yb = end.lat
+    let d = Math.sqrt(Math.pow((xa - xb), 2) + Math.pow((ya - yb), 2))
+    let xc = xa - ((d2 * (xa - xb)) / d)
+    let yc = ya - ((d2 * (ya - yb)) / d)
+    return {lng: xc, lat: yc}
+  }
+
+//Resamples path specified in coords using samplingDistance (in feet), returning an array of the resampled path
+/*********************************************************************
+ * @function getSampledPath 
+ * @desc 
+ * Given a set of coords defining a line, create a new line
+ * where the distance between each point is spaced
+ * samplingDistanceInFeet apart.
+ * @param map -- the mapbox GL object where the path is plotted
+ * @param coords -- a set of coords ({lat, lng, elv} defining
+ *        the path.
+ * @param samplingDistInFeet -- the amount of distance in feet 
+ *        between each point on the new line.
+ * @returns an array of coordinates defining the newly sampled path 
+ ********************************************************************/
+export function getSampledPath(map, coords, samplingDistInFeet) {
+    const metersTo10Km = 0.00001;
+    const feetTo10Km = 0.3048 * metersTo10Km;
+    const samplingDistance = samplingDistInFeet * feetTo10Km;
+    let arr = [];
+    for(let i = 0; i < coords.length-1; i++) {
+      const distance = Math.sqrt(Math.pow((coords[i].lng - coords[i+1].lng), 2) + Math.pow((coords[i].lat - coords[i+1].lat), 2))
+      for(let j = 0; j <= distance / samplingDistance; j++) {
+        const dest = computeDestinationPoint(coords[i], coords[i+1], samplingDistance * j)
+        const elv = map.queryTerrainElevation(dest, {exaggerated: false}) * 3.280839895 // convert meters to feet
+        arr.push({lat: dest.lat, lng: dest.lng, elv: elv})
+      }
+    }
+    //console.dir(arr)
+    return arr
+  }

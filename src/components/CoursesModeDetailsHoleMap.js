@@ -5,10 +5,13 @@
  ************************************************************************/
 
 import React, { useEffect, useState, useRef } from 'react';
+
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
+import FontawesomeMarker from 'mapbox-gl-fontawesome-markers'
+import * as SGCalcs from '../speedgolfCalculations'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 mapboxgl.accessToken = 'pk.eyJ1IjoidWRkeWFuIiwiYSI6ImNsZzY3MG1tZjAzbnczY3FjN2h0amp0MjUifQ.h7bnjg6dqjrJeFqNPvJyuA';
 
@@ -67,21 +70,19 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
    * Invoked when the map is loaded.
    *************************************************************************/
    map.current.on('load', () => {
-     map.current.addSource('mapbox-dem', {
+     map.current.addSource('mapbox-golf', {
       'type': 'raster-dem',
       'url': 'mapbox://mapbox.terrain-rgb',
       'tileSize': 256,
       'maxzoom': 15
       });
-      map.current.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1 });
+      map.current.setTerrain({ 'source': 'mapbox-golf', 'exaggeration': 1 });
       displayAllDefinedFeatures();
     });
 
     map.current.on('render', () => {
       map.current.resize();
     });
-
-    
 
     /*************************************************************************
      * @function on move handler
@@ -106,36 +107,97 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
     //Whether a path is currently being defined
     let isDrawingStopped = (editPath === null ? true : false);
 
-    /*************************************************************************
+    function handleTeeDrag(holeNum) {
+     
+      
+    }
+
+    function handleFlagDrag(holeNum) {
+
+    }
+
+    function handleFlagDragEnd(holeNum, flagMarker) {
+      const lngLat = flagMarker.getLngLat();
+      const elv = map.current.queryTerrainElevation(lngLat, {exaggerated: false}) * 3.280839895;
+      const golfLayerId = `H${holeNum}golfPath`;
+      const transLayerId = `H${holeNum+1}transitionPath`;
+      if (holes[holeNum-1].golfPath !== "") {
+        map.current.removeLayer(golfLayerId);
+        map.current.removeLayer(golfLayerId + "_label");
+        map.current.removeSource(golfLayerId);
+        holes[holeNum-1].golfPath[holes[holeNum-1].golfPath.length-1].lat = lngLat.lat;
+        holes[holeNum-1].golfPath[holes[holeNum-1].golfPath.length-1].lng = lngLat.lng;
+        holes[holeNum-1].golfPath[holes[holeNum-1].golfPath.length-1].elv = elv; 
+        displayFeature(holeNum,holes[holeNum-1].golfPath,'golfPath',false);
+      }
+      if (holeNum < holes.length && holes[holeNum].transitionPath !== "") {
+        map.current.removeLayer(transLayerId);
+        map.current.removeLayer(transLayerId + "_label");
+        map.current.removeSource(transLayerId);
+        holes[holeNum].transitionPath[0].lat = lngLat.lat;
+        holes[holeNum].transitionPath[0].lng = lngLat.lng;
+        holes[holeNum].transitionPath[0].elv = elv;
+        displayFeature(holeNum+1,holes[holeNum].transitionPath,'transitionPath');
+      }
+    }
+
+    function handleTeeDragEnd(holeNum, teeMarker) {
+      const lngLat = teeMarker.getLngLat();
+      const elv = map.current.queryTerrainElevation(lngLat, {exaggerated: false}) * 3.280839895;
+      const transLayerId = `H${holeNum}transitionPath`;
+      const golfLayerId = `H${holeNum}golfPath`;
+      if (holes[holeNum-1].transitionPath !== "" && holes[holeNum-1].transitionPath.length > 1) {
+        map.current.removeLayer(transLayerId);
+        map.current.removeLayer(transLayerId + "_label");
+        map.current.removeSource(transLayerId);
+        holes[holeNum-1].transitionPath[holes[holeNum-1].transitionPath.length-1].lat = lngLat.lat;
+        holes[holeNum-1].transitionPath[holes[holeNum-1].transitionPath.length-1].lng = lngLat.lng;
+        holes[holeNum-1].transitionPath[holes[holeNum-1].transitionPath.length-1].elv = elv;
+        displayFeature(holeNum,holes[holeNum-1].transitionPath,'transitionPath');
+      }
+      if (holes[holeNum-1].golfPath !== "") {
+        map.current.removeLayer(golfLayerId);
+        map.current.removeLayer(golfLayerId + "_label");
+        map.current.removeSource(golfLayerId);
+        holes[holeNum-1].golfPath[0].lat = lngLat.lat;
+        holes[holeNum-1].golfPath[0].lng = lngLat.lng;
+        holes[holeNum-1].golfPath[0].elv = elv; 
+        displayFeature(holeNum,holes[holeNum-1].golfPath,'golfPath',false);
+      }
+    }
+   
+   /*************************************************************************
    * @function displayFeature
    * @param feature, an array of geocoord objects with 'lat' and 'lng' props.
    * @param lineColor, a hex value indicating the color of the feature.
    * @param id, a unique id to assign to the feature
    * @param label, a textual label for the feature that includes the feature
    *        type as a substring: 'Golf', 'Transition', 'Green' or 'Tee'
+   * @param createMarkers, a boolean indicating whether to create tee and
+   *        green markers (used only when featureType==='golfPath')
    * @returns the unique id of the feature displayed
    * @Desc 
    * Display a feature (transition path, teebox, golf path, or green) on the 
    * map; label the feature on the map (TO DO)
    *************************************************************************/
-  function displayFeature(holeNum, featureCoords, featureType) {
+   function displayFeature(holeNum, featureCoords, featureType, createMarkers=true) {
     if (featureCoords.length == 0) return;
     const geojson = {
-        'type': 'geojson',
-        'data': { 
-          'type': 'Feature',
-          'properties': {
-            'label': `Hole ${holeNum} ${featureLabel[featureType]}`
-          },
-          'geometry': {
-            'type': 'LineString',
-            'coordinates': featureCoords.map(pt => [pt.lng, pt.lat])                 
-          }
+      'type': 'geojson',
+      'data': { 
+        'type': 'Feature',
+        'properties': {
+          'label': `Hole ${holeNum} ${featureLabel[featureType]}`
+        },
+        'geometry': {
+          'type': 'LineString',
+          'coordinates': featureCoords.map(pt => [pt.lng, pt.lat])                 
         }
-      };
+      }
+    };
     const id = `H${holeNum}${featureType}`;
     map.current.addSource(id,geojson); 
-    //Add line segment
+    //Add path layer
     map.current.addLayer({
       'id': id,
       'type': 'line',
@@ -171,33 +233,38 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath}
         }
       });
     }
-    if (featureType==='golfPath') {
+    if (featureType==='golfPath' && createMarkers) {
       //Add _draggable!_ tee and flag markers
-      const teePopup = new mapboxgl.Popup()
-        .setText(`Hole ${holeNum} Tee`)
-        .addTo(map.current);
-      const tee = new mapboxgl.Marker({
-        color: "#3bb2d0",
-        symbol: holeNum,
+      // const teePopup = new mapboxgl.Popup()
+      //   .setText(`Hole ${holeNum} Tee`)
+      //   .addTo(map.current);
+      const tee = new FontawesomeMarker({
+        icon: 'fas fa-golf-ball-tee',
+        iconColor: 'white',
+        color: 'blue',
         draggable: true
       }).setLngLat([featureCoords[0].lng, 
           featureCoords[0].lat])
-        .addTo(map.current)
-        .setPopup(teePopup);
-      const flagPopup = new mapboxgl.Popup()
-        .setText(`Hole ${holeNum} Flag`)
-        .addTo(map.current);
-      const flag = new mapboxgl.Marker({
-        color: "#3bb2d0",
-        symbol: holeNum,
-        draggable: true
-      }).setLngLat([featureCoords[featureCoords.length-1].lng, 
-          featureCoords[featureCoords.length-1].lat])
-        .addTo(map.current)
-        .setPopup(flagPopup);
+         .addTo(map.current);
+      // const flagPopup = new mapboxgl.Popup()
+      //   .setText(`Hole ${holeNum} Flag`)
+      //   .addTo(map.current);
+      const flag = new FontawesomeMarker({
+          icon: 'fas fa-flag',
+          iconColor: 'white',
+          color: 'lightgreen',
+          draggable: true
+        }).setLngLat([featureCoords[featureCoords.length-1].lng, 
+                      featureCoords[featureCoords.length-1].lat])
+           .addTo(map.current);
+      tee.on('drag', ()=>handleTeeDrag(holeNum,tee));
+      tee.on('dragend',()=>handleTeeDragEnd(holeNum,tee));
+      flag.on('drag', ()=>handleFlagDrag(holeNum,flag));
+      flag.on('dragend',()=>handleFlagDragEnd(holeNum,flag));
+    }
+  //const sampledPath2 = SGCalcs.getSampledPath(map.current,sampledPath,50);
+    return id;
   }
-  return id;
-}
 
   /*************************************************************************
    * @function displayAllDefinedFeatures
