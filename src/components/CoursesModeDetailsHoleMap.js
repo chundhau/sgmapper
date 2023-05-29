@@ -46,9 +46,9 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
   };
   Object.freeze(featureLabel);
 
-  /* For now, we're using editPath to capture the state of the feature currently being edited. 
+  /* For now, we're using defineFeature to capture the state of the feature currently being edited. 
      Ultimately, this will be done in 'status' state variable. */
-  const [editPath, setEditPath] = useState(null);
+  const [defineFeature, setDefineFeature] = useState(null);
 
   /* profileHole keeps track hole currently displayed in profile view. Wil become part of 'status. */
   const [profileHole, setProfileHole] = useState(0);
@@ -79,15 +79,51 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
 
   //const distanceContainer = useRef(null);
 
-  function handleEditPath(holeNum, path) { 
-      setEditPath({holeNum: holeNum,
-                   pathType: path
+  function handleDefineFeature(holeNum, featureType) { 
+      setDefineFeature({holeNum: holeNum,
+                   featureType: featureType
       });
   }
 
-  //All of the Mapbox functionality is defined in useEffect() because it has to 
-  //happen after render, and because it has to be updated after changes to
-  //status state variable.
+  /*************************************************************************
+   * @function selectPath
+   * @param pathId, the string id of the path to select.
+   * @param unselectIfSame, a boolean. If true, unselect currently selected
+   * path if it's the same as the path to select (so that NO path is selected).
+   * If false, essentially ignore the request: keep the selected path the same
+   * @Desc 
+   * Invoked when the user clicks on a path on the map. If the path is 
+   * currently selected, it is unselected. Otherwise, the path is selected
+   * and the previously selected path (if any) is unselected. 
+   *************************************************************************/
+  function selectPath(pathId,unselectIfSame) {
+    if (selectedPathId.current === pathId) {
+      if (unselectIfSame) {
+        //unselect path just clicked on
+        map.current.setPaintProperty(pathId,'line-width',3); //normal width
+        selectedPathId.current = null;
+      }
+      return;
+    }
+    //if here, we need to select a different path from currently selected path
+    map.current.setPaintProperty(pathId,'line-width',6); //thick width
+    if (selectedPathId.current !== null) {
+      //unselect currently selected path
+      map.current.setPaintProperty(selectedPathId.current,'line-width',3);
+    }
+    //Set current selection
+    selectedPathId.current = pathId;
+  }
+
+  /*************************************************************************
+   * @function useEffect
+   * @Desc 
+   * To minimize re-renders, we define most of the Mapbox functionality 
+   * within useEffect. useEffect only re-fires on changes to the defineFeature
+   * state variable. Note: This will soon be changed to the status state
+   * variable. Any updates to the 'status box' within mapbox are handled
+   * through refs to minimize re-renders. 
+   *************************************************************************/
   useEffect(() => {
     
     //Instantiate a mapbox Map object and attach to mapContainer DOM element
@@ -153,27 +189,51 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
   const pathIds = []; //array of layer ids of all paths added to the map
   
   //Popup for displaying distance info when path is hovered over
-  const pathPopup = new mapboxgl.Popup({closeButton: false}); 
+  const pathPopup = new mapboxgl.Popup({closeButton: false});
   
+  /* Need to define an object to style feature lines as they are being drawn.
+     See https://github.com/mapbox/mapbox-gl-draw/blob/main/docs/EXAMPLES.md */
+  const lineStyleObj = {
+    'id': 'gl-draw-line',
+    'type': 'line', 
+    'filter': ['all', ['==', '$type', 'LineString'], ['==', 'mode', 'draw_line_string']], 
+    'layout': { 
+      'line-cap': 'round', 
+      'line-join': 'round' 
+    },
+    'paint': { 
+      'line-width': 3, 
+      'line-dasharray': [0.2, 2],
+      'line-color': (defineFeature !== null ? 
+        lineColor[defineFeature.featureType] : '#FFFFFF')
+    }
+  };
   //Mapbox draw object to allow users to create paths on map
   const draw = new MapboxDraw({
     displayControlsDefault: false,
-    defaultMode: editPath === null ? 'simple_select' : 'draw_line_string'
+    defaultMode: defineFeature === null ? 'simple_select' :
+      (defineFeature.featureType.includes('Path') ? 'draw_line_string' : 
+        'draw_polygon'),
+    styles: [lineStyleObj]
   });
   map.current.addControl(draw);
 
-  //Array of coordinates of path currently being defined
-  const pathCoords = []; 
+  /* Array of coordinates of path currently being defined
+    We maintain manually because we want to capture elevation
+    and the default draw method does not capture elevation.
+  */
+  const featureCoords = []; 
 
   //Whether a path is currently being defined
-  let isDrawingStopped = (editPath === null ? true : false);
-
+  let isDrawingStopped = (defineFeature === null ? true : false);
 
   /*************************************************************************
    * @function updateLine
    * @Desc 
    * As the user draws a path, update the stats on the path in the 
    * distanceContainer object.
+   * We WON'T use this. Included only to show how to get length of current
+   * line.
    *************************************************************************/
   function updateLine() {
     const data = draw.getAll();
@@ -186,58 +246,56 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
     // }
 }
 
-/*************************************************************************
- * @function addMarker
- * @param coords, the lat and lng where the path vertex is to be added
- * @Desc 
- * Called by the global 'click' event handler to add a path vertex to the 
- * map at the latitude and longitude that were clicked.
- *************************************************************************/
-function addMarker(coords) {
-  const el = document.createElement('div');
-  el.className = 'marker';
-  el.style.backgroundImage = 'radial-gradient(circle, yellow 60%, transparent 70%)';
-  el.style.width = '10px';
-  el.style.height = '10px';
-  el.style.borderRadius = '50%';
-  new mapboxgl.Marker(el)
-    .setLngLat(coords)
-    .addTo(map.current);
-}
-      
-/*************************************************************************
- * @function draw.create event handler
- * @Desc 
- * Invoked when user starts drawing a path. Updates status box.
- *************************************************************************/
-  map.current.on('draw.create', () => {
-    updateLine();
-  });
-  
-  // map.on('draw.delete', () => {
-  //   markers.forEach(marker => {
-  //     marker.remove();
-  //   });
-  //   markers = [];
-  //   updateLine();
-  // });
-  
-/*************************************************************************
- * @function draw.update event handler
- * @Desc 
- * Invoked when user continues drawing a path. Calls updateLine to update
- * path stats.
- *************************************************************************/
-  map.current.on('draw.update', () => {
-    updateLine();
-  });
+  /*************************************************************************
+   * @function drawVertex
+   * @param coords, the lat, lng, elv of the feature vertex to be added
+   * @Desc 
+   * Called by the 'click' event handler to add a feature vertex to the 
+   * map at the lat, long, and elev that were clicked. We style it
+   * based on the type of feature being defined.
+   *************************************************************************/
+  function drawVertex(coords) {
+    const el = document.createElement('div');
+    el.className = 'marker';
+    el.style.backgroundImage = `radial-gradient(circle, ${lineColor[defineFeature.featureType]} 60%, transparent 70%)`;
+    el.style.width = '10px';
+    el.style.height = '10px';
+    el.style.borderRadius = '50%';
+    
+    new mapboxgl.Marker(el)
+      .setLngLat(coords)
+      .addTo(map.current);
+  }
 
-// function selectPath(pathId) {
-//   if (map.current.getPaintProperty(pathId,'line-width') === 3)
-//     map.current.setPaintProperty(id,'line-width',6);
-//   else 
-//     map.current.setPaintProperty(id,'line-width',6);
-// }
+  /*************************************************************************
+   * @function selectPath
+   * @param pathId, the string id of the path to select.
+   * @param unselectIfSame, a boolean. If true, unselect currently selected
+   * path if it's the same as the path to select (so that NO path is selected).
+   * If false, essentially ignore the request: keep the selected path the same
+   * @Desc 
+   * Invoked when the user clicks on a path on the map. If the path is 
+   * currently selected, it is unselected. Otherwise, the path is selected
+   * and the previously selected path (if any) is unselected. 
+   *************************************************************************/
+  function selectPath(pathId,unselectIfSame) {
+    if (selectedPathId.current === pathId) {
+      if (unselectIfSame) {
+        //unselect path just clicked on
+        map.current.setPaintProperty(pathId,'line-width',3); //normal width
+        selectedPathId.current = null;
+      }
+      return;
+    }
+    //if here, we need to select a different path from currently selected path
+    map.current.setPaintProperty(pathId,'line-width',6); //thick width
+    if (selectedPathId.current !== null) {
+      //unselect currently selected path
+      map.current.setPaintProperty(selectedPathId.current,'line-width',3);
+    }
+    //Set current selection
+    selectedPathId.current = pathId;
+  }
 
   /*************************************************************************
    * @function map.click event handler for path selection events
@@ -252,31 +310,65 @@ function addMarker(coords) {
    *************************************************************************/
   map.current.on('click',pathIds, (e)=> {
     e.clickOnLayer = true; //Ensure that the event propagates no further
-    const id = e.features[0].layer.id; //undocumented magic!
-    if (selectedPathId.current === id) {
-      //unselect path just clicked on
-      map.current.setPaintProperty(id,'line-width',3); //normal width
-      selectedPathId.current = null;
-      return;
-    }
-    //if here, we need to select the path that was clicked on
-    map.current.setPaintProperty(id,'line-width',6); //thick width
-    if (selectedPathId.current !== null) {
-      //unselect currently selected path
-      map.current.setPaintProperty(selectedPathId.current,'line-width',3);
-    }
-    //Set current selection
-    selectedPathId.current = id;
+    const id = e.features[0].layer.id; //undocumented prop containing layer id clicked on
+    selectPath(id,true);
   });
 
+  function getSnapStartVertex(holeNum, featureType) {
+    if (featureType == 'golfPath') {
+      if (holeNum === 1 && Object.hasOwn(holes[0],'startPath') && holes[0].startPath !== "") {
+        //Only case in which hole 1 golfPath startpoint should be snapped
+        return holes[0].startPath[holes[0].startPath.length-1];
+      }
+      if (holeNum == 1) {
+        return null;
+      }
+      //If here, can assume hole >= 2
+      if (holes[holeNum-1].transitionPath !== "") {
+        //Snap to transition pah
+        return holes[holeNum-1].transitionPath[holes[holeNum-1].transitionPath.length-1];
+      }
+      return null;
+    } else if (featureType === 'transitionPath') {
+      if (holeNum > 1 && holes[holeNum-2].golfPath !== "") {
+        //Snap to previous hole's golf path
+        return holes[holeNum-2].golfPath[holes[holeNum-2].golfPath.length-1];
+      }
+      return null;
+    }
+  }
+
+  function getSnapEndVertex(holeNum, featureType) {
+    if (featureType == 'golfPath') {
+      if (holeNum === holes.length && Object.hasOwn(holes[holes.length-1],'finishPath') && holes[holes.length-1].finishPath !== "") {
+        //Only case in which hole 1 golfPath endpoint should be snapped
+        return holes[holes.length-1].finishPath[0];
+      }
+      if (holeNum == holes.length) {
+        return null;
+      }
+      //If here, can assume hole is at least one less than last hole
+      if (holes[holeNum].transitionPath !== "") {
+        //Snap to transition pah
+        return holes[holeNum].transitionPath[0];
+      }
+      return null;
+    } else if (featureType === 'transitionPath') {
+      if (holeNum < holes.length && holes[holeNum-1].golfPath !== "") {
+        //Snap to current hole's golf path
+        return holes[holeNum-1].golfPath[0];
+      }
+      return null;
+    }
+  }
 
   /*************************************************************************
-   * @function map.click event handler for path definition events and
+   * @function map.click event handler for feature definition events and
    * clicks outside of path
    * @param e, the event object
    * @Desc 
-   * Invoked when the user clicks on the map. If a path is in the process
-   * of being defined, invokes addMarker() to add a vertex, with lat, lng, 
+   * Invoked when the user clicks on the map. If a feature is in the process
+   * of being defined, invokes drawVertex() to draw a vertex, with lat, lng, 
    * and elv, at the location clicked. If the event is a double-click 
    * (e.orginalEvent.detal === 2), path is terminated and staged for saving
    * via the updatePath prop function, and drawing mode is toggled to 
@@ -284,21 +376,34 @@ function addMarker(coords) {
    *************************************************************************/
   map.current.on('click', (e) => {
     if (e.clickOnLayer) return;  //Don't execute if click was on layer
-    console.dir(e);
     if (selectedPathId.current !== null) {
       //unselect current selection
       map.current.setPaintProperty(selectedPathId.current,'line-width',3);
       selectedPathId.current = null;
     }
     if (!isDrawingStopped && e.originalEvent.detail === 2) {
-        draw.changeMode('simple_select'); //Line is done
+        //Feature definition is complete; add it to map and update local storage
+        draw.changeMode('simple_select');
         isDrawingStopped = true;
-        updatePath(editPath.holeNum, editPath.pathType, pathCoords);
-        setEditPath(null);
+        const snapVertex = getSnapEndVertex(defineFeature.holeNum, defineFeature.featureType);
+        if (snapVertex !== null) {
+          featureCoords[featureCoords.length-1] = snapVertex;
+        }
+        updatePath(defineFeature.holeNum, defineFeature.featureType, featureCoords);
+        setDefineFeature(null);
     } else if (!isDrawingStopped) {
-        const elev = map.current.queryTerrainElevation(e.lngLat, { exaggerated: false }) * 3.280839895 // convert meters to feet
-        pathCoords.push({lat: e.lngLat.lat, lng: e.lngLat.lng, elv: elev });
-        addMarker(e.lngLat);
+        //Feature definition is continuing...
+        const snapVertex = getSnapStartVertex(defineFeature.holeNum , defineFeature.featureType);
+        let newVertex;
+        // Should this vertex be snapped?
+        if (featureCoords.length === 0 && snapVertex !== null)  {
+          newVertex = snapVertex;
+        } else {
+          const elev = map.current.queryTerrainElevation(e.lngLat, { exaggerated: false }) * 3.280839895 // convert meters to feet
+          newVertex = {lat: e.lngLat.lat, lng: e.lngLat.lng, elv: elev };
+        }
+        featureCoords.push(newVertex);
+        drawVertex(newVertex);
     }
   });
 
@@ -480,24 +585,42 @@ function addMarker(coords) {
       const lngLat = flagMarker.getLngLat();
       const elv = map.current.queryTerrainElevation(lngLat, {exaggerated: false}) * 3.280839895;
       const golfLayerId = ((holeNum < 10) ? `H0${holeNum}golfPath`:  `H${holeNum}golfPath`);
-      const transLayerId = ((holeNum < 10) ? `H0${holeNum}transitionPath`:  `H${holeNum}transitionPath`);
+      const transLayerId = (((holeNum+1) < 10) ? `H0${holeNum+1}transitionPath`:  `H${holeNum+1}transitionPath`);
+      let newPath;
       if (holes[holeNum-1].golfPath !== "") {
         map.current.removeLayer(golfLayerId);
         map.current.removeLayer(golfLayerId + "_label");
         map.current.removeSource(golfLayerId);
-        holes[holeNum-1].golfPath[holes[holeNum-1].golfPath.length-1].lat = lngLat.lat;
-        holes[holeNum-1].golfPath[holes[holeNum-1].golfPath.length-1].lng = lngLat.lng;
-        holes[holeNum-1].golfPath[holes[holeNum-1].golfPath.length-1].elv = elv; 
-        addFeatureToMap(holeNum,holes[holeNum-1].golfPath,'golfPath',false);
+        newPath = [...holes[holeNum-1].golfPath];
+        newPath[newPath.length-1].lat = lngLat.lat;
+        newPath[newPath.length-1].lng = lngLat.lng;
+        newPath[newPath.length-1].elv = elv; 
+        addFeatureToMap(holeNum,newPath,'golfPath',false);
+        updatePath(holeNum,"golfPath",newPath)
       }
       if (holeNum < holes.length && holes[holeNum].transitionPath !== "") {
         map.current.removeLayer(transLayerId);
         map.current.removeLayer(transLayerId + "_label");
         map.current.removeSource(transLayerId);
-        holes[holeNum].transitionPath[0].lat = lngLat.lat;
-        holes[holeNum].transitionPath[0].lng = lngLat.lng;
-        holes[holeNum].transitionPath[0].elv = elv;
-        addFeatureToMap(holeNum+1,holes[holeNum].transitionPath,'transitionPath');
+        newPath = [...holes[holeNum].transitionPath];
+        newPath[0].lat = lngLat.lat;
+        newPath[0].lng = lngLat.lng;
+        newPath[0].elv = elv;
+        addFeatureToMap(holeNum+1,newPath,'transitionPath');
+        updatePath(holeNum+1,"transitionPath",newPath)
+      } else if (holeNum === holes.length && Object.hasOwn(holes[holeNum-1],'finishPath') && 
+                 holes[holeNum-1].finishPath !== "") {
+          //Special case: Course has finish path and user dragged final flag
+          const finishLayerId = ((holeNum < 10) ? `H0${holeNum}finishPath`:  `H${holeNum}finishPath`);
+          map.current.removeLayer(finishLayerId);
+          map.current.removeLayer(finishLayerId + "_label");
+          map.current.removeSource(finishLayerId);
+          newPath = [...holes[holeNum-1].finishPath];
+          newPath[0].lat = lngLat.lat;
+          newPath[0].lng = lngLat.lng;
+          newPath[0].elv = elv;
+          addFeatureToMap(holeNum,newPath,'finishPath');
+          updatePath(holeNum,"finishPath",newPath);
       }
     }
 
@@ -514,25 +637,42 @@ function addMarker(coords) {
     function handleTeeDragEnd(holeNum, teeMarker) {
       const lngLat = teeMarker.getLngLat();
       const elv = map.current.queryTerrainElevation(lngLat, {exaggerated: false}) * 3.280839895;
-      const transLayerId = `H${holeNum}transitionPath`;
-      const golfLayerId = `H${holeNum}golfPath`;
-      if (holes[holeNum-1].transitionPath !== "" && holes[holeNum-1].transitionPath.length > 1) {
+      const transLayerId = ((holeNum < 10) ? `H0${holeNum}transitionPath`:`H${holeNum}transitionPath`);
+      const golfLayerId = ((holeNum < 10) ? `H0${holeNum}golfPath`:`H${holeNum}golfPath`);
+      let newPath;
+      if (holeNum === 1 && Object.hasOwn(holes[0],'startPath' && holes[0].startPath !== "")) {
+        //Special case: Tee has start path and user dragged first tee marker
+        const startLayerId = ((holeNum < 10) ? `H0${holeNum}startPath`:`H${holeNum}startPath`);
+        map.current.removeLayer(startLayerId);
+        map.current.removeLayer(startLayerId + "_label");
+        map.current.removeSource(startLayerId);
+        newPath = [...holes[holeNum-1].startPath];
+        newPath[newPath.length-1].lat = lngLat.lat;
+        newPath[newPath.length-1].lng = lngLat.lng;
+        newPath[newPath.length-1].elv = elv;
+        addFeatureToMap(holeNum,newPath,'startPath');
+        updatePath(holeNum,"startPath",newPath);
+      } else if (holes[holeNum-1].transitionPath !== "" && holes[holeNum-1].transitionPath.length > 1) {
         map.current.removeLayer(transLayerId);
         map.current.removeLayer(transLayerId + "_label");
         map.current.removeSource(transLayerId);
-        holes[holeNum-1].transitionPath[holes[holeNum-1].transitionPath.length-1].lat = lngLat.lat;
-        holes[holeNum-1].transitionPath[holes[holeNum-1].transitionPath.length-1].lng = lngLat.lng;
-        holes[holeNum-1].transitionPath[holes[holeNum-1].transitionPath.length-1].elv = elv;
-        addFeatureToMap(holeNum,holes[holeNum-1].transitionPath,'transitionPath');
+        newPath = [...holes[holeNum-1].transitionPath];
+        newPath[newPath.length-1].lat = lngLat.lat;
+        newPath[newPath.length-1].lng = lngLat.lng;
+        newPath[newPath.length-1].elv = elv;
+        addFeatureToMap(holeNum,newPath,'transitionPath');
+        updatePath(holeNum,"transitionPath",newPath);
       }
       if (holes[holeNum-1].golfPath !== "") {
         map.current.removeLayer(golfLayerId);
         map.current.removeLayer(golfLayerId + "_label");
         map.current.removeSource(golfLayerId);
-        holes[holeNum-1].golfPath[0].lat = lngLat.lat;
-        holes[holeNum-1].golfPath[0].lng = lngLat.lng;
-        holes[holeNum-1].golfPath[0].elv = elv; 
-        addFeatureToMap(holeNum,holes[holeNum-1].golfPath,'golfPath',false);
+        newPath = [...holes[holeNum-1].golfPath];
+        newPath[0].lat = lngLat.lat;
+        newPath[0].lng = lngLat.lng;
+        newPath[0].elv = elv; 
+        addFeatureToMap(holeNum,newPath,'golfPath',false);
+        updatePath(holeNum,"golfPath",newPath);
       }
     }
 
@@ -594,7 +734,7 @@ function addMarker(coords) {
   return () => {
     map.current.remove();
   };     
-}, [editPath]); //useEffect() is reinvoked whenever editPath state var changes 
+}, [defineFeature]); //useEffect() is reinvoked whenever defineFeature state var changes 
       
 
   /*************************************************************************
@@ -624,27 +764,41 @@ function addMarker(coords) {
   function handleKeyDown(e) {
     if (selectedPathId.current !== null && (e.keyCode === 8 || e.keyCode === 46)) {
       map.current.removeLayer(selectedPathId.current);
+      map.current.removeLayer(selectedPathId.current + "_label");
       const hNum = parseInt(selectedPathId.current.substr(1,2));
       const pathType = selectedPathId.current.substr(3);
       updatePath(hNum, pathType, "");
       selectedPathId.current = null; //path no longer selected
-      if (pathType == 'golfPath') {
-        if (hNum == 1) {
-          if (holes[0].transitionPath.length === 0) {
-          teeFlagMarkers.current[0].tee.remove();
+      if (pathType === 'golfPath') {
+        if (hNum == 1) { //special case #1--trans path can be defined as empty array
+          if (holes[hNum-1].transitionPath === "" || holes[hNum-1].transitionPath.length === 0) {
+          teeFlagMarkers.current[hNum-1].tee.remove();
           }
-          if (holes[1].transitionPath === "") {
-          teeFlagMarkers.current[0].flag.remove();
+          if (holes[hNum].transitionPath === "") {
+          teeFlagMarkers.current[hNum-1].flag.remove();
           }
-        } else {
+        } else if (hNum === holes.length) { //special case #2--could be finish path
+          if (holes[hNum-1].transitionPath === "") {
+            teeFlagMarkers.current[hNum-1].tee.remove();
+          } 
+          if (!Object.hasOwn(holes[hNum-1],'finishPath') || holes[hNum-1].finishPath === "") {
+            teeFlagMarkers.current[hNum-1].flag.remove();
+          }
+        } else { //General case
           if (holes[hNum-1].transitionPath === "") {
             teeFlagMarkers.current[hNum-1].tee.remove();
           }
           if (hNum < holes.length && holes[hNum].transitionPath === "") {
             teeFlagMarkers.current[hNum-1].flag.remove();
-          }
-          
+          }  
         } 
+      } else if (pathType === 'transitionPath') {
+        if (holes[hNum-1].golfPath === "" && (hNum === 1 || holes[hNum-2].golfPath === "")) {
+          teeFlagMarkers.current[hNum-1].tee.remove();
+        }
+        if (hNum > 1 && holes[hNum-2].golfPath === "") {
+          teeFlagMarkers.current[hNum-2].flag.remove();
+        }
       }
     }
   }
@@ -673,33 +827,35 @@ function addMarker(coords) {
               </td>
               <td>
                 <button className={"btn btn-sm" + ((h.transitionPath !== "") ? " btn-green" : "")}
-                        aria-label={"Hole " + h.holeNum + " transition path " + 
+                        aria-label={"Hole " + h.number + " transition path " + 
                                     ((h.transitionPath === "") ? "(not yet defined)":"(defined)")}
-                          onClick={((h.transitionPath === "") ? ()=>handleEditPath(h.number,"transitionPath") : null)}>
+                          onClick={((h.transitionPath === "") ? ()=>handleDefineFeature(h.number,"transitionPath") : 
+                                     ()=>selectPath(((h.number < 10) ? `H0${h.number}transitionPath` : `H${h.number}transitionPath`)))}>
                     <FontAwesomeIcon icon={((h.transitionPath === "") ? "plus" : "check")}/>
                 </button>
               </td>
               <td>
               <button className={"btn btn-sm" + ((h.teebox !== "") ? " btn-green" : "")}
-                        aria-label={"Hole " + h.holeNum + " tee box " + 
+                        aria-label={"Hole " + h.number + " tee box " + 
                                     ((h.transitionPath === "") ? "(not yet defined)":"(defined)")}
-                          onClick={((h.transitionPath === "") ? ()=>handleEditPath(h.number,"teebox") : null)}>
+                          onClick={((h.transitionPath === "") ? ()=>handleDefineFeature(h.number,"teebox") : null)}>
                     <FontAwesomeIcon icon={((h.teebox === "") ? "plus" : "check")}/>
                 </button>
               </td>
               <td>
               <button className={"btn btn-sm" + ((h.golfPath !== "") ? " btn-green" : "")}
-                        aria-label={"Hole " + h.holeNum + " golf path " + 
+                        aria-label={"Hole " + h.number + " golf path " + 
                                     ((h.golfPath === "") ? "(not yet defined)":"(defined)")}
-                          onClick={((h.golfPath === "") ? ()=>handleEditPath(h.number,"golfPath") : null)}>
+                          onClick={((h.golfPath === "") ? ()=>handleDefineFeature(h.number,"golfPath") : 
+                                   ()=>selectPath(((h.number < 10) ? `H0${h.number}golfPath` : `H${h.number}golfPath`)))}>
                     <FontAwesomeIcon icon={((h.golfPath === "") ? "plus" : "check")}/>
                 </button>
               </td>
               <td>
               <button className={"btn btn-sm" + ((h.green !== "") ? " btn-green" : "")}
-                        aria-label={"Hole " + h.holeNum + " green " + 
+                        aria-label={"Hole " + h.number + " green " + 
                                     ((h.green === "") ? "(not yet defined)":"(defined)")}
-                          onClick={((h.green === "") ? ()=>handleEditPath(h.number,"green") : null)}>
+                          onClick={((h.green === "") ? ()=>handleDefineFeature(h.number,"green") : null)}>
                     <FontAwesomeIcon icon={((h.green === "") ? "plus" : "check")}/>
                 </button>
               </td>
