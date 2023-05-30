@@ -69,6 +69,8 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
 
   const mapContainer = useRef(null);
   const map = useRef(null);
+  const draw = useRef();
+  const pathMarkers = useRef();
 
   //Layer Id of path currently selected.
   const selectedPathId = useRef(null); 
@@ -208,24 +210,38 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
         lineColor[defineFeature.featureType] : '#FFFFFF')
     }
   };
+  //Alas, this seems to have no effect on the vertices of a line.
+  // const pointStyleObj =  {
+  //   "id": "gl-draw-polygon-and-line-vertex-halo-active",
+  //   "type": "circle",
+  //   "filter": ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"], ["==", "mode", "draw_line_string"]],
+  //   "paint": {
+  //     "circle-radius": 5,
+  //     "circle-color": (defineFeature !== null ? 
+  //       lineColor[defineFeature.featureType] : '#FFFFFF')
+  //   }
+  // };
   //Mapbox draw object to allow users to create paths on map
-  const draw = new MapboxDraw({
+
+  draw.current = new MapboxDraw({
     displayControlsDefault: false,
     defaultMode: defineFeature === null ? 'simple_select' :
       (defineFeature.featureType.includes('Path') ? 'draw_line_string' : 
         'draw_polygon'),
     styles: [lineStyleObj]
   });
-  map.current.addControl(draw);
+  map.current.addControl(draw.current);
 
   /* Array of coordinates of path currently being defined
     We maintain manually because we want to capture elevation
     and the default draw method does not capture elevation.
   */
+
   const featureCoords = []; 
+  pathMarkers.current = [];
 
   //Whether a path is currently being defined
-  let isDrawingStopped = (defineFeature === null ? true : false);
+  //let isDrawingStopped = (defineFeature === null ? true : false);
 
   /*************************************************************************
    * @function updateLine
@@ -236,7 +252,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
    * line.
    *************************************************************************/
   function updateLine() {
-    const data = draw.getAll();
+    const data = draw.current.getAll();
     if (data.features.length > 0) {
       const line = data.features[0];
       //const distance = turf.length(line, { units: 'feet' });
@@ -262,10 +278,12 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
     el.style.height = '10px';
     el.style.borderRadius = '50%';
     
-    new mapboxgl.Marker(el)
+    const m = new mapboxgl.Marker(el)
       .setLngLat(coords)
       .addTo(map.current);
+    pathMarkers.current.push(m);
   }
+ 
 
   /*************************************************************************
    * @function selectPath
@@ -314,6 +332,15 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
     selectPath(id,true);
   });
 
+  /*************************************************************************
+   * @function getSnapStartVertex
+   * @param holeNum, the hole number for which the user is drawing a path
+   * @param featureType, either 'golfPath' or 'runningPath' for now, but
+   * eventually also 'startPath' and 'finishPath'
+   * @desc Determine if the start of the path currently being drawn should
+   * snap to the end of the previous path. If so, return the coordinates of
+   * the vertex to snap to. 
+   *************************************************************************/
   function getSnapStartVertex(holeNum, featureType) {
     if (featureType == 'golfPath') {
       if (holeNum === 1 && Object.hasOwn(holes[0],'startPath') && holes[0].startPath !== "") {
@@ -338,6 +365,15 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
     }
   }
 
+   /*************************************************************************
+   * @function getSnapEndVertex
+   * @param holeNum, the hole number for which the user is drawing a path
+   * @param featureType, either 'golfPath' or 'runningPath' for now, but
+   * eventually also 'startPath' and 'finishPath'
+   * @desc Determine if the end of the path currently being drawn should
+   * snap to the start of the next path. If so, return the coordinates of
+   * the vertex to snap to. 
+   *************************************************************************/
   function getSnapEndVertex(holeNum, featureType) {
     if (featureType == 'golfPath') {
       if (holeNum === holes.length && Object.hasOwn(holes[holes.length-1],'finishPath') && holes[holes.length-1].finishPath !== "") {
@@ -381,17 +417,16 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
       map.current.setPaintProperty(selectedPathId.current,'line-width',3);
       selectedPathId.current = null;
     }
-    if (!isDrawingStopped && e.originalEvent.detail === 2) {
+    if (defineFeature !== null && e.originalEvent.detail === 2) {
         //Feature definition is complete; add it to map and update local storage
-        draw.changeMode('simple_select');
-        isDrawingStopped = true;
+        draw.current.changeMode('simple_select');
         const snapVertex = getSnapEndVertex(defineFeature.holeNum, defineFeature.featureType);
         if (snapVertex !== null) {
           featureCoords[featureCoords.length-1] = snapVertex;
         }
         updatePath(defineFeature.holeNum, defineFeature.featureType, featureCoords);
         setDefineFeature(null);
-    } else if (!isDrawingStopped) {
+    } else if (defineFeature !== null) {
         //Feature definition is continuing...
         const snapVertex = getSnapStartVertex(defineFeature.holeNum , defineFeature.featureType);
         let newVertex;
@@ -404,7 +439,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
         }
         featureCoords.push(newVertex);
         drawVertex(newVertex);
-    }
+     }
   });
 
   /**********************************************************************
@@ -759,10 +794,12 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
    * @Desc 
    * When the user hits a key when the map window is focused, we potentially
    * need to respond. Here are the cases we currently support:
-   * - Delete or backspace when path selected: Delete the path
+   * - Delete or backspace when feature selected: Delete the feature
+   * - Escape when feature is being created: delete the feature in progress
    *************************************************************************/
   function handleKeyDown(e) {
     if (selectedPathId.current !== null && (e.keyCode === 8 || e.keyCode === 46)) {
+      //Delete selection
       map.current.removeLayer(selectedPathId.current);
       map.current.removeLayer(selectedPathId.current + "_label");
       const hNum = parseInt(selectedPathId.current.substr(1,2));
@@ -800,6 +837,13 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
           teeFlagMarkers.current[hNum-2].flag.remove();
         }
       }
+    } else if (defineFeature !== null && e.keyCode === 27) {
+      //Cancel feature currently being drawn
+      for (let m = 0; m < pathMarkers.current.length; ++m) {
+        map.current.removeLayer(pathMarkers.current[m]);
+      }
+      draw.current.changeMode('simple_select');
+      setDefineFeature(null);
     }
   }
 
