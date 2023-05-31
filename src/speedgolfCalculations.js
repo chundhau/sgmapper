@@ -109,12 +109,12 @@ export function getSegmentTimePar(distance, percentGradient, parPace) {
  * @param transPath -- array of georcoords defining transition  
  *        running path from center of previous green to tee box
  * @param golfPath -- array of geocoords defining golf running path
- *        from tee box to center of green. 
- * @param finishPath -- array of geocoords defining golf running path
- *        from center of final green to finish line (final hole only,
- *        defaults to null to indicate it shouldn't be considered). 
+ *        from tee box to center of green.  
  * @param womensStrokePar -- women's stroke par for the hole
  * @param mensStrokePar -- men's stroke par for the hole
+ * @param finishPath -- array of geocoords defining golf running path
+ *        from center of final green to finish line (final hole only,
+ *        defaults to null to indicate it shouldn't be considered).
  * @returns Object with the following props: 
  *          --transPathRunDistance
  *          --transPathWomensTimePar,
@@ -128,7 +128,7 @@ export function getSegmentTimePar(distance, percentGradient, parPace) {
  *         If any of the hole's paths has no data, the functino returns
  *         an object with all empty ("") values.
  ********************************************************************/
-export function getHoleRunningStats(transPath, golfPath, finishPath=null, womensStrokePar, mensStrokePar) {
+export function getHoleRunningStats(transPath, golfPath,womensStrokePar, mensStrokePar, finishPath=null) {
     const stats = {
         transPathRunDistance: 0,
         transPathWomensTimePar: 0,

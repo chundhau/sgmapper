@@ -272,7 +272,7 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
             //CASE 2: Finishing hole; could have finishPath
             if (Object.hasOwn(thisHole,"finishPath")) {
                 runStats = SGCalcs.getHoleRunningStats(thisHole.transitionPath, thisHole.golfPath,
-                    thisHole.finishPath, thisHole.womensStrokePar, thisHole.mensStrokePar);
+                    thisHole.womensStrokePar, thisHole.mensStrokePar, thisHole.finishPath);
             }
             else {
                 //Calculate stats based on no finish path
@@ -288,6 +288,9 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
         thisHole.runDistance = runStats.runDistance;
         thisHole.transRunDistance = runStats.transPathRunDistance;
         thisHole.golfRunDistance = runStats.golfPathRunDistance;
+        if (Object.hasOwn(thisHole,"finishPath")) {
+            thisHole.finishPathRunDistance = runStats.finishPathRunDistance;
+        }
         thisHole.womensTimePar = runStats.womensTimePar;
         thisHole.mensTimePar = runStats.mensTimePar;
         updatedTees[selectedTee].holes[holeNum-1] = thisHole;
