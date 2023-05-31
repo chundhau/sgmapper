@@ -28,25 +28,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
   };
   Object.freeze(holeMapTool);
 
-   /* Static object mapping hole features to line colors */
-   const lineColor = {
-    golfPath: '#FF0000',
-    transitionPath: '#FFFF00',
-    teebox: '#0000FF',
-    green: '#90EE90',
-  };
-  Object.freeze(lineColor);
-
-  /* Static object mapping hole features to text labels displayed on map */
-  const featureLabel = {
-    golfPath: 'Golf',
-    transitionPath: 'Transition',
-    teebox: 'Tee',
-    green: 'Green',
-  };
-  Object.freeze(featureLabel);
-
-  /* For now, we're using defineFeature to capture the state of the feature currently being edited. 
+    /* For now, we're using defineFeature to capture the state of the feature currently being edited. 
      Ultimately, this will be done in 'status' state variable. */
   const [defineFeature, setDefineFeature] = useState(null);
 
@@ -127,6 +109,24 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
    * through refs to minimize re-renders. 
    *************************************************************************/
   useEffect(() => {
+
+    /* Static object mapping hole features to line colors */
+    const lineColor = {
+      golfPath: '#FF0000',
+      transitionPath: '#FFFF00',
+      teebox: '#0000FF',
+      green: '#90EE90',
+    };
+    Object.freeze(lineColor);
+
+    /* Static object mapping hole features to text labels displayed on map */
+    const featureLabel = {
+      golfPath: 'Golf',
+      transitionPath: 'Transition',
+      teebox: 'Tee',
+      green: 'Green',
+    };
+    Object.freeze(featureLabel);
     
     //Instantiate a mapbox Map object and attach to mapContainer DOM element
      map.current = new mapboxgl.Map({
@@ -136,7 +136,10 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
       zoom: zoom
     });
 
+    //the teeFlagMarkers array keeps track of the start, tee, flag, and finish markers that are on the map
     teeFlagMarkers.current = Array.from({length: holes.length}, (h) => {return {tee: null, flag: null}});
+    teeFlagMarkers.current[0].start = null;
+    teeFlagMarkers.current[holes.length-1].finish = null;
 
   /**********************************************************************
    * GLOBAL MAP EVENT HANDLERS
@@ -380,7 +383,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
         //Only case in which hole 1 golfPath endpoint should be snapped
         return holes[holes.length-1].finishPath[0];
       }
-      if (holeNum == holes.length) {
+      if (holeNum === holes.length) {
         return null;
       }
       //If here, can assume hole is at least one less than last hole
@@ -465,7 +468,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
    * map; label the feature on the map (TO DO)
    *************************************************************************/
    function addFeatureToMap(holeNum, featureCoords, featureType, createMarkers=true) {
-    if (featureCoords.length == 0) return;
+    if (featureCoords.length === 0) return;
     const geojson = {
       'type': 'geojson',
       'data': { 
@@ -517,50 +520,136 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
           'text-halo-blur': 0.5
         }
       });
-      pathIds.push(id);
-    }
-    
-    if (featureType==='golfPath' && createMarkers) {
-      //Add _draggable!_ tee and flag markers
-      const teePopup = new mapboxgl.Popup({closeButton: false, maxWidth: 'none'})
-        .setText(`Hole ${holeNum} Tee`);
-      const tee = new FontawesomeMarker({
+      pathIds.push(id); //This array accumulates path ids so we can define a focused click handler.
+    } 
+    //Add tee and flag markers, as appropriate...
+    if (!createMarkers) return;
+    let flagPopup, flag, teePopup, tee, teeDiv, flagDiv;
+    if (featureType === 'golfPath') {
+      if (teeFlagMarkers.current[holeNum-1].tee === null) {
+        teePopup = new mapboxgl.Popup({closeButton: false, maxWidth: 'none'})
+      .setText(`Hole ${holeNum} Tee`);
+      tee = new FontawesomeMarker({
         icon: 'fas fa-golf-ball-tee',
         iconColor: 'white',
         color: 'blue',
         draggable: true
       }).setLngLat([featureCoords[0].lng, 
           featureCoords[0].lat])
-         .setPopup(teePopup)
-         .addTo(map.current);
-      const flagPopup = new mapboxgl.Popup({closeButton: false, maxWidth: 'none'})
-        .setText(`Hole ${holeNum} Flag`);
-      const flag = new FontawesomeMarker({
+        .setPopup(teePopup)
+        .addTo(map.current);
+        teeDiv = tee.getElement();
+        teeFlagMarkers.current[holeNum-1].tee = tee;
+        tee.on('drag', ()=>handleTeeDrag(holeNum,tee));
+        tee.on('dragend',()=>handleTeeDragEnd(holeNum,tee));
+        teeDiv.addEventListener('mouseenter',()=>tee.togglePopup());
+        teeDiv.addEventListener('mouseleave',()=>tee.togglePopup());
+      }
+      if (teeFlagMarkers.current[holeNum-1].flag === null) {
+        flagPopup = new mapboxgl.Popup({closeButton: false, maxWidth: 'none'})
+          .setText(`Hole ${holeNum} Flag`);
+        flag = new FontawesomeMarker({
+            icon: 'fas fa-flag',
+            iconColor: 'white',
+            color: 'lightgreen',
+            draggable: true
+          }).setLngLat([featureCoords[featureCoords.length-1].lng, 
+                        featureCoords[featureCoords.length-1].lat])
+            .setPopup(flagPopup)
+            .addTo(map.current);
+        flagDiv = flag.getElement();
+        teeFlagMarkers.current[holeNum-1].flag = flag;
+        flag.on('drag', ()=>handleFlagDrag(holeNum,flag));
+        flag.on('dragend',()=>handleFlagDragEnd(holeNum,flag));
+        flagDiv.addEventListener('mouseenter',()=>flag.togglePopup());
+        flagDiv.addEventListener('mouseleave',()=>flag.togglePopup());
+      }
+    } else if (featureType === 'transitionPath') {
+      if (teeFlagMarkers.current[holeNum-2].flag === null) {
+        flagPopup = new mapboxgl.Popup({closeButton: false, maxWidth: 'none'})
+        .setText(`Hole ${holeNum-1} Flag`);
+      flag = new FontawesomeMarker({
           icon: 'fas fa-flag',
           iconColor: 'white',
           color: 'lightgreen',
           draggable: true
-        }).setLngLat([featureCoords[featureCoords.length-1].lng, 
-                      featureCoords[featureCoords.length-1].lat])
+        }).setLngLat([featureCoords[0].lng, 
+                      featureCoords[0].lat])
            .setPopup(flagPopup)
            .addTo(map.current);
-      teeFlagMarkers.current[holeNum-1].tee = tee;
-      teeFlagMarkers.current[holeNum-1].flag = flag;
-      tee.on('drag', ()=>handleTeeDrag(holeNum,tee));
-      tee.on('dragend',()=>handleTeeDragEnd(holeNum,tee));
-      flag.on('drag', ()=>handleFlagDrag(holeNum,flag));
-      flag.on('dragend',()=>handleFlagDragEnd(holeNum,flag));
-      flag.on('mouseenter',()=>{alert("entering markder!")});
-      const teeDiv = tee.getElement();
-      const flagDiv = flag.getElement();
-      teeDiv.addEventListener('mouseenter',()=>tee.togglePopup());
-      teeDiv.addEventListener('mouseleave',()=>tee.togglePopup());
-      teeDiv.addEventListener('click',()=>tee.togglePopup());
+      flagDiv = flag.getElement();
+      teeFlagMarkers.current[holeNum-2].flag = flag;
+      flag.on('drag', ()=>handleFlagDrag(holeNum-1,flag));
+      flag.on('dragend',()=>handleFlagDragEnd(holeNum-1,flag));
       flagDiv.addEventListener('mouseenter',()=>flag.togglePopup());
       flagDiv.addEventListener('mouseleave',()=>flag.togglePopup());
-      teeDiv.addEventListener('click',()=>tee.togglePopup());
+      }
+      if (teeFlagMarkers.current[holeNum-1].tee === null) {
+        teePopup = new mapboxgl.Popup({closeButton: false, maxWidth: 'none'})
+      .setText(`Hole ${holeNum} Tee`);
+      tee = new FontawesomeMarker({
+        icon: 'fas fa-golf-ball-tee',
+        iconColor: 'white',
+        color: 'blue',
+        draggable: true
+      }).setLngLat([featureCoords[featureCoords.length-1].lng, 
+          featureCoords[featureCoords.length-1].lat])
+        .setPopup(teePopup)
+        .addTo(map.current);
+        teeDiv = tee.getElement();
+        teeFlagMarkers.current[holeNum-1].tee = tee;
+        tee.on('drag', ()=>handleTeeDrag(holeNum,tee));
+        tee.on('dragend',()=>handleTeeDragEnd(holeNum,tee));
+        teeDiv.addEventListener('mouseenter',()=>tee.togglePopup());
+        teeDiv.addEventListener('mouseleave',()=>tee.togglePopup());
+      }
+    } else if (featureType === 'startPath') {
+      /******************************
+       * TO DO: Add start marker
+       * ***************************/
+      if (teeFlagMarkers.current[0].tee === null) {
+        teePopup = new mapboxgl.Popup({closeButton: false, maxWidth: 'none'})
+      .setText(`Hole ${holeNum} Tee`);
+      tee = new FontawesomeMarker({
+        icon: 'fas fa-golf-ball-tee',
+        iconColor: 'white',
+        color: 'blue',
+        draggable: true
+      }).setLngLat([featureCoords[featureCoords.length-1].lng, 
+          featureCoords[featureCoords.length-1].lat])
+        .setPopup(teePopup)
+        .addTo(map.current);
+        teeDiv = tee.getElement();
+        teeFlagMarkers.current[holeNum-1].tee = tee;
+        tee.on('drag', ()=>handleTeeDrag(holeNum,tee));
+        tee.on('dragend',()=>handleTeeDragEnd(holeNum,tee));
+        teeDiv.addEventListener('mouseenter',()=>tee.togglePopup());
+        teeDiv.addEventListener('mouseleave',()=>tee.togglePopup());
+      }
+    } else if (featureType === 'finishPath') {
+      /******************************
+       * TO DO: Add finish marker
+       * ***************************/
+      if (teeFlagMarkers.current[holes.length-1].flag === null) {
+        flagPopup = new mapboxgl.Popup({closeButton: false, maxWidth: 'none'})
+        .setText(`Hole ${holeNum} Flag`);
+      flag = new FontawesomeMarker({
+          icon: 'fas fa-flag',
+          iconColor: 'white',
+          color: 'lightgreen',
+          draggable: true
+        }).setLngLat([featureCoords[0].lng, 
+                      featureCoords[0].lat])
+           .setPopup(flagPopup)
+           .addTo(map.current);
+      flagDiv = flag.getElement();
+      teeFlagMarkers.current[holeNum-1].flag = flag;
+      flag.on('drag', ()=>handleFlagDrag(holeNum,flag));
+      flag.on('dragend',()=>handleFlagDragEnd(holeNum,flag));
+      flagDiv.addEventListener('mouseenter',()=>flag.togglePopup());
+      flagDiv.addEventListener('mouseleave',()=>flag.togglePopup());
+      }
     }
-    return id;
   }
 
   /*************************************************************************
@@ -668,7 +757,6 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
    * path emanating from the tee (if present), such that they match the
    * tee's new dragged location 
    *************************************************************************/
-
     function handleTeeDragEnd(holeNum, teeMarker) {
       const lngLat = teeMarker.getLngLat();
       const elv = map.current.queryTerrainElevation(lngLat, {exaggerated: false}) * 3.280839895;
@@ -807,7 +895,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
       updatePath(hNum, pathType, "");
       selectedPathId.current = null; //path no longer selected
       if (pathType === 'golfPath') {
-        if (hNum == 1) { //special case #1--trans path can be defined as empty array
+        if (hNum === 1) { //special case #1--trans path can be defined as empty array
           if (holes[hNum-1].transitionPath === "" || holes[hNum-1].transitionPath.length === 0) {
           teeFlagMarkers.current[hNum-1].tee.remove();
           }
@@ -830,12 +918,13 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
           }  
         } 
       } else if (pathType === 'transitionPath') {
-        if (holes[hNum-1].golfPath === "" && (hNum === 1 || holes[hNum-2].golfPath === "")) {
+        if (holes[hNum-1].golfPath === "" ) {
           teeFlagMarkers.current[hNum-1].tee.remove();
         }
         if (hNum > 1 && holes[hNum-2].golfPath === "") {
           teeFlagMarkers.current[hNum-2].flag.remove();
         }
+        
       }
     } else if (defineFeature !== null && e.keyCode === 27) {
       //Cancel feature currently being drawn
@@ -870,12 +959,17 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
                    </button>
               </td>
               <td>
-                <button className={"btn btn-sm" + ((h.transitionPath !== "") ? " btn-green" : "")}
+                <button className={"btn btn-sm" + (h.number===1 ? !Object.hasOwn(h,"startPath") ? " btn-gray" :
+                                    h.startPath !== "" ? " btn-green" : "" :
+                                    h.transitionPath !== "" ? " btn-green" : "")}
                         aria-label={"Hole " + h.number + " transition path " + 
                                     ((h.transitionPath === "") ? "(not yet defined)":"(defined)")}
-                          onClick={((h.transitionPath === "") ? ()=>handleDefineFeature(h.number,"transitionPath") : 
+                          onClick={(h.number===1 ? (!Object.hasOwn(h,"startPath") ? null: (h.startPath==="" ? 
+                                     ()=>handleDefineFeature(1,"startPath") : ()=>selectPath('startPath'))) : 
+                                    (h.transitionPath === "") ? ()=>handleDefineFeature(h.number,"transitionPath") : 
                                      ()=>selectPath(((h.number < 10) ? `H0${h.number}transitionPath` : `H${h.number}transitionPath`)))}>
-                    <FontAwesomeIcon icon={((h.transitionPath === "") ? "plus" : "check")}/>
+                    <FontAwesomeIcon icon={h.number===1 ? !Object.hasOwn(h,"startPath") ? "xmark" : h.startPath==="" ? "plus" : "check" :
+                                           h.transitionPath === "" ? "plus" : "check"}/>
                 </button>
               </td>
               <td>
@@ -896,7 +990,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
                 </button>
               </td>
               <td>
-              <button className={"btn btn-sm" + ((h.green !== "") ? " btn-green" : "")}
+                <button className={"btn btn-sm" + ((h.green !== "") ? " btn-green" : "")}
                         aria-label={"Hole " + h.number + " green " + 
                                     ((h.green === "") ? "(not yet defined)":"(defined)")}
                           onClick={((h.green === "") ? ()=>handleDefineFeature(h.number,"green") : null)}>
@@ -906,6 +1000,19 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
               </tr>
           );
           })}
+          {!Object.hasOwn(holes[holes.length-1],"finishPath") ? null :
+          <tr>
+            <td colSpan={5}>
+              Finish Path: 
+              <button className={"btn btn-sm" + ((holes[holes.length-1].finishPath !== "") ? " btn-green" : "")}
+                        aria-label={"Hole " + holes.length + " finish path " + 
+                                    ((holes[holes.length-1].finishPath === "") ? "(not yet defined)":"(defined)")}
+                          onClick={((holes[holes.length-1].finishPath === "") ? 
+                                     ()=>handleDefineFeature(holes.length-1,"finishPath") : null)}>
+                    <FontAwesomeIcon icon={((holes[holes.length-1].finishPat === "") ? "plus" : "check")}/>
+              </button>
+            </td>
+          </tr>}
         </tbody>
       </table>
       <div className="map-box-container">

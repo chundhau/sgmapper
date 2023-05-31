@@ -245,30 +245,55 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
      * @param pathCoords, an array of coord objects {lat, lng, elv} defining
      *        the path
      * @Desc 
-     * update the hole's path with the new path coords, and update the 
-     * corresponding hole's running distances and time pars.
+     * Upate the hole's path with the new path coords, and use
+     * SGCalcs.getHoleRunningStats() to update the 
+     * corresponding hole's running distances and time pars. Note that
+     * SGCalcs.getHoleRunningStats() is cleverly designed to return empty
+     * data if any required path data is missing. This means we don't need
+     * to worry about checking for this here.
      *************************************************************************/
       function updatePath(holeNum,pathType,pathCoords) {
         const updatedTees = {...updatedCourse.tees};
         const thisHole = {...updatedTees[selectedTee].holes[holeNum-1]};
+        let runStats;
         thisHole[pathType] = pathCoords;
-        if (pathType === 'golfPath' && holeNum === 1 && 
-            thisHole.transitionPath === "") { //Special case: Add empty trans path
-              thisHole.transitionPath = [];
+        if (holeNum === 1) {
+            //CASE 1: Starting hole; could have startPath
+            if (Object.hasOwn(thisHole,"startPath")) {
+                runStats = SGCalcs.getHoleRunningStats(thisHole.startPath, thisHole.golfPath,
+                    thisHole.womensStrokePar, thisHole.mensStrokePar);
+            }
+            else {
+                //Calculate stats based on empty start path
+                runStats = SGCalcs.getHoleRunningStats([], thisHole.golfPath,
+                    thisHole.womensStrokePar, thisHole.mensStrokePar);
+            }
+        } else if (holeNum === updatedTees[selectedTee].holes.length) {
+            //CASE 2: Finishing hole; could have finishPath
+            if (Object.hasOwn(thisHole,"finishPath")) {
+                runStats = SGCalcs.getHoleRunningStats(thisHole.transitionPath, thisHole.golfPath,
+                    thisHole.finishPath, thisHole.womensStrokePar, thisHole.mensStrokePar);
+            }
+            else {
+                //Calculate stats based on no finish path
+                runStats = SGCalcs.getHoleRunningStats(thisHole.transitionPath, thisHole.golfPath,
+                    thisHole.womensStrokePar, thisHole.mensStrokePar);
+            }
+        } else {
+            //CASE 3: General case: Not start or finish hole
+            runStats = SGCalcs.getHoleRunningStats(thisHole.transitionPath, thisHole.golfPath,
+                thisHole.womensStrokePar, thisHole.mensStrokePar);
+
         }
-        if (thisHole.transitionPath !== "" &&  thisHole.golfPath !== "") { 
-          const runStats = SGCalcs.getHoleRunningStats(thisHole.transitionPath, thisHole.golfPath,
-               thisHole.womensStrokePar, thisHole.mensStrokePar);
-          thisHole.runDistance = runStats.runDistance;
-          thisHole.transRunDistance = runStats.transPathRunDistance;
-          thisHole.golfRunDistance = runStats.golfPathRunDistance;
-          thisHole.womensTimePar = runStats.womensTimePar;
-          thisHole.mensTimePar = runStats.mensTimePar;
-        }
+        thisHole.runDistance = runStats.runDistance;
+        thisHole.transRunDistance = runStats.transPathRunDistance;
+        thisHole.golfRunDistance = runStats.golfPathRunDistance;
+        thisHole.womensTimePar = runStats.womensTimePar;
+        thisHole.mensTimePar = runStats.mensTimePar;
         updatedTees[selectedTee].holes[holeNum-1] = thisHole;
         updatedTees[selectedTee].numHolesPathDataComplete = updateNumHolesPathDataComplete(updatedTees[selectedTee].holes);
         updateTees(updatedTees);
-      } 
+    } 
   
     return (
       addEditTeeDialog.show ? 

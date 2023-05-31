@@ -110,6 +110,9 @@ export function getSegmentTimePar(distance, percentGradient, parPace) {
  *        running path from center of previous green to tee box
  * @param golfPath -- array of geocoords defining golf running path
  *        from tee box to center of green. 
+ * @param finishPath -- array of geocoords defining golf running path
+ *        from center of final green to finish line (final hole only,
+ *        defaults to null to indicate it shouldn't be considered). 
  * @param womensStrokePar -- women's stroke par for the hole
  * @param mensStrokePar -- men's stroke par for the hole
  * @returns Object with the following props: 
@@ -122,42 +125,86 @@ export function getSegmentTimePar(distance, percentGradient, parPace) {
  *          --runDistance
  *          --womensTimePar
  *          --mensTimePar
+ *         If any of the hole's paths has no data, the functino returns
+ *         an object with all empty ("") values.
  ********************************************************************/
-export function getHoleRunningStats(transPath, golfPath, womensStrokePar, mensStrokePar) {
-    let stats = {
+export function getHoleRunningStats(transPath, golfPath, finishPath=null, womensStrokePar, mensStrokePar) {
+    const stats = {
         transPathRunDistance: 0,
         transPathWomensTimePar: 0,
         transPathMensTimePar: 0,
         golfPathRunDistance: 0,
         golfPathWomensTimePar: 0,
         golfPathMensTimePar: 0,
+        finishPathRunDistance: 0,
+        finishPathWomensTimePar: 0,
+        finishPathMensTimePar: 0,
         runDistance: 0,
         womensTimePar: 0,
         mensTimePar: 0
     };
-
+    if (transPath==="") {
+        stats.transPathRunDistance = "";
+        stats.transPathWomensTimePar = "";
+        stats.transPathMensTimePar = "";
+        stats.womensTimePar = "";
+        stats.mensTimePar = ""
+        stats.runDistance = ""
+    } 
+    if (golfPath==="") {
+        stats.golfPathRunDistance = "";
+        stats.golfPathWomensTimePar = "";
+        stats.golfPathMensTimePar = "";
+        stats.womensTimePar = "";
+        stats.mensTimePar = "";
+        stats.runDistance = "";
+    }
+    if (finishPath==="") {
+        stats.finishPathRunDistance = "";
+        stats.finishPathWomensTimePar = "";
+        stats.finishPathMensTimePar = "";
+        stats.womensTimePar = "";
+        stats.mensTimePar = "";
+        stats.runDistance = "";
+    }
+    if (transPath !== "") {
     //Get stats for transition path
-    for (let i = 0; i < transPath.length-1; i++) {
-        let segDist = getDistance([transPath[i], transPath[i+1]]);
-        stats.transPathRunDistance += segDist;
-        let segPctGrad = getPercentGradient([transPath[i], transPath[i+1]], segDist);
-        stats.transPathWomensTimePar += getSegmentTimePar(segDist,segPctGrad, parRunPaceWomen);
-        stats.transPathMensTimePar += getSegmentTimePar(segDist,segPctGrad, parRunPaceMen);
+        for (let i = 0; i < transPath.length-1; i++) {
+            let segDist = getDistance([transPath[i], transPath[i+1]]);
+            stats.transPathRunDistance += segDist;
+            let segPctGrad = getPercentGradient([transPath[i], transPath[i+1]], segDist);
+            stats.transPathWomensTimePar += getSegmentTimePar(segDist,segPctGrad, parRunPaceWomen);
+            stats.transPathMensTimePar += getSegmentTimePar(segDist,segPctGrad, parRunPaceMen);
+        }
     }
-    //Get stats for golf path
-    for (let i = 0; i < golfPath.length-1; i++) {
-        let segDist = getDistance([golfPath[i], golfPath[i+1]]);
-        stats.golfPathRunDistance += segDist;
-        let segPctGrad = getPercentGradient([golfPath[i], golfPath[i+1]], segDist);
-        stats.golfPathWomensTimePar += getSegmentTimePar(segDist,segPctGrad, parRunPaceWomen);
-        stats.golfPathMensTimePar += getSegmentTimePar(segDist,segPctGrad, parRunPaceMen);
+    if (golfPath !== "") {
+        //Get stats for golf path
+        for (let i = 0; i < golfPath.length-1; i++) {
+            let segDist = getDistance([golfPath[i], golfPath[i+1]]);
+            stats.golfPathRunDistance += segDist;
+            let segPctGrad = getPercentGradient([golfPath[i], golfPath[i+1]], segDist);
+            stats.golfPathWomensTimePar += getSegmentTimePar(segDist,segPctGrad, parRunPaceWomen);
+            stats.golfPathMensTimePar += getSegmentTimePar(segDist,segPctGrad, parRunPaceMen);
+        }
     }
-    //Compute total hole distance and time par
-    stats.runDistance = stats.transPathRunDistance + stats.golfPathRunDistance;
-    stats.womensTimePar = stats.transPathWomensTimePar + stats.golfPathWomensTimePar + 
-                        (womensStrokePar * parShotBoxSecWomen);
-    stats.mensTimePar = stats.transPathMensTimePar + stats.golfPathMensTimePar + 
-                        (mensStrokePar * parShotBoxSecMen);
+    if (finishPath !== null && finishPath !== "") {
+        //Get stats for finish path
+        for (let i = 0; i < finishPath.length-1; i++) {
+            let segDist = getDistance([finishPath[i], finishPath[i+1]]);
+            stats.finishPathRunDistance += segDist;
+            let segPctGrad = getPercentGradient([finishPath[i], finishPath[i+1]], segDist);
+            stats.finishPathWomensTimePar += getSegmentTimePar(segDist,segPctGrad, parRunPaceWomen);
+            stats.finishPathMensTimePar += getSegmentTimePar(segDist,segPctGrad, parRunPaceMen);
+        }
+    }
+    if (stats.runDistance !== "") {
+        //Compute total hole distance and time par
+        stats.runDistance = stats.transPathRunDistance + stats.golfPathRunDistance + stats.finishPathRunDistance;
+        stats.womensTimePar = stats.transPathWomensTimePar + stats.golfPathWomensTimePar + stats.finishPathWomensTimePar +
+                            (womensStrokePar * parShotBoxSecWomen);
+        stats.mensTimePar = stats.transPathMensTimePar + stats.golfPathMensTimePar + stats.finishPathMensTimePar +
+                            (mensStrokePar * parShotBoxSecMen);
+    }
     return stats;
 }
 
