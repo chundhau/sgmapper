@@ -42,17 +42,22 @@ export default function CoursesModeDetailsHoleTable({selectedTee, holes, updateH
         <caption>Table of Hole Info</caption>
         <thead>
             <tr>
+                <th></th>
+                <th colSpan="5">Entered from Course Scorecard</th>
+                <th colSpan="5" className="txt-gray">Auto-calculated from 'Hole Map' Tab</th>
+            </tr>
+            <tr>
               <th>Hole #</th>
               <th title="Hole distance, as shown on scorecard">Golf Dist&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
               <th title="Women's stroke par, as shown on scorecard">W Par&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
               <th title="Women's hole handicap, as shown on scorecard">W Hcp&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
               <th title="Men's stroke par, as shown on scorecard">M Par&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
               <th title="Men's hole handicap, as shown on scorecard">M Hcp&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
-              <th title="Running distance. Computed automatically based on transition path and golf path">Run Dist&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
-              <th title="Transition path running distance. Computed automatically based on transition path">Trans Dist&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
-              <th title="Golf path running distance. Computed automatically based on golf path">Golf Dist&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
-              <th title="Women's time par. Computed automatically based on hole's running distance and topography">W TPar&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
-              <th title="Men's time par. Computed automatically based on hole's running distance and topography">M TPar&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
+              <th title="Running distance. Computed automatically based on transition path and golf path" className="txt-gray">Run Dist&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
+              <th title="Transition path running distance. Computed automatically based on transition path" className="txt-gray">Trans Dist&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
+              <th title="Golf path running distance. Computed automatically based on golf path" className="txt-gray">Golf Dist&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
+              <th title="Women's time par. Computed automatically based on hole's running distance and topography" className="txt-gray">W TPar&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
+              <th title="Men's time par. Computed automatically based on hole's running distance and topography" className="txt-gray">M TPar&nbsp;<FontAwesomeIcon icon="circle-info"/></th>
             </tr>
         </thead>
         <tbody>

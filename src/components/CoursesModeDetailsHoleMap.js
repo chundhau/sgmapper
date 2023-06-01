@@ -166,6 +166,8 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
    //Not sure why, but this resize appears necessary to allow the user to
    //scale the map to consume entire window after opening tab.
    //There is still a bug: We need window to open at full size out of the gate
+   //I've determined that map.current.resize() must occur in 'render' for the
+   //user to be able to scale to full size on clicking the map!
    map.current.on('render', () => {
      map.current.resize();
    });

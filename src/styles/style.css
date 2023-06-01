@@ -745,3 +745,6 @@ cursor: pointer;
     color: lightgreen;
   }
   
+  .txt-gray {
+    color: gray;
+  }
