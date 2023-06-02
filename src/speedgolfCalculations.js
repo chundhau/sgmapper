@@ -3,8 +3,6 @@
  * This file defines constants and functions that are useful for computing
  * speedgolf pars.
  ************************************************************************/
-
-import mapboxgl from 'mapbox-gl';
 const parRunPaceMinMen = 7;
 const parRunPaceSecMen = 0;
 export const parRunPaceMen = (parRunPaceMinMen * 60) + parRunPaceSecMen;
@@ -14,23 +12,17 @@ export const parRunPaceWomen = (parRunPaceMinWomen * 60) + parRunPaceSecWomen;
 export const parShotBoxSecMen = 15;
 export const parShotBoxSecWomen = 20;
 const mileDistInFeet = 5280;
+export const samplingDistInFeet = 50;
 
 
-/*
- * Description: 
- *  Computes the distance of a line-segment (requires a minimum of two points)
- * 
- * Parameters:
- *  coords - an array of coordinates representing a line-segment
- *
- * Output:
- *  A float value representing the distance of a given line-segment
-*/
+
 /*********************************************************************
  * @function getDistance 
  * @desc 
- * Compute distance, in feet, between two geocoordinates
- * @parm coords -- an array of two geocoords with lat and lng props
+ * Compute distance, in feet, between a path defined by a set of 
+ * geocoordinates
+ * @parm coords -- an array of geocoords with lat and lng props
+ * @return a float containing the distance of the path
  * @credit https://www.movable-type.co.uk/scripts/latlong.html
  ********************************************************************/
 export function getDistance(coords) {
@@ -70,7 +62,6 @@ export function getPercentGradient(coords, distance) {
     return (elevation_change / distance) * 100 // number between 1 and 100
 }
 
-
 /*********************************************************************
  * @function getSegmentTimePar 
  * @desc 
@@ -106,6 +97,7 @@ export function getSegmentTimePar(distance, percentGradient, parPace) {
  * Note: We set a standard sampling rate of 50 feet and use gradients
  * of individual 50 foot segments on path to calculate time par.
  * Time par is calculated by considering each path segment in a path
+ * @param map -- the mapbox GL object where the path is plotted
  * @param transPath -- array of georcoords defining transition  
  *        running path from center of previous green to tee box
  * @param golfPath -- array of geocoords defining golf running path
@@ -169,6 +161,7 @@ export function getHoleRunningStats(transPath, golfPath,womensStrokePar, mensStr
     }
     if (transPath !== "") {
     //Get stats for transition path
+        //transPath = getSampledPath(map,transPath,50); 
         for (let i = 0; i < transPath.length-1; i++) {
             let segDist = getDistance([transPath[i], transPath[i+1]]);
             stats.transPathRunDistance += segDist;
@@ -179,6 +172,7 @@ export function getHoleRunningStats(transPath, golfPath,womensStrokePar, mensStr
     }
     if (golfPath !== "") {
         //Get stats for golf path
+        //golfPath = getSampledPath(map,golfPath,50); 
         for (let i = 0; i < golfPath.length-1; i++) {
             let segDist = getDistance([golfPath[i], golfPath[i+1]]);
             stats.golfPathRunDistance += segDist;
@@ -189,6 +183,7 @@ export function getHoleRunningStats(transPath, golfPath,womensStrokePar, mensStr
     }
     if (finishPath !== null && finishPath !== "") {
         //Get stats for finish path
+        //finishPath = getSampledPath(map,finishPath,50); 
         for (let i = 0; i < finishPath.length-1; i++) {
             let segDist = getDistance([finishPath[i], finishPath[i+1]]);
             stats.finishPathRunDistance += segDist;
@@ -208,18 +203,26 @@ export function getHoleRunningStats(transPath, golfPath,womensStrokePar, mensStr
     return stats;
 }
 
-function computeDestinationPoint(start, end, d2) {
-    let xa = start.lng
-    let ya = start.lat
-    let xb = end.lng
-    let yb = end.lat
-    let d = Math.sqrt(Math.pow((xa - xb), 2) + Math.pow((ya - yb), 2))
-    let xc = xa - ((d2 * (xa - xb)) / d)
-    let yc = ya - ((d2 * (ya - yb)) / d)
-    return {lng: xc, lat: yc}
-  }
+/*********************************************************************
+ * @function computeDestinationPoint 
+ * @desc 
+ * Compute a point along line defined by start and end that lies
+ * d2 feet from start. Serves as ancillary function for getSampledPath().
+ * @param start, end, the start and end points of the line
+ * @param d2, the distance along the line to find the point
+ * @returns the coordinates of the line on the path.
+ ********************************************************************/
+// function computeDestinationPoint(start, end, d2) {
+//     let xa = start.lng
+//     let ya = start.lat
+//     let xb = end.lng
+//     let yb = end.lat
+//     let d = Math.sqrt(Math.pow((xa - xb), 2) + Math.pow((ya - yb), 2))
+//     let xc = xa - ((d2 * (xa - xb)) / d)
+//     let yc = ya - ((d2 * (ya - yb)) / d)
+//     return {lng: xc, lat: yc}
+//   }
 
-//Resamples path specified in coords using samplingDistance (in feet), returning an array of the resampled path
 /*********************************************************************
  * @function getSampledPath 
  * @desc 
@@ -233,19 +236,19 @@ function computeDestinationPoint(start, end, d2) {
  *        between each point on the new line.
  * @returns an array of coordinates defining the newly sampled path 
  ********************************************************************/
-export function getSampledPath(map, coords, samplingDistInFeet) {
-    const metersTo10Km = 0.00001;
-    const feetTo10Km = 0.3048 * metersTo10Km;
-    const samplingDistance = samplingDistInFeet * feetTo10Km;
-    let arr = [];
-    for(let i = 0; i < coords.length-1; i++) {
-      const distance = Math.sqrt(Math.pow((coords[i].lng - coords[i+1].lng), 2) + Math.pow((coords[i].lat - coords[i+1].lat), 2))
-      for(let j = 0; j <= distance / samplingDistance; j++) {
-        const dest = computeDestinationPoint(coords[i], coords[i+1], samplingDistance * j)
-        const elv = map.queryTerrainElevation(dest, {exaggerated: false}) * 3.280839895 // convert meters to feet
-        arr.push({lat: dest.lat, lng: dest.lng, elv: elv})
-      }
-    }
-    //console.dir(arr)
-    return arr
-  }
+//  function getSampledPath(map, coords, samplingDistInFeet) {
+//     const metersTo10Km = 0.00001;
+//     const feetTo10Km = 0.3048 * metersTo10Km;
+//     const samplingDistance = samplingDistInFeet * feetTo10Km;
+//     let arr = [];
+//     for(let i = 0; i < coords.length-1; i++) {
+//       const distance = Math.sqrt(Math.pow((coords[i].lng - coords[i+1].lng), 2) + Math.pow((coords[i].lat - coords[i+1].lat), 2))
+//       for(let j = 0; j <= distance / samplingDistance; j++) {
+//         const dest = computeDestinationPoint(coords[i], coords[i+1], samplingDistance * j)
+//         const elv = map.queryTerrainElevation(dest, {exaggerated: false}) * 3.280839895 // convert meters to feet
+//         arr.push({lat: dest.lat, lng: dest.lng, elv: elv})
+//       }
+//     }
+//     //console.dir(arr)
+//     return arr
+//   }

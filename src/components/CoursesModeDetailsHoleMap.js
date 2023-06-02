@@ -14,12 +14,12 @@ import FontawesomeMarker from 'mapbox-gl-fontawesome-markers'
 import * as SGCalcs from '../speedgolfCalculations'
 import * as Conversions from '../conversions'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { feature } from '@turf/turf';
+//import { feature } from '@turf/turf';
 mapboxgl.accessToken = 'pk.eyJ1IjoidWRkeWFuIiwiYSI6ImNsZzY3MG1tZjAzbnczY3FjN2h0amp0MjUifQ.h7bnjg6dqjrJeFqNPvJyuA';
 
 
 export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath, distUnits})  {
-  
+
   /* Enumerated type for top-level state of "Hole Map" */
   const holeMapTool = {
     SELECT: 0,
@@ -63,10 +63,70 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
 
   //const distanceContainer = useRef(null);
 
+  /*********************************************************************
+   * @function handleDefineFeature 
+   * @desc 
+   * When the user chooses a feature (path or polygon) to define by
+   * clicking on the item in the table in the left pane, we set the
+   * defineFeature state variable to enable the user to proceed.
+   * @param holeNum, the hole number where the feature will be defined
+   * @param featureType: startPath, transitionPath, golfPath, teebox,
+   *        green, or finishPath
+   ********************************************************************/
   function handleDefineFeature(holeNum, featureType) { 
       setDefineFeature({holeNum: holeNum,
                    featureType: featureType
       });
+  }
+
+  /*********************************************************************
+   * @function computeDestinationPoint 
+   * @desc 
+   * Compute a point along line defined by start and end that lies
+   * d2 feet from start. Serves as ancillary function for getSampledPath().
+   * @param start, end, the start and end points of the line
+   * @param d2, the distance along the line to find the point
+   * @returns the coordinates of the line on the path.
+   ********************************************************************/
+  function computeDestinationPoint(start, end, d2) {
+    let xa = start.lng
+    let ya = start.lat
+    let xb = end.lng
+    let yb = end.lat
+    let d = Math.sqrt(Math.pow((xa - xb), 2) + Math.pow((ya - yb), 2))
+    let xc = xa - ((d2 * (xa - xb)) / d)
+    let yc = ya - ((d2 * (ya - yb)) / d)
+    return {lng: xc, lat: yc}
+  }
+
+  /*********************************************************************
+  * @function getSampledPath 
+  * @desc 
+  * Given a set of coords defining a line, create a new line
+  * where the distance between each point is spaced
+  * samplingDistanceInFeet apart.
+  * @param map -- the mapbox GL object where the path is plotted
+  * @param coords -- a set of coords ({lat, lng, elv} defining
+  *        the path.
+  * @param samplingDistInFeet -- the amount of distance in feet 
+  *        between each point on the new line.
+  * @returns an array of coordinates defining the newly sampled path 
+  ********************************************************************/
+  function getSampledPath(coords) {
+    const metersTo10Km = 0.00001;
+    const feetTo10Km = 0.3048 * metersTo10Km;
+    const samplingDistance = SGCalcs.samplingDistInFeet * feetTo10Km;
+    let arr = [];
+    for(let i = 0; i < coords.length-1; i++) {
+      const distance = Math.sqrt(Math.pow((coords[i].lng - coords[i+1].lng), 2) + Math.pow((coords[i].lat - coords[i+1].lat), 2))
+      for(let j = 0; j <= distance / samplingDistance; j++) {
+        const dest = computeDestinationPoint(coords[i], coords[i+1], samplingDistance * j)
+        const elv = map.current.queryTerrainElevation(dest, {exaggerated: false}) * 3.280839895 // convert meters to feet
+        arr.push({lat: dest.lat, lng: dest.lng, elv: elv})
+      }
+    }
+    //console.dir(arr)
+    return arr;
   }
 
   /*************************************************************************
@@ -256,16 +316,16 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
    * We WON'T use this. Included only to show how to get length of current
    * line.
    *************************************************************************/
-  function updateLine() {
-    const data = draw.current.getAll();
-    if (data.features.length > 0) {
-      const line = data.features[0];
-      //const distance = turf.length(line, { units: 'feet' });
-      //distanceContainer.current.innerHTML = `${distance.toFixed(2)} miles`;
-    }// } else {
-    //   distanceContainer.current.innerHTML = "0.00 miles";
-    // }
-}
+//   function updateLine() {
+//     const data = draw.current.getAll();
+//     if (data.features.length > 0) {
+//       const line = data.features[0];
+//       //const distance = turf.length(line, { units: 'feet' });
+//       //distanceContainer.current.innerHTML = `${distance.toFixed(2)} miles`;
+//     }// } else {
+//     //   distanceContainer.current.innerHTML = "0.00 miles";
+//     // }
+// }
 
   /*************************************************************************
    * @function drawVertex
@@ -347,12 +407,12 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
    * the vertex to snap to. 
    *************************************************************************/
   function getSnapStartVertex(holeNum, featureType) {
-    if (featureType == 'golfPath') {
+    if (featureType === 'golfPath') {
       if (holeNum === 1 && Object.hasOwn(holes[0],'startPath') && holes[0].startPath !== "") {
         //Only case in which hole 1 golfPath startpoint should be snapped
         return holes[0].startPath[holes[0].startPath.length-1];
       }
-      if (holeNum == 1) {
+      if (holeNum === 1) {
         return null;
       }
       //If here, can assume hole >= 2
@@ -380,7 +440,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
    * the vertex to snap to. 
    *************************************************************************/
   function getSnapEndVertex(holeNum, featureType) {
-    if (featureType == 'golfPath') {
+    if (featureType === 'golfPath') {
       if (holeNum === holes.length && Object.hasOwn(holes[holes.length-1],'finishPath') && holes[holes.length-1].finishPath !== "") {
         //Only case in which hole 1 golfPath endpoint should be snapped
         return holes[holes.length-1].finishPath[0];
@@ -429,7 +489,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
         if (snapVertex !== null) {
           featureCoords[featureCoords.length-1] = snapVertex;
         }
-        updatePath(defineFeature.holeNum, defineFeature.featureType, featureCoords);
+        updatePath(defineFeature.holeNum, defineFeature.featureType, featureCoords, getSampledPath(featureCoords));
         setDefineFeature(null);
     } else if (defineFeature !== null) {
         //Feature definition is continuing...
@@ -722,7 +782,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
         newPath[newPath.length-1].lng = lngLat.lng;
         newPath[newPath.length-1].elv = elv; 
         addFeatureToMap(holeNum,newPath,'golfPath',false);
-        updatePath(holeNum,"golfPath",newPath)
+        updatePath(holeNum,"golfPath",newPath, getSampledPath(newPath));
       }
       if (holeNum < holes.length && holes[holeNum].transitionPath !== "") {
         map.current.removeLayer(transLayerId);
@@ -733,7 +793,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
         newPath[0].lng = lngLat.lng;
         newPath[0].elv = elv;
         addFeatureToMap(holeNum+1,newPath,'transitionPath');
-        updatePath(holeNum+1,"transitionPath",newPath)
+        updatePath(holeNum+1,"transitionPath",newPath, getSampledPath(newPath));
       } else if (holeNum === holes.length && Object.hasOwn(holes[holeNum-1],'finishPath') && 
                  holes[holeNum-1].finishPath !== "") {
           //Special case: Course has finish path and user dragged final flag
@@ -746,7 +806,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
           newPath[0].lng = lngLat.lng;
           newPath[0].elv = elv;
           addFeatureToMap(holeNum,newPath,'finishPath');
-          updatePath(holeNum,"finishPath",newPath);
+          updatePath(holeNum,"finishPath",newPath, getSampledPath(newPath));
       }
     }
 
@@ -776,7 +836,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
         newPath[newPath.length-1].lng = lngLat.lng;
         newPath[newPath.length-1].elv = elv;
         addFeatureToMap(holeNum,newPath,'startPath');
-        updatePath(holeNum,"startPath",newPath);
+        updatePath(holeNum,"startPath",newPath, getSampledPath(newPath));
       } else if (holes[holeNum-1].transitionPath !== "" && holes[holeNum-1].transitionPath.length > 1) {
         map.current.removeLayer(transLayerId);
         map.current.removeLayer(transLayerId + "_label");
@@ -786,7 +846,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
         newPath[newPath.length-1].lng = lngLat.lng;
         newPath[newPath.length-1].elv = elv;
         addFeatureToMap(holeNum,newPath,'transitionPath');
-        updatePath(holeNum,"transitionPath",newPath);
+        updatePath(holeNum,"transitionPath",newPath, getSampledPath(newPath));
       }
       if (holes[holeNum-1].golfPath !== "") {
         map.current.removeLayer(golfLayerId);
@@ -797,7 +857,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
         newPath[0].lng = lngLat.lng;
         newPath[0].elv = elv; 
         addFeatureToMap(holeNum,newPath,'golfPath',false);
-        updatePath(holeNum,"golfPath",newPath);
+        updatePath(holeNum,"golfPath",newPath, getSampledPath(newPath));
       }
     }
 
@@ -894,7 +954,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
       map.current.removeLayer(selectedPathId.current + "_label");
       const hNum = parseInt(selectedPathId.current.substr(1,2));
       const pathType = selectedPathId.current.substr(3);
-      updatePath(hNum, pathType, "");
+      updatePath(hNum, pathType, "","");
       selectedPathId.current = null; //path no longer selected
       if (pathType === 'golfPath') {
         if (hNum === 1) { //special case #1--trans path can be defined as empty array
