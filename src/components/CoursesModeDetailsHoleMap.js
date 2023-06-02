@@ -125,6 +125,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
         arr.push({lat: dest.lat, lng: dest.lng, elv: elv})
       }
     }
+    arr.push(coords[coords.length-1]); //Add final point of path to sampled path to ensure sampled path has same length.
     //console.dir(arr)
     return arr;
   }
