@@ -18,7 +18,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 mapboxgl.accessToken = 'pk.eyJ1IjoidWRkeWFuIiwiYSI6ImNsZzY3MG1tZjAzbnczY3FjN2h0amp0MjUifQ.h7bnjg6dqjrJeFqNPvJyuA';
 
 
-export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath, distUnits})  {
+export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyInsertionPt, mapCenter, updateFeature, distUnits})  {
 
   /* Enumerated type for top-level state of "Hole Map" */
   const holeMapTool = {
@@ -53,6 +53,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
   const map = useRef(null);
   const draw = useRef();
   const pathMarkers = useRef();
+  const snapDrawMode = useRef();
 
   //Layer Id of path currently selected.
   const selectedPathId = useRef(null); 
@@ -75,8 +76,8 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
    ********************************************************************/
   function handleDefineFeature(holeNum, featureType) { 
       setDefineFeature({holeNum: holeNum,
-                   featureType: featureType
-      });
+                   featureType: featureType}
+      );
   }
 
   /*********************************************************************
@@ -158,6 +159,34 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
     }
     //Set current selection
     selectedPathId.current = pathId;
+  }
+
+  /*************************************************************************
+   * @function enablePathCreation
+   * @param holeNum, the hole number of the path
+   * @param pathType, the type of the path 
+   * @Desc 
+   * Determines whether the '+' button associated with the path in the hole
+   * pane should be enabled or disabled. Only the path at the current 
+   * insertion point may be defined.
+   * @return true if path is at current insertion point, false otherwise
+   *************************************************************************/
+  function enablePathCreation(holeNum, pathType) {
+    return (holeNum === pathInsertionPt.holeNum && pathType === pathInsertionPt.path);
+  }
+
+  /*************************************************************************
+   * @function enablePolyCreation
+   * @param holeNum, the hole number of the polygon
+   * @param pathType, the type of polygon 
+   * @Desc 
+   * Determines whether the '+' button associated with the polygon in the hole
+   * pane should be enabled or disabled. Only the polygon at the current 
+   * insertion point may be defined.
+   * @return true if polygon is at current insertion point, false otherwise
+   *************************************************************************/
+  function enablePolyCreation(holeNum, polyType) {
+    return (holeNum === polyInsertionPt.holeNum && polyType === polyInsertionPt.poly);
   }
 
   /*************************************************************************
@@ -290,7 +319,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
   //Mapbox draw object to allow users to create paths on map
 
   draw.current = new MapboxDraw({
-    displayControlsDefault: false,
+    displayControlsDefault: true,
     defaultMode: defineFeature === null ? 'simple_select' :
       (defineFeature.featureType.includes('Path') ? 'draw_line_string' : 
         'draw_polygon'),
@@ -305,28 +334,6 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
 
   const featureCoords = []; 
   pathMarkers.current = [];
-
-  //Whether a path is currently being defined
-  //let isDrawingStopped = (defineFeature === null ? true : false);
-
-  /*************************************************************************
-   * @function updateLine
-   * @Desc 
-   * As the user draws a path, update the stats on the path in the 
-   * distanceContainer object.
-   * We WON'T use this. Included only to show how to get length of current
-   * line.
-   *************************************************************************/
-//   function updateLine() {
-//     const data = draw.current.getAll();
-//     if (data.features.length > 0) {
-//       const line = data.features[0];
-//       //const distance = turf.length(line, { units: 'feet' });
-//       //distanceContainer.current.innerHTML = `${distance.toFixed(2)} miles`;
-//     }// } else {
-//     //   distanceContainer.current.innerHTML = "0.00 miles";
-//     // }
-// }
 
   /*************************************************************************
    * @function drawVertex
@@ -350,7 +357,6 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
     pathMarkers.current.push(m);
   }
  
-
   /*************************************************************************
    * @function selectPath
    * @param pathId, the string id of the path to select.
@@ -381,6 +387,31 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
     selectedPathId.current = pathId;
   }
 
+  map.current.on('draw.create', ()=> {
+    const lineData = draw.current.getAll();
+    if (lineData.features.length > 0) {
+      const line = lineData.features[0].geometry.coordinates;
+      const startVertex = getSnapStartVertex(pathInsertionPt.holeNum, pathInsertionPt.path);
+      const endVertex = getSnapEndVertex(pathInsertionPt.holeNum, pathInsertionPt.path);
+      const featureCoords = [];
+      for (let i = 0; i < line.length; ++i) {
+        if (i==0 && startVertex !== null)
+            featureCoords.push(startVertex);
+        else if (i === line.length-1 && endVertex !== null)
+            featureCoords.push(endVertex);
+        else {
+            const pt = {lng: line[i][0], lat: line[i][1]};
+            const elev = map.current.queryTerrainElevation(pt, { exaggerated: false }) * 3.280839895 // convert meters to feet
+            pt.elv = elev;
+            featureCoords.push(pt);
+        }    
+      }
+      updateFeature(defineFeature.holeNum, defineFeature.featureType, featureCoords, getSampledPath(featureCoords));
+      setDefineFeature(null);
+      draw.current.changeMode('simple_select');
+    }
+  });
+
   /*************************************************************************
    * @function map.click event handler for path selection events
    * @param pathIds, the array of layer ids of all paths on the map
@@ -401,7 +432,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
   /*************************************************************************
    * @function getSnapStartVertex
    * @param holeNum, the hole number for which the user is drawing a path
-   * @param featureType, either 'golfPath' or 'runningPath' for now, but
+   * @param featureType, either 'golfPath' or 'transitionPath' for now, but
    * eventually also 'startPath' and 'finishPath'
    * @desc Determine if the start of the path currently being drawn should
    * snap to the end of the previous path. If so, return the coordinates of
@@ -473,7 +504,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
    * of being defined, invokes drawVertex() to draw a vertex, with lat, lng, 
    * and elv, at the location clicked. If the event is a double-click 
    * (e.orginalEvent.detal === 2), path is terminated and staged for saving
-   * via the updatePath prop function, and drawing mode is toggled to 
+   * via the updateFeature prop function, and drawing mode is toggled to 
    * 'simple_select' (i.e., path not being defined).
    *************************************************************************/
   map.current.on('click', (e) => {
@@ -483,29 +514,30 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
       map.current.setPaintProperty(selectedPathId.current,'line-width',3);
       selectedPathId.current = null;
     }
-    if (defineFeature !== null && e.originalEvent.detail === 2) {
-        //Feature definition is complete; add it to map and update local storage
-        draw.current.changeMode('simple_select');
-        const snapVertex = getSnapEndVertex(defineFeature.holeNum, defineFeature.featureType);
-        if (snapVertex !== null) {
-          featureCoords[featureCoords.length-1] = snapVertex;
-        }
-        updatePath(defineFeature.holeNum, defineFeature.featureType, featureCoords, getSampledPath(featureCoords));
-        setDefineFeature(null);
-    } else if (defineFeature !== null) {
-        //Feature definition is continuing...
-        const snapVertex = getSnapStartVertex(defineFeature.holeNum , defineFeature.featureType);
-        let newVertex;
-        // Should this vertex be snapped?
-        if (featureCoords.length === 0 && snapVertex !== null)  {
-          newVertex = snapVertex;
-        } else {
-          const elev = map.current.queryTerrainElevation(e.lngLat, { exaggerated: false }) * 3.280839895 // convert meters to feet
-          newVertex = {lat: e.lngLat.lat, lng: e.lngLat.lng, elv: elev };
-        }
-        featureCoords.push(newVertex);
-        drawVertex(newVertex);
-     }
+    // if (defineFeature !== null && e.originalEvent.detail === 2) {
+    //     //Feature definition is complete; add it to map and update local storage
+    //     draw.current.changeMode('simple_select');
+    //     const snapVertex = getSnapEndVertex(defineFeature.holeNum, defineFeature.featureType);
+    //     if (snapVertex !== null) {
+    //       featureCoords[featureCoords.length-1] = snapVertex;
+    //     }
+    //     updateFeature(defineFeature.holeNum, defineFeature.featureType, featureCoords, getSampledPath(featureCoords));
+    //     setDefineFeature(null);
+    // } else if (defineFeature !== null) {
+    //     //Feature definition is continuing...
+    //     const snapVertex = getSnapStartVertex(defineFeature.holeNum , defineFeature.featureType);
+    //     let newVertex;
+    //     // Should this vertex be snapped?
+    //     if (featureCoords.length === 0 && snapVertex !== null)  {
+    //       newVertex = snapVertex;
+    //     } else {
+    //       const elev = map.current.queryTerrainElevation(e.lngLat, { exaggerated: false }) * 3.280839895 // convert meters to feet
+    //       newVertex = {lat: e.lngLat.lat, lng: e.lngLat.lng, elv: elev };
+    //     }
+    //     featureCoords.push(newVertex);
+    //     console.dir(featureCoords);
+    //     drawVertex(newVertex);
+    //  }
   });
 
   /**********************************************************************
@@ -783,7 +815,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
         newPath[newPath.length-1].lng = lngLat.lng;
         newPath[newPath.length-1].elv = elv; 
         addFeatureToMap(holeNum,newPath,'golfPath',false);
-        updatePath(holeNum,"golfPath",newPath, getSampledPath(newPath));
+        updateFeature(holeNum,"golfPath",newPath, getSampledPath(newPath));
       }
       if (holeNum < holes.length && holes[holeNum].transitionPath !== "") {
         map.current.removeLayer(transLayerId);
@@ -794,7 +826,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
         newPath[0].lng = lngLat.lng;
         newPath[0].elv = elv;
         addFeatureToMap(holeNum+1,newPath,'transitionPath');
-        updatePath(holeNum+1,"transitionPath",newPath, getSampledPath(newPath));
+        updateFeature(holeNum+1,"transitionPath",newPath, getSampledPath(newPath));
       } else if (holeNum === holes.length && Object.hasOwn(holes[holeNum-1],'finishPath') && 
                  holes[holeNum-1].finishPath !== "") {
           //Special case: Course has finish path and user dragged final flag
@@ -807,7 +839,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
           newPath[0].lng = lngLat.lng;
           newPath[0].elv = elv;
           addFeatureToMap(holeNum,newPath,'finishPath');
-          updatePath(holeNum,"finishPath",newPath, getSampledPath(newPath));
+          updateFeature(holeNum,"finishPath",newPath, getSampledPath(newPath));
       }
     }
 
@@ -837,7 +869,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
         newPath[newPath.length-1].lng = lngLat.lng;
         newPath[newPath.length-1].elv = elv;
         addFeatureToMap(holeNum,newPath,'startPath');
-        updatePath(holeNum,"startPath",newPath, getSampledPath(newPath));
+        updateFeature(holeNum,"startPath",newPath, getSampledPath(newPath));
       } else if (holes[holeNum-1].transitionPath !== "" && holes[holeNum-1].transitionPath.length > 1) {
         map.current.removeLayer(transLayerId);
         map.current.removeLayer(transLayerId + "_label");
@@ -847,7 +879,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
         newPath[newPath.length-1].lng = lngLat.lng;
         newPath[newPath.length-1].elv = elv;
         addFeatureToMap(holeNum,newPath,'transitionPath');
-        updatePath(holeNum,"transitionPath",newPath, getSampledPath(newPath));
+        updateFeature(holeNum,"transitionPath",newPath, getSampledPath(newPath));
       }
       if (holes[holeNum-1].golfPath !== "") {
         map.current.removeLayer(golfLayerId);
@@ -858,7 +890,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
         newPath[0].lng = lngLat.lng;
         newPath[0].elv = elv; 
         addFeatureToMap(holeNum,newPath,'golfPath',false);
-        updatePath(holeNum,"golfPath",newPath, getSampledPath(newPath));
+        updateFeature(holeNum,"golfPath",newPath, getSampledPath(newPath));
       }
     }
 
@@ -920,7 +952,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
   return () => {
     map.current.remove();
   };     
-}, [defineFeature]); //useEffect() is reinvoked whenever defineFeature state var changes 
+}, [defineFeature, pathInsertionPt, polyInsertionPt]); //useEffect() is reinvoked whenever defineFeature state var changes 
       
 
   /*************************************************************************
@@ -950,14 +982,16 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
    *************************************************************************/
   function handleKeyDown(e) {
     if (selectedPathId.current !== null && (e.keyCode === 8 || e.keyCode === 46)) {
-      //Delete selection
+      /**********************************
+       * Delete selection
+       * *******************************/
       map.current.removeLayer(selectedPathId.current);
       map.current.removeLayer(selectedPathId.current + "_label");
       const hNum = parseInt(selectedPathId.current.substr(1,2));
-      const pathType = selectedPathId.current.substr(3);
-      updatePath(hNum, pathType, "","");
+      const featureType = selectedPathId.current.substr(3);
+      updateFeature(hNum, featureType, "","");
       selectedPathId.current = null; //path no longer selected
-      if (pathType === 'golfPath') {
+      if (featureType === 'golfPath') {
         if (hNum === 1) { //special case #1--trans path can be defined as empty array
           if (holes[hNum-1].transitionPath === "" || holes[hNum-1].transitionPath.length === 0) {
           teeFlagMarkers.current[hNum-1].tee.remove();
@@ -980,17 +1014,27 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
             teeFlagMarkers.current[hNum-1].flag.remove();
           }  
         } 
-      } else if (pathType === 'transitionPath') {
+      } else if (featureType === 'transitionPath') {
         if (holes[hNum-1].golfPath === "" ) {
           teeFlagMarkers.current[hNum-1].tee.remove();
         }
         if (hNum > 1 && holes[hNum-2].golfPath === "") {
           teeFlagMarkers.current[hNum-2].flag.remove();
         }
-        
+      } else if (featureType === 'startPath') {
+        if (holes[hNum-1].golfPath === "") {
+          teeFlagMarkers.current[hNum-1].tee.remove();
+        }
+
+      } else if (featureType === 'finishPath') {
+        if (holes[hNum-1].golfPath === "") {
+          teeFlagMarkers.current[hNum-1].flag.remove();
+        }
       }
     } else if (defineFeature !== null && e.keyCode === 27) {
-      //Cancel feature currently being drawn
+      /**********************************
+       * Cancel feature being drawn
+       * *******************************/
       for (let m = 0; m < pathMarkers.current.length; ++m) {
         map.current.removeLayer(pathMarkers.current[m]);
       }
@@ -1022,9 +1066,9 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
                    </button>
               </td>
               <td>
-                <button className={"btn btn-sm" + (h.number===1 ? !Object.hasOwn(h,"startPath") ? " btn-gray" :
-                                    h.startPath !== "" ? " btn-green" : "" :
-                                    h.transitionPath !== "" ? " btn-green" : "")}
+                <button className={"btn btn-sm" + (h.number===1 ? (!Object.hasOwn(h,"startPath") ? " btn-gray" :
+                                    h.startPath !== "" && enablePathCreation(h.number,'startPath') ? " btn-green": " btn-gray") :
+                                    h.transitionPath === "" && enablePathCreation(h.number,'transitionPath') ? "" : " btn-gray")}
                         aria-label={"Hole " + h.number + " transition path " + 
                                     ((h.transitionPath === "") ? "(not yet defined)":"(defined)")}
                           onClick={(h.number===1 ? (!Object.hasOwn(h,"startPath") ? null: (h.startPath==="" ? 
@@ -1036,7 +1080,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
                 </button>
               </td>
               <td>
-              <button className={"btn btn-sm" + ((h.teebox !== "") ? " btn-green" : "")}
+              <button className={"btn btn-sm" + (h.teebox === "" ? (enablePolyCreation(h.number,'teebox') ? "" : " btn-gray") : " btn-green")}
                         aria-label={"Hole " + h.number + " tee box " + 
                                     ((h.transitionPath === "") ? "(not yet defined)":"(defined)")}
                           onClick={((h.transitionPath === "") ? ()=>handleDefineFeature(h.number,"teebox") : null)}>
@@ -1044,7 +1088,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
                 </button>
               </td>
               <td>
-              <button className={"btn btn-sm" + ((h.golfPath !== "") ? " btn-green" : "")}
+              <button className={"btn btn-sm" + ((h.golfPath !== "") ? " btn-green" : (enablePathCreation(h.number,'golfPath') ? "" : " btn-gray"))}
                         aria-label={"Hole " + h.number + " golf path " + 
                                     ((h.golfPath === "") ? "(not yet defined)":"(defined)")}
                           onClick={((h.golfPath === "") ? ()=>handleDefineFeature(h.number,"golfPath") : 
@@ -1053,7 +1097,7 @@ export default function CoursesModeDetailsHoleMap({holes, mapCenter, updatePath,
                 </button>
               </td>
               <td>
-                <button className={"btn btn-sm" + ((h.green !== "") ? " btn-green" : "")}
+                <button className={"btn btn-sm" + (h.green === "" ? (enablePolyCreation(h.number,'green') ? "" : " btn-gray") : " btn-green")}
                         aria-label={"Hole " + h.number + " green " + 
                                     ((h.green === "") ? "(not yet defined)":"(defined)")}
                           onClick={((h.green === "") ? ()=>handleDefineFeature(h.number,"green") : null)}>

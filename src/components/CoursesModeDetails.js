@@ -62,7 +62,6 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
         } else {
             const newTee = {
               name: teeName,
-              finishLinePath: "",
               golfDistance: "",
               runningDistance: "",
               mensStrokePar: "",
@@ -97,7 +96,9 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
             })),
             numHolesGolfDataComplete: 0,
             numHolesPathDataComplete: 0,
-            numHolesGreenDataComplete: 0
+            numHolesPolyDataComplete: 0,
+            pathInsertionPoint: {path: 'golfPath', holeNum: 1},
+            polyInsertionPoint: {poly: 'teebox', holeNum: 1}
           };
           updatedTees[teeName] = newTee;
         }
@@ -177,6 +178,139 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
     }
 
     /*************************************************************************
+     * @function updateNumHolesPathDataComplete
+     * @param newHoles, the updated holes array
+     * @Desc 
+     * Return the number of holes for which we have complete golf data (i.e.,
+     * golfDistance, womensStrokePar, and mensStrokePar data)
+     *************************************************************************/
+    function updateNumHolesPathDataComplete(newHoles) {
+        let count = 0;
+        for (let i=0; i < newHoles.length; ++i) {
+            switch (i) {
+                case 0: //Special case: First hole
+                  if (Object.hasOwn("startPath")) {
+                    if (newHoles[0].startPath !== "" && newHoles[0].golfPath !== "" && 
+                      newHoles[0].transitionPath !== "") {
+                      count++;
+                    } 
+                  }  else {
+                    if (newHoles[0].startPath !== "" && newHoles[0].golfPath !== "") {
+                      count++
+                    }
+                  }
+                break;
+                case newHoles.length-1: //Special case: Last hole
+                    if (Object.hasOwn("finishPath")) {
+                        if (newHoles[newHoles.length-1].finishPath !== "" && newHoles[newHoles.length-1].golfPath !== "" && 
+                          newHoles[newHoles.length-1].transitionPath !== "") {
+                          count++;
+                        } 
+                      }  else {
+                        if (newHoles[newHoles.length-1].startPath !== "" && newHoles[newHoles.length-1].golfPath !== "") {
+                          count++;
+                        }
+                      }
+                break;
+                default: //General case
+                  if (newHoles[i].golfPath !== "" && 
+                      newHoles[i].transitionPath !== "") {
+                        count++;
+                  }
+                break;
+            }
+
+        }
+        return count;
+    }
+
+    /*************************************************************************
+     * @function updatePathInsertionPoint
+     * @param newHoles, the updated holes array
+     * @Desc 
+     * Return an object indicating the path type ('startPath', 'transitionPath',
+     * 'golfPath' or 'finishPath) and hole number where the user must define
+     * the next path. If all paths have been defined, the object's 'path' 
+     * prop is set to ""
+     *************************************************************************/
+    function updatePathInsertionPoint(newHoles) {
+        const pt = {
+            path: "",
+            holeNum: newHoles.length
+        };
+        for (let i=0; i < newHoles.length; ++i) {
+            if (i===0 && Object.hasOwn(newHoles[i],'startPath') && newHoles[i].startPath === "") {
+                pt.path = 'startPath';
+                pt.holeNum = i+1;
+                return pt;
+            }
+            if (i !== 0 && newHoles[i].transitionPath === "") {
+                pt.path = 'transitionPath';
+                pt.holeNum = i+1;
+                return pt;
+            }
+            if (newHoles[i].golfPath === "") {
+                pt.path = 'golfPath';
+                pt.holeNum = i+1;
+                return pt;
+            }
+            if (i===newHoles.length-1 && Object.hasOwn(newHoles[i],'finishPath') && newHoles[i].finishPath === "") {
+                pt.path = 'finishPath';
+                pt.hole = i+1;
+                return pt;
+            }
+        }
+        return pt;
+    }
+
+    
+    /*************************************************************************
+     * @function updateNumHolesPolyDataComplete
+     * @param newHoles, the updated holes array
+     * @Desc 
+     * Return the number of holes for which we have complete polygon data (i.e.,
+     * teebox and green data)
+     *************************************************************************/
+    function updateNumHolesPolyDataComplete(newHoles) {
+        let count = 0;
+        for (let i = 0; i < newHoles.length; ++i) {
+            if (newHoles[i].teebox !== "" && newHoles[i].green !== "") {
+                count++;
+            }
+        }
+        return count;
+    }
+
+     /*************************************************************************
+     * @function updatePolyInsertionPoint
+     * @param newHoles, the updated holes array
+     * @Desc 
+     * Return an object indicating the poly type ('teebox', 'green') and 
+     * hole number where the user must define
+     * the next polygon. If all polygons have been defined, the object's 
+     * 'poly' prop is set to "".
+     *************************************************************************/
+     function updatePolyInsertionPoint(newHoles) {
+        const pt = {
+            poly: "",
+            holeNum: newHoles.length
+        };
+        for (let i = 0; i < newHoles.length; ++i) {
+            if (newHoles[i].teebox === "") {
+                pt.poly = 'teebox';
+                pt.holeNum = i+1;
+                return pt;
+            }
+            if (newHoles[i].green === "") {
+                pt.poly = 'green';
+                pt.holeNum = i+1;
+                return pt;
+            }
+        }
+        return pt;
+    }
+
+    /*************************************************************************
      * @function updateNumHolesGolfDataComplete
      * @param newHoles, the updated holes array
      * @Desc 
@@ -189,24 +323,6 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
             if (newHoles[i].golfDistance !== "" && 
                 newHoles[i].womensStrokePar !== "" &&
                 newHoles[i].mensStrokePar !== "") {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    /*************************************************************************
-     * @function updateNumHolesGolfDataComplete
-     * @param newHoles, the updated holes array
-     * @Desc 
-     * Return the number of holes for which we have complete path data (i.e.,
-     * transitionPath and golfPath data)
-     *************************************************************************/
-    function updateNumHolesPathDataComplete(newHoles) {
-        let count = 0;
-        for (let i=0; i < newHoles.length; ++i) {
-            if (newHoles[i].transitionPath !== "" && 
-                newHoles[i].golfPath !== "") {
                 count++;
             }
         }
@@ -231,74 +347,86 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
      * is assigned to holes
      *************************************************************************/
     function updateHoles(newHoles) {
-        const newTees = {...course.tees};
+        const newTees = {...updatedCourse.tees};
         newTees[selectedTee].holes = newHoles;
         newTees[selectedTee].numHolesGolfDataComplete = updateNumHolesGolfDataComplete(newHoles);
         updateCourseVal("tees",newTees); 
       }
 
     /*************************************************************************
-     * @function updatePath
-     * @param holeNum, the number of the hole whose path is to be updated
-     * @param pathType, "transitionPath" or "golfPath"
-     * @param pathCoords, an array of coord objects {lat, lng, elv} defining
-     *        the path
+     * @function updateFeature
+     * @param holeNum, the number of the hole whose feature is to be updated
+     * @param featureType: 'startPath', 'transitionPath', 'golfPath',
+     *        'finishPath', 'teebox', 'green'
+     * @param featureCoords, an array of coord objects {lat, lng, elv} defining
+     *        the feature
      * @param sampledPathCoords, an array of coord objects in 50' intervals
-     *        defining the path. Used to compute running stats but not
-     *        displayed on the map.
+     *        defining the path. Apply only to paths. Used to compute 
+     *        running stats but not displayed on the map.
      * @Desc 
-     * Upate the hole's path with the new path coords, and use
-     * SGCalcs.getHoleRunningStats() to update the 
+     * Upate the hole's featureType with the new coords; if the feature
+     * is a path, use SGCalcs.getHoleRunningStats() to update the 
      * corresponding hole's running distances and time pars. Note that
      * SGCalcs.getHoleRunningStats() is cleverly designed to return empty
      * data if any required path data is missing. This means we don't need
      * to worry about checking for this here.
      *************************************************************************/
-      function updatePath(holeNum,pathType,pathCoords, sampledPathCoords) {
+      function updateFeature(holeNum,featureType,featureCoords, sampledPathCoords=null) {
         const updatedTees = {...updatedCourse.tees};
         const thisHole = {...updatedTees[selectedTee].holes[holeNum-1]};
+        const numHoles = updatedTees[selectedTee].holes.length;
         let runStats;
-        thisHole[pathType] = pathCoords;
-        thisHole[pathType + "Sampled"] = sampledPathCoords;
-        if (holeNum === 1) {
-            //CASE 1: Starting hole; could have startPath
-            if (Object.hasOwn(thisHole,"startPath")) {
-                runStats = SGCalcs.getHoleRunningStats(thisHole.startPathSampled, thisHole.golfPathSampled,
-                    thisHole.womensStrokePar, thisHole.mensStrokePar);
-            }
-            else {
-                //Calculate stats based on empty start path
-                runStats = SGCalcs.getHoleRunningStats([], thisHole.golfPathSampled,
-                    thisHole.womensStrokePar, thisHole.mensStrokePar);
-            }
-        } else if (holeNum === updatedTees[selectedTee].holes.length) {
-            //CASE 2: Finishing hole; could have finishPath
-            if (Object.hasOwn(thisHole,"finishPath")) {
-                runStats = SGCalcs.getHoleRunningStats(thisHole.transitionPathSampled, thisHole.golfPathSampled,
-                    thisHole.womensStrokePar, thisHole.mensStrokePar, thisHole.finishPathSampled);
-            }
-            else {
-                //Calculate stats based on no finish path
-                runStats = SGCalcs.getHoleRunningStats(thisHole.transitionPathSampled, thisHole.golfPathSampled,
-                    thisHole.womensStrokePar, thisHole.mensStrokePar);
-            }
+        thisHole[featureType] = featureCoords;
+        if (featureType === 'teebox' || featureType === 'green') {
+            //Simple case: Feature is a polygon.
+            thisHole[featureType] = featureCoords;
+            updatedTees[selectedTee].holes[holeNum-1] = thisHole;
+            updatedTees[selectedTee].numHolesPolyDataComplete = updateNumHolesPolyDataComplete(updatedTees[selectedTee].holes);
+            updatedTees[selectedTee].polyInsertionPoint = updatePolyInsertionPoint(updatedTees[selectedTee].holes);
+            updateTees(updatedTees);
         } else {
-            //CASE 3: General case: Not start or finish hole
-            runStats = SGCalcs.getHoleRunningStats(thisHole.transitionPathSampled, thisHole.golfPathSampled,
-                thisHole.womensStrokePar, thisHole.mensStrokePar);
-
+            //Tricky case: Feature is a path
+            thisHole[featureType + "Sampled"] = sampledPathCoords;
+            if (holeNum === 1) {
+                //CASE 1: Starting hole--could have startPath
+                if (Object.hasOwn(thisHole,"startPath")) {
+                    runStats = SGCalcs.getHoleRunningStats(thisHole.startPathSampled, thisHole.golfPathSampled,
+                        thisHole.womensStrokePar, thisHole.mensStrokePar);
+                }
+                else {
+                    //Calculate stats based on empty start path
+                    runStats = SGCalcs.getHoleRunningStats([], thisHole.golfPathSampled,
+                        thisHole.womensStrokePar, thisHole.mensStrokePar);
+                }
+            } else if (holeNum === updatedTees[selectedTee].holes.length) {
+                //CASE 2: Finishing hole--could have finishPath
+                if (Object.hasOwn(thisHole,"finishPath")) {
+                    runStats = SGCalcs.getHoleRunningStats(thisHole.transitionPathSampled, thisHole.golfPathSampled,
+                        thisHole.womensStrokePar, thisHole.mensStrokePar, thisHole.finishPathSampled);
+                }
+                else {
+                    //Calculate stats based on no finish path
+                    runStats = SGCalcs.getHoleRunningStats(thisHole.transitionPathSampled, thisHole.golfPathSampled,
+                        thisHole.womensStrokePar, thisHole.mensStrokePar);
+                }
+            } else {
+                //CASE 3: General case: Not start or finish hole
+                runStats = SGCalcs.getHoleRunningStats(thisHole.transitionPathSampled, thisHole.golfPathSampled,
+                    thisHole.womensStrokePar, thisHole.mensStrokePar);
+            }
+            thisHole.runDistance = runStats.runDistance;
+            thisHole.transRunDistance = runStats.transPathRunDistance;
+            thisHole.golfRunDistance = runStats.golfPathRunDistance;
+            if (Object.hasOwn(thisHole,"finishPath")) {
+                thisHole.finishPathRunDistance = runStats.finishPathRunDistance;
+            }
+            thisHole.womensTimePar = runStats.womensTimePar;
+            thisHole.mensTimePar = runStats.mensTimePar;
+            updatedTees[selectedTee].holes[holeNum-1] = thisHole;
+            updatedTees[selectedTee].numHolesPathDataComplete = updateNumHolesPathDataComplete(updatedTees[selectedTee].holes);
+            updatedTees[selectedTee].pathInsertionPoint = updatePathInsertionPoint(updatedTees[selectedTee].holes);
+            updateTees(updatedTees);
         }
-        thisHole.runDistance = runStats.runDistance;
-        thisHole.transRunDistance = runStats.transPathRunDistance;
-        thisHole.golfRunDistance = runStats.golfPathRunDistance;
-        if (Object.hasOwn(thisHole,"finishPath")) {
-            thisHole.finishPathRunDistance = runStats.finishPathRunDistance;
-        }
-        thisHole.womensTimePar = runStats.womensTimePar;
-        thisHole.mensTimePar = runStats.mensTimePar;
-        updatedTees[selectedTee].holes[holeNum-1] = thisHole;
-        updatedTees[selectedTee].numHolesPathDataComplete = updateNumHolesPathDataComplete(updatedTees[selectedTee].holes);
-        updateTees(updatedTees);
     } 
   
     return (
@@ -413,10 +541,9 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
                 <CoursesModeDetailsSG course={updatedCourse} updateCourseVal={updateCourseVal}/> 
             </div>
             <div className="tab-pane fade" id="tees-info" role="tabpanel" aria-labelledby="tees-tab">
-                <CoursesModeDetailsTees numHoles={updatedCourse.numHoles} tees={updatedCourse.tees} 
+                <CoursesModeDetailsTees tees={updatedCourse.tees} 
                                         updateTees={updateTees} selectedTee={selectedTee}
-                                        setSelectedTee={setSelectedTee} distUnits={distUnits}
-                                        setDistUnits={setDistUnits} />
+                                        distUnits={distUnits}/>
             </div>
             <div className="tab-pane fade" id="holes-info" role="tabpanel" aria-labelledby="holes-table-tab">
               {selectedTee === null ? null : 
@@ -426,8 +553,10 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
             <div className="tab-pane fade" id="path-map" role="tabpanel" aria-labelledby="holes-map-tab">
               {selectedTee === null ? null:
                 <CoursesModeDetailsHoleMap holes={updatedCourse.tees[selectedTee].holes} 
+                                           pathInsertionPt={updatedCourse.tees[selectedTee].pathInsertionPoint}
+                                           polyInsertionPt={updatedCourse.tees[selectedTee].polyInsertionPoint}
                                            mapCenter={updatedCourse.geoLocation}
-                                           updatePath={updatePath} 
+                                           updateFeature={updateFeature} 
                                            distUnits={distUnits} />}
             </div>
         </div>

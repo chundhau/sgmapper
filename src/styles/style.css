@@ -634,7 +634,8 @@ cursor: pointer;
 
 .btn-gray {
     outline: 0;     
-    color: gray;
+    color: lightgray;
+    pointer-events: none;
 }
 
 /*************************************************************************

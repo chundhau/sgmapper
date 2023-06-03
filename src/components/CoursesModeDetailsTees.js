@@ -5,9 +5,9 @@
  ************************************************************************/
 import * as Conversions from './../conversions';
 
-export default function CoursesModeDetailsTees({numHoles, tees, updateTees, 
-                                                selectedTee, setSelectedTee,
-                                                distUnits, setDistUnits}) {
+export default function CoursesModeDetailsTees({tees, updateTees, 
+                                                selectedTee,
+                                                distUnits}) {
 
     /*************************************************************************
      * @function handleTeeDataChange
@@ -34,59 +34,6 @@ export default function CoursesModeDetailsTees({numHoles, tees, updateTees,
       return total;
     }
 
-    // function updatePathFromTable(val) {
-    //     const updatedTees = {...tees};
-    //     const thisHole = {...updatedTees[selectedTee].holes[uploadGeoPathDialog.holeNum-1]};
-    //     const prevHole = (uploadGeoPathDialog.holeNum > 1 ? 
-    //         {...updatedTees[selectedTee].holes[uploadGeoPathDialog.holeNum-2]} : null);
-    //     if (uploadGeoPathDialog.prop === 'golfPath') {
-    //         if (thisHole.transitionPath !== "" &&
-    //             Object.keys(thisHole.transitionPath).length > 0) { 
-    //             //adjust start of golf path to match prev trans path
-    //             const transPath = thisHole.transitionPath;
-    //             val[0].lat = transPath[transPath.length-1].lat;
-    //             val[0].lng = transPath[transPath.length-1].lng;
-    //             val[0].elv = transPath[transPath.length-1].elv;
-    //         }
-    //         thisHole.golfPath = val;
-    //         thisHole.teeLoc = {...val[0]};
-    //         thisHole.flagLoc = {...val[val.length-1]};
-    //         if (uploadGeoPathDialog.holeNum === 1 && thisHole.transitionPath === "") {
-    //             thisHole.transitionPath = {}; //Special case: Force empty trans path for Hole #1
-    //         }
-    //     } else { //uploadGeoPathDialog.prop === 'transitionPath
-    //         if (uploadGeoPathDialog.holeNum > 1 &&  prevHole.golfPath !== "") {
-    //             //adjust start of trans path to match end of prev golf path
-    //             val[0].lat = prevHole.golfPath[prevHole.golfPath.length-1].lat;
-    //             val[0].lng = prevHole.golfPath[prevHole.golfPath.length-1].lng;
-    //             val[0].elv = prevHole.golfPath[prevHole.golfPath.length-1].elv;
-    //         }
-    //         thisHole.transitionPath = val;
-    //         thisHole.teeLoc = {...val[val.length-1]};
-    //     } 
-    //     if (thisHole.transitionPath !== "" &&
-    //         thisHole.golfPath !== "") { //Compute running distance and time pars!
-    //             const womenHoleRunStats = 
-    //               getHoleRunningStats(thisHole.transitionPath, thisHole.golfPath,
-    //                 thisHole.womensStrokePar, parRunPaceWomen, parShotBoxSecWomen);
-    //             const menHoleRunStats = 
-    //               getHoleRunningStats(thisHole.transitionPath, thisHole.golfPath,
-    //                 thisHole.mensStrokePar, parRunPaceMen, parShotBoxSecMen);
-    //             thisHole.runDistance = Math.round(womenHoleRunStats.holeRunDistance);
-    //             thisHole.transRunDistance = Math.round(womenHoleRunStats.transPathRunDistance);
-    //             thisHole.golfRunDistance = Math.round(womenHoleRunStats.golfPathRunDistance);
-    //             thisHole.womensTimePar = Math.round(womenHoleRunStats.holeTimePar);
-    //             thisHole.mensTimePar = Math.round(menHoleRunStats.holeTimePar);
-    //     }
-    //     updatedTees[selectedTee].holes[uploadGeoPathDialog.holeNum-1] = thisHole;
-    //     updateCourseVal("tees",updatedTees);
-    //     setUploadGeoPathDialog({show: false});
-    // }
-
-    // function cancelSaveGeoPath() {
-    //     setUploadGeoPathDialog({show: false});
-    // }
-
     return(
             (selectedTee === null) ? null :
               <div>
@@ -95,8 +42,7 @@ export default function CoursesModeDetailsTees({numHoles, tees, updateTees,
                   {"Distances and Pars from " + selectedTee + " Tees"}
                   <br/>
                   <i className="font-small">{"(based on " + tees[selectedTee].numHolesGolfDataComplete +
-                    " holes with complete golf data and " +
-                    tees[selectedTee].numHolesPathDataComplete + 
+                    " holes with complete golf data and " + tees[selectedTee].numHolesPathDataComplete +
                     " holes with complete running path data)"}</i>
                 </legend>
                 <table className="table table-sm table-bordered table-narrow">
