@@ -21,6 +21,31 @@ export default function CoursesModeDetailsTees({tees, updateTees,
           updateTees(updatedTees);
       }
 
+     /*************************************************************************
+     * @function handleStartFinishCheck
+     * @param event, the event object returned by the event handler
+     * @Desc 
+     * Toggle "Tee has starting/finish" line value when user checks/unchecks box.
+     *************************************************************************/
+    function handleStartFinishCheck(event) {
+      const updatedTees = {...tees};
+      if (event.target.id === "startPath") {
+        if (Object.hasOwn(updatedTees[selectedTee].holes[0],"startPath")) {
+          delete updatedTees[selectedTee].holes[0].startPath;
+        }
+        else {
+          updatedTees[selectedTee].holes[0].startPath = "";
+        }
+      } else { //event.target.id === "finishPath"
+        if (Object.hasOwn(updatedTees[selectedTee].holes[updatedTees[selectedTee].holes.length-1],"finishPath")) {
+          delete updatedTees[selectedTee].holes[updatedTees[selectedTee].holes.length-1].finishPath;
+        } else {
+          updatedTees[selectedTee].holes[updatedTees[selectedTee].holes.length-1].finishPath = "";
+        }
+      }
+      updateTees(updatedTees);
+    }
+
     /*************************************************************************
      * @function computeTotal
      * @param prop, the name of the hole prop over which to compute the total
@@ -37,6 +62,26 @@ export default function CoursesModeDetailsTees({tees, updateTees,
     return(
             (selectedTee === null) ? null :
               <div>
+                <fieldset className="centered">
+                <legend>{selectedTee + " Tees Starting and Finish Lines"}</legend>
+                <div className="form-check-inline">
+                  <input className="form-check-input" type="checkbox" name="startPath"
+                         onChange={handleStartFinishCheck}
+                         checked={Object.hasOwn(tees[selectedTee].holes[0],"startPath")} />
+                  <label className="form-check-label" htmlFor="flexCheckDefault">
+                    &nbsp;Tee has starting line
+                  </label>
+                </div>
+                <br />
+                <div className="form-check-inline">
+                  <input className="form-check-input" type="checkbox" name="finishPath"
+                         onChange={handleStartFinishCheck}
+                         checked={Object.hasOwn(tees[selectedTee].holes[tees[selectedTee].holes.length-1],"finishPath")} />
+                  <label className="form-check-label" htmlFor="flexCheckChecked">
+                    &nbsp;Tee has finish line
+                  </label>
+                </div>
+                </fieldset>
                 <fieldset className="centered">
                 <legend>
                   {"Distances and Pars from " + selectedTee + " Tees"}

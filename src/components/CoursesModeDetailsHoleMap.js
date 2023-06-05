@@ -343,19 +343,20 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
    * map at the lat, long, and elev that were clicked. We style it
    * based on the type of feature being defined.
    *************************************************************************/
-  function drawVertex(coords) {
-    const el = document.createElement('div');
-    el.className = 'marker';
-    el.style.backgroundImage = `radial-gradient(circle, ${lineColor[defineFeature.featureType]} 60%, transparent 70%)`;
-    el.style.width = '10px';
-    el.style.height = '10px';
-    el.style.borderRadius = '50%';
+  //Note: Deprecated in favor of the draw_create event, which is more reliable.
+  // function drawVertex(coords) {
+  //   const el = document.createElement('div');
+  //   el.className = 'marker';
+  //   el.style.backgroundImage = `radial-gradient(circle, ${lineColor[defineFeature.featureType]} 60%, transparent 70%)`;
+  //   el.style.width = '10px';
+  //   el.style.height = '10px';
+  //   el.style.borderRadius = '50%';
     
-    const m = new mapboxgl.Marker(el)
-      .setLngLat(coords)
-      .addTo(map.current);
-    pathMarkers.current.push(m);
-  }
+  //   const m = new mapboxgl.Marker(el)
+  //     .setLngLat(coords)
+  //     .addTo(map.current);
+  //   pathMarkers.current.push(m);
+  // }
  
   /*************************************************************************
    * @function selectPath
@@ -387,6 +388,13 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
     selectedPathId.current = pathId;
   }
 
+  /*************************************************************************
+   * @function on draw_create
+   * @desc
+   * Invoked when the user completes definition of a path. When this happens,
+   * We do any snapping that's required, get the elevations of the points 
+   * in the path, and finally add the new path feature using updateFeature(). 
+   *************************************************************************/
   map.current.on('draw.create', ()=> {
     const lineData = draw.current.getAll();
     if (lineData.features.length > 0) {
@@ -496,16 +504,11 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
   }
 
   /*************************************************************************
-   * @function map.click event handler for feature definition events and
-   * clicks outside of path
+   * @function map.click event handler for clicks outside of path
    * @param e, the event object
    * @Desc 
-   * Invoked when the user clicks on the map. If a feature is in the process
-   * of being defined, invokes drawVertex() to draw a vertex, with lat, lng, 
-   * and elv, at the location clicked. If the event is a double-click 
-   * (e.orginalEvent.detal === 2), path is terminated and staged for saving
-   * via the updateFeature prop function, and drawing mode is toggled to 
-   * 'simple_select' (i.e., path not being defined).
+   * Invoked when the user clicks on the map in simpleSelect mode. We may need
+   * to unselect currently selected feature. 
    *************************************************************************/
   map.current.on('click', (e) => {
     if (e.clickOnLayer) return;  //Don't execute if click was on layer
@@ -514,30 +517,6 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
       map.current.setPaintProperty(selectedPathId.current,'line-width',3);
       selectedPathId.current = null;
     }
-    // if (defineFeature !== null && e.originalEvent.detail === 2) {
-    //     //Feature definition is complete; add it to map and update local storage
-    //     draw.current.changeMode('simple_select');
-    //     const snapVertex = getSnapEndVertex(defineFeature.holeNum, defineFeature.featureType);
-    //     if (snapVertex !== null) {
-    //       featureCoords[featureCoords.length-1] = snapVertex;
-    //     }
-    //     updateFeature(defineFeature.holeNum, defineFeature.featureType, featureCoords, getSampledPath(featureCoords));
-    //     setDefineFeature(null);
-    // } else if (defineFeature !== null) {
-    //     //Feature definition is continuing...
-    //     const snapVertex = getSnapStartVertex(defineFeature.holeNum , defineFeature.featureType);
-    //     let newVertex;
-    //     // Should this vertex be snapped?
-    //     if (featureCoords.length === 0 && snapVertex !== null)  {
-    //       newVertex = snapVertex;
-    //     } else {
-    //       const elev = map.current.queryTerrainElevation(e.lngLat, { exaggerated: false }) * 3.280839895 // convert meters to feet
-    //       newVertex = {lat: e.lngLat.lat, lng: e.lngLat.lng, elv: elev };
-    //     }
-    //     featureCoords.push(newVertex);
-    //     console.dir(featureCoords);
-    //     drawVertex(newVertex);
-    //  }
   });
 
   /**********************************************************************
