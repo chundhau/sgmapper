@@ -7,6 +7,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 
 import mapboxgl from 'mapbox-gl';
+import CustomMap from './customMap';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
@@ -222,7 +223,7 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
   useEffect(() => {  
     if (map.current) return;
     //Instantiate a mapbox Map object and attach to mapContainer DOM element
-     map.current = new mapboxgl.Map({
+     map.current = new CustomMap({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/satellite-streets-v12',
       center: [lng, lat],
@@ -375,7 +376,7 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
     
 
   /*************************************************************************
-   * Define Mapbox draw object and draw_create handler
+   * Define Mapbox draw object
    * @Desc 
    * On map load, and when the draw mode changes, we need to instantiate 
    * a map draw object to accommondate the current mode. This is defined
@@ -383,6 +384,12 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
    *************************************************************************/
   useEffect(() => {
      if (!map.current) return;
+     console.dir("In useEffect to initialize draw object...");
+     if (defineFeature === null) {
+       console.dir("defineFeature is null");
+     } else {
+       console.dir("Value of defineFeature: " + defineFeature.holeNum + ", " + defineFeature.featureType);
+     }
      /* Need to define an object to style feature lines as they are being drawn.
      See https://github.com/mapbox/mapbox-gl-draw/blob/main/docs/EXAMPLES.md */
      const lineStyleObj = {
@@ -419,9 +426,17 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
       });
       map.current.addControl(draw.current);
       return () => map.current.removeControl(draw.current); //removeControl on cleanup
+     
     },[defineFeature]);
 
   useEffect(() => {
+    console.dir("In useEffect to initialize draw_create...");
+    if (defineFeature === null) {
+      console.dir("defineFeature is null");
+    } else {
+      console.dir("Value of defineFeature: " + defineFeature.holeNum + ", " + defineFeature.featureType);
+    }
+    
     /*************************************************************************
      * @function on draw_create
      * @desc
@@ -436,6 +451,12 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
      * proper closure is created for pathInsertionPt!
      *************************************************************************/
       map.current.on('draw.create', ()=> {
+        console.dir("In draw_create...");
+        if (defineFeature === null) {
+          console.dir("defineFeature is null");
+        } else {
+          console.dir("Value of defineFeature: " + defineFeature.holeNum + ", " + defineFeature.featureType);
+        }
         const lineData = draw.current.getAll();
         if (lineData.features.length > 0) {
           const line = lineData.features[0].geometry.coordinates;
@@ -475,7 +496,7 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
         }
       });
       
-  },[]); 
+  },[defineFeature]); 
 
 
 
