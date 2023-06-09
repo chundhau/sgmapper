@@ -102,8 +102,8 @@ export default function CoursesModeDetails({course, updateCourseDetails, closeCo
           };
           updatedTees[teeName] = newTee;
         }
-        updateTees(updatedTees);
         setSelectedTee(teeName);
+        updateTees(updatedTees);
         setAddEditTeeDialog({show: false});
     }
 

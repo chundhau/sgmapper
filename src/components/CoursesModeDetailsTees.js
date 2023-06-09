@@ -29,14 +29,14 @@ export default function CoursesModeDetailsTees({tees, updateTees,
      *************************************************************************/
     function handleStartFinishCheck(event) {
       const updatedTees = {...tees};
-      if (event.target.id === "startPath") {
+      if (event.target.name === "startPath") {
         if (Object.hasOwn(updatedTees[selectedTee].holes[0],"startPath")) {
           delete updatedTees[selectedTee].holes[0].startPath;
         }
         else {
           updatedTees[selectedTee].holes[0].startPath = "";
         }
-      } else { //event.target.id === "finishPath"
+      } else { //event.target.name === "finishPath"
         if (Object.hasOwn(updatedTees[selectedTee].holes[updatedTees[selectedTee].holes.length-1],"finishPath")) {
           delete updatedTees[selectedTee].holes[updatedTees[selectedTee].holes.length-1].finishPath;
         } else {
@@ -69,7 +69,7 @@ export default function CoursesModeDetailsTees({tees, updateTees,
                          onChange={handleStartFinishCheck}
                          checked={Object.hasOwn(tees[selectedTee].holes[0],"startPath")} />
                   <label className="form-check-label" htmlFor="flexCheckDefault">
-                    &nbsp;Tee has starting line
+                    &nbsp;Speedgolfers run from a starting line to first tee
                   </label>
                 </div>
                 <br />
@@ -78,7 +78,7 @@ export default function CoursesModeDetailsTees({tees, updateTees,
                          onChange={handleStartFinishCheck}
                          checked={Object.hasOwn(tees[selectedTee].holes[tees[selectedTee].holes.length-1],"finishPath")} />
                   <label className="form-check-label" htmlFor="flexCheckChecked">
-                    &nbsp;Tee has finish line
+                    &nbsp;Speedgolfers  run from last hole to a finish line
                   </label>
                 </div>
                 </fieldset>

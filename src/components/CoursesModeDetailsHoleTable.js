@@ -20,14 +20,25 @@ export default function CoursesModeDetailsHoleTable({selectedTee, holes, updateH
         if (prop === 'golfDistance') { //need to convert to feet
             newHoles[index][prop] = (distUnits === "Imperial" ? 
               Conversions.yardsToFeet(newVal) : Conversions.metersToFeet(newVal));
-        } else if (prop === 'womensStrokePar') { //need also to change womensTimePar, which depends on stroke par
-            newHoles[index].womensStrokePar = newVal;
-            const stats = SGCalcs.getHoleRunningStats(newHoles[index].transitionPath, newHoles[index].golfPath,newVal,newHoles[index].mensStrokePar);
-            newHoles[index].womensTimePar = stats.womensTimePar;
-        } else if (prop === 'mensStrokePar') { //need also to change mensTimePar, which depends on stroke par
-            newHoles[index].mensStrokePar = newVal;
-            const stats = SGCalcs.getHoleRunningStats(newHoles[index].transitionPath, newHoles[index].golfPath,newHoles[index].womensStrokePar, newVal);
-            newHoles[index].mensTimePar = stats.mensTimePar;
+        } else if (prop === 'womensStrokePar' || prop === 'mensStrokePar') { //need also to change timePar, which depends on stroke par
+            newHoles[index][prop] = newVal;
+            let stats;
+            if (index === 0) {
+                if (!Object.hasOwn(newHoles[index], "startPath")) {
+                    stats = SGCalcs.getHoleRunningStats([], newHoles[index].golfPath,newVal,newHoles[index].mensStrokePar);
+                } else {
+                    stats = SGCalcs.getHoleRunningStats(newHoles[index].startPath, newHoles[index].golfPath,newVal,newHoles[index].mensStrokePar);
+                }
+            } else if (index === newHoles.length-1) {
+                if (!Object.hasOwn(newHoles[index], "finishPath")) {
+                    stats = SGCalcs.getHoleRunningStats(newHoles[index].transitionPath, newHoles[index].golfPath,newVal,newHoles[index].mensStrokePar);
+                    } else {
+                    stats = SGCalcs.getHoleRunningStats(newHoles[index].transitionPath, newHoles[index].golfPath,newVal,newHoles[index].mensStrokePar, newHoles[index].finishPath);
+                    }
+            } else {
+                stats = SGCalcs.getHoleRunningStats(newHoles[index].transitionPath, newHoles[index].golfPath,newVal,newHoles[index].mensStrokePar);
+            }
+            newHoles[index][prop] = stats[prop];
         } else {
             newHoles[index][prop] = newVal;
         }
