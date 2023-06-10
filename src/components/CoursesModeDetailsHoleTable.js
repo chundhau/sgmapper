@@ -38,7 +38,8 @@ export default function CoursesModeDetailsHoleTable({selectedTee, holes, updateH
             } else {
                 stats = SGCalcs.getHoleRunningStats(newHoles[index].transitionPath, newHoles[index].golfPath,newVal,newHoles[index].mensStrokePar);
             }
-            newHoles[index][prop] = stats[prop];
+            newHoles[index].womensTimePar = stats.womensTimePar;
+            newHoles[index].mensTimePar = stats.mensTimePar;
         } else {
             newHoles[index][prop] = newVal;
         }

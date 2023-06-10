@@ -158,36 +158,6 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
   }
 
   /*************************************************************************
-   * @function selectPath
-   * @param pathId, the string id of the path to select.
-   * @param unselectIfSame, a boolean. If true, unselect currently selected
-   * path if it's the same as the path to select (so that NO path is selected).
-   * If false, essentially ignore the request: keep the selected path the same
-   * @Desc 
-   * Invoked when the user clicks on a path on the map. If the path is 
-   * currently selected, it is unselected. Otherwise, the path is selected
-   * and the previously selected path (if any) is unselected. 
-   *************************************************************************/
-  function selectPath(pathId,unselectIfSame) {
-    if (selectedPathId.current === pathId) {
-      if (unselectIfSame) {
-        //unselect path just clicked on
-        map.current.setPaintProperty(pathId,'line-width',3); //normal width
-        selectedPathId.current = null;
-      }
-      return;
-    }
-    //if here, we need to select a different path from currently selected path
-    map.current.setPaintProperty(pathId,'line-width',6); //thick width
-    if (selectedPathId.current !== null) {
-      //unselect currently selected path
-      map.current.setPaintProperty(selectedPathId.current,'line-width',3);
-    }
-    //Set current selection
-    selectedPathId.current = pathId;
-  }
-
-  /*************************************************************************
    * @function enablePathCreation
    * @param holeNum, the hole number of the path
    * @param pathType, the type of the path 
@@ -229,7 +199,7 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
       center: [lng, lat],
       zoom: zoom
     });
-  }, []); //end use effect; should be executed only once
+  }, [lat,lng,zoom]); //end use effect; should be executed only once
 
 
   /*************************************************************************
@@ -351,7 +321,7 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
           .setLngLat(e.lngLat)
           .addTo(map.current);
       });
-    },[distUnits]);
+    },[distUnits, holes]);
 
   /*************************************************************************
    * @function path mouseleave event handler 
@@ -384,12 +354,6 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
    *************************************************************************/
   useEffect(() => {
      if (!map.current) return;
-     console.dir("In useEffect to initialize draw object...");
-     if (defineFeature === null) {
-       console.dir("defineFeature is null");
-     } else {
-       console.dir("Value of defineFeature: " + defineFeature.holeNum + ", " + defineFeature.featureType);
-     }
      /* Need to define an object to style feature lines as they are being drawn.
      See https://github.com/mapbox/mapbox-gl-draw/blob/main/docs/EXAMPLES.md */
      const lineStyleObj = {
@@ -429,41 +393,27 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
      
     },[defineFeature]);
 
-  useEffect(() => {
-    console.dir("In useEffect to initialize draw_create...");
-    if (defineFeature === null) {
-      console.dir("defineFeature is null");
-    } else {
-      console.dir("Value of defineFeature: " + defineFeature.holeNum + ", " + defineFeature.featureType);
-    }
-    
+  useEffect(() => {   
     /*************************************************************************
-     * @function on draw_create
+     * @function processDrawnFeature
      * @desc
-     * Invoked when the user completes definition of a path. When this happens,
-     * We do any snapping that's required, get the elevations of the points 
+     * As the draw-create click handler, it is called when the user 
+     * completes definition of a path or polygon by double-clicking. Based on
+     * the feature being defined (in the defineFeature state variable), 
+     * we do any snapping that's required, get the elevations of the points 
      * in the path, and finally add the new path feature using updateFeature().
-     * NOTE: This _should_ be responsive to the defineFeature state variable.
-     * However, when I placed defineFeature in useEffect's dependency list,
-     * the closure was incorrect (stale)--a real headscratcher! As an
-     * unsatisfying fix, I hav created a feature ref to hold the feature
-     * being created. This is, alas, redundant but it works. Not even a 
-     * proper closure is created for pathInsertionPt!
+     * NOTE: We have isolated this in its own function so that a new function 
+     * closure can be formed every time the defineFeature state variable is updated. 
      *************************************************************************/
-      map.current.on('draw.create', ()=> {
-        console.dir("In draw_create...");
-        if (defineFeature === null) {
-          console.dir("defineFeature is null");
-        } else {
-          console.dir("Value of defineFeature: " + defineFeature.holeNum + ", " + defineFeature.featureType);
-        }
+     function processDrawnFeature() {
         const lineData = draw.current.getAll();
         if (lineData.features.length > 0) {
           const line = lineData.features[0].geometry.coordinates;
           let startVertex, endVertex;
-          if (feature.current.featureType.includes('Path')) {
-            startVertex = getSnapStartVertex(feature.current.holeNum, feature.current.featureType);
-            endVertex = getSnapEndVertex(feature.current.holeNum, feature.current.featureType);
+          //defineFeature replaces feature.current
+          if (defineFeature.featureType.includes('Path')) {
+            startVertex = getSnapStartVertex(defineFeature.holeNum, defineFeature.featureType);
+            endVertex = getSnapEndVertex(defineFeature.holeNum, defineFeature.featureType);
           } else {
             startVertex = null;
             endVertex = null;
@@ -482,20 +432,21 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
             }    
           }
           //Add to map
-          addFeatureToMap(feature.current.holeNum, featureCoords, feature.current.featureType, true);
+          addFeatureToMap(defineFeature.holeNum, featureCoords, defineFeature.featureType, true);
           //Update for possible save to storage
-          if (feature.current.featureType.includes('Path')) {
-            updateFeature(feature.current.holeNum, feature.current.featureType, featureCoords, getSampledPath(featureCoords));
+          if (defineFeature.featureType.includes('Path')) {
+            updateFeature(defineFeature.holeNum, defineFeature.featureType, featureCoords, getSampledPath(featureCoords));
           } else { //Polygon -- no need to get sampled path
-            updateFeature(feature.current.holeNum, feature.current.featureType, featureCoords, null);
+            updateFeature(defineFeature.holeNum, defineFeature.featureType, featureCoords, null);
           }
           //We don't need the draw items anymore;
           draw.current.deleteAll();
           //Done with line drawing, so we can switch to select mode.
           draw.current.changeMode('simple_select');
         }
-      });
-      
+      }
+        map.current.on('draw.create', processDrawnFeature);
+        return () => map.current.off('draw.create', processDrawnFeature);
   },[defineFeature]); 
 
 
@@ -867,40 +818,50 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
         if (hNum === 1) { //special case #1--trans path can be defined as empty array
           if (holes[hNum-1].transitionPath === "" || holes[hNum-1].transitionPath.length === 0) {
           teeFlagMarkers.current[hNum-1].tee.remove();
+          teeFlagMarkers.current[hNum-1].tee = null;
           }
           if (holes[hNum].transitionPath === "") {
           teeFlagMarkers.current[hNum-1].flag.remove();
+          teeFlagMarkers.current[hNum-1].flag = null;
           }
         } else if (hNum === holes.length) { //special case #2--could be finish path
           if (holes[hNum-1].transitionPath === "") {
             teeFlagMarkers.current[hNum-1].tee.remove();
+            teeFlagMarkers.current[hNum-1].tee = null;
           } 
           if (!Object.hasOwn(holes[hNum-1],'finishPath') || holes[hNum-1].finishPath === "") {
             teeFlagMarkers.current[hNum-1].flag.remove();
+            teeFlagMarkers.current[hNum-1].flag = null;
           }
         } else { //General case
           if (holes[hNum-1].transitionPath === "") {
             teeFlagMarkers.current[hNum-1].tee.remove();
+            teeFlagMarkers.current[hNum-1].tee = null;
           }
           if (hNum < holes.length && holes[hNum].transitionPath === "") {
             teeFlagMarkers.current[hNum-1].flag.remove();
+            teeFlagMarkers.current[hNum-1].flag = null;
           }  
         } 
       } else if (featureType === 'transitionPath') {
         if (holes[hNum-1].golfPath === "" ) {
           teeFlagMarkers.current[hNum-1].tee.remove();
+          teeFlagMarkers.current[hNum-1].tee = null;
         }
         if (hNum > 1 && holes[hNum-2].golfPath === "") {
           teeFlagMarkers.current[hNum-2].flag.remove();
+          teeFlagMarkers.current[hNum-2].flag = null;
         }
       } else if (featureType === 'startPath') {
         if (holes[hNum-1].golfPath === "") {
           teeFlagMarkers.current[hNum-1].tee.remove();
+          teeFlagMarkers.current[hNum-1].tee = null;
         }
 
       } else if (featureType === 'finishPath') {
         if (holes[hNum-1].golfPath === "") {
           teeFlagMarkers.current[hNum-1].flag.remove();
+          teeFlagMarkers.current[hNum-1].flag = null;
         }
       }
     } else if (defineFeature !== null && e.keyCode === 27) {
