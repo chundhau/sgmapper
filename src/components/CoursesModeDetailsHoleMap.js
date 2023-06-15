@@ -49,9 +49,9 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
   };
   Object.freeze(featureLabel);
 
-    /* defineFeature describes the feature currently being edited, e.g., hole 1's transitino path . */
+    /* defineFeature describes the feature currently being edited, e.g., hole 1's transition path . */
   const [defineFeature, setDefineFeature]  = useState(null);
-  const feature = useRef(null);
+ 
 
   /* profileHole keeps track hole currently displayed in profile view. Will become part of 'status. */
   const [profileHole, setProfileHole] = useState(0);
@@ -103,7 +103,6 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
    ********************************************************************/
   function handleDefineFeature(holeNum, featureType) { 
     setDefineFeature({holeNum: holeNum, featureType: featureType});
-    feature.current = {holeNum: holeNum, featureType: featureType};
   }
 
   /*********************************************************************
@@ -199,7 +198,7 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
       center: [lng, lat],
       zoom: zoom
     });
-  }, [lat,lng,zoom]); //end use effect; should be executed only once
+  }); //end use effect; should be executed only once
 
 
   /*************************************************************************
@@ -223,8 +222,6 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
         addAllFeaturesToMap();
       } 
     });
-    //return () => {if (map.current.loaded()) map.current.removeSource('mapbox-golf')};
-   
   });
 
     /*************************************************************************
@@ -253,7 +250,7 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
         setZoom(map.current.getZoom().toFixed(2));
       });
       
-    },[lng, lat, zoom]);
+    });
 
     /*************************************************************************
      * @function map.click event handler for path selection events
@@ -420,7 +417,7 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
           }
           const featureCoords = [];
           for (let i = 0; i < line.length; ++i) {
-            if (i==0 && startVertex !== null)
+            if (i===0 && startVertex !== null)
                 featureCoords.push(startVertex);
             else if (i === line.length-1 && endVertex !== null)
                 featureCoords.push(endVertex);
@@ -477,7 +474,7 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
       return;
     }
     //if here, we need to select a different path from currently selected path
-    map.current.setPaintProperty(pathId,'line-width',6); //thick width
+    map.current.setPaintProperty(pathId,'line-width',9); //thick width
     if (selectedPathId.current !== null) {
       //unselect currently selected path
       map.current.setPaintProperty(selectedPathId.current,'line-width',3);
@@ -865,12 +862,9 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
         }
       }
     } else if (defineFeature !== null && e.keyCode === 27) {
-      // /**********************************
-      //  * Cancel feature being drawn
-      //  * *******************************/
-      // for (let m = 0; m < pathMarkers.current.length; ++m) {
-      //   map.current.removeLayer(pathMarkers.current[m]);
-      // }
+      /**********************************
+       * Cancel feature being drawn
+       * *******************************/
       draw.current.changeMode('simple_select');
       setDefineFeature(null);
     }
@@ -1116,14 +1110,17 @@ export default function CoursesModeDetailsHoleMap({holes, pathInsertionPt, polyI
             </div>
           </div> : 
           <div className="status-box" tabIndex="0">     
-            <span className="txt-small-bold">Tips:</span>
-            <ul className="txt-small txt-align-left">
+            <p className="txt-small-bold">RUNNING PATHS</p>
+            <p className="p-no-space"><i>20 of 36 paths defined</i></p>
+            <button className="btn btn-secondary">Define Next Path<br/>(Hole 11 Transition)</button>
+
+            {/* <ul className="txt-small txt-align-left">
               <li>Click on a <FontAwesomeIcon icon="plus" /> icon in side panel to define a hole's
                   &nbsp;<span className="txt-yellow bg-black">Transition Path</span>, <span className="txt-red">Golf Path</span>,&nbsp;
                   <span className="txt-blue">Tee Box</span>, or&nbsp;<span className="txt-green bg-black">Green</span></li>
               <li>A <FontAwesomeIcon icon="check" className="btn-green"/> icon in side panel means the hole's path, tee box, or green has been defined. To redefine it, first delete it on map by selecting it and hitting 'delete' key.</li>
               <li>Click on a hole # to show/hide elevation profile of hole. (Available only if transition path AND golf path are defined for hole.)</li>
-            </ul>
+            </ul> */}
           </div>
         }
 

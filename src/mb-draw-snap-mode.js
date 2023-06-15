@@ -22,7 +22,7 @@ drawPath.onSetup = function(opts) {
     opts = opts || {};
     const featureId = opts.featureId;
     const state = {};
-    state.startMarker = Object.hasOwn(opts,"startMaker") ? opts.startMarker : null;
+    state.startMarker = Object.hasOwn(opts,"startMarker") ? opts.startMarker : null;
     state.endMarker = Object.hasOwn(opts,"endMarker") ? opts.endMarker : null;
     if (opts.startMarker !== null) {
         const startDiv = startMarker.getElement();
