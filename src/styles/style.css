@@ -696,16 +696,11 @@ cursor: pointer;
   .txt-small-bold {
     font-size: small;
     font-weight: bold;
-    margin: 0pt;
-  }
-
-  .p-no-space {
-    margin: 0pt;
   }
   
   .status-box {
     z-index: 1;
-    width: 200px;
+    width: 400px;
     position: absolute;
     top: 1px;
     left: 50%;
