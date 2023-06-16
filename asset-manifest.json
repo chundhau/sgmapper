@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/static/css/main.b885eeec.css",
+    "main.js": "/static/js/main.1b1443a3.js",
+    "index.html": "/index.html",
+    "static/media/DefaultGolfCoursePic.jpg": "/static/media/DefaultGolfCoursePic.4334893b3b47a5c7d746.jpg",
+    "main.b885eeec.css.map": "/static/css/main.b885eeec.css.map",
+    "main.1b1443a3.js.map": "/static/js/main.1b1443a3.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.b885eeec.css",
+    "static/js/main.1b1443a3.js"
+  ]
+}
